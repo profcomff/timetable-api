@@ -1,16 +1,10 @@
 from fastapi import FastAPI, Query, HTTPException
-
-import connect
+from connect import timetable, engine
 
 app = FastAPI()
 
-exec(open("connect.py").read())
 
-timetable = connect.timetable
-engine = connect.engine
-
-
-@app.get('/timetable/by_group')
+@app.get('/timetable/group/{group_num}')
 async def get_timetable_by_group(group: str = Query(..., description="Group number")):
     s = timetable.select().where(timetable.columns.group == group)
     result = engine.execute(s).fetchall()
@@ -19,7 +13,7 @@ async def get_timetable_by_group(group: str = Query(..., description="Group numb
     return result
 
 
-@app.get('/timetable/by_teacher')
+@app.get('/timetable/teacher/{teacher_name}')
 async def get_timetable_by_teacher(teacher: str = Query(..., description="Teacher name")):
     s = timetable.select().where(timetable.columns.teacher == teacher)
     result = engine.execute(s).fetchall()
@@ -28,7 +22,7 @@ async def get_timetable_by_teacher(teacher: str = Query(..., description="Teache
     return result
 
 
-@app.get('/timetable/by_audience')
+@app.get('/timetable/audience/{audience_num}')
 async def get_timetable_by_place(place: str = Query(..., description="Audience number")):
     s = timetable.select().where(timetable.columns.place == place)
     result = engine.execute(s).fetchall()

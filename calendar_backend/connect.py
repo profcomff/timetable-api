@@ -1,29 +1,30 @@
-import keyring
-from sqlalchemy.exc import SQLAlchemyError
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.exc import SQLAlchemyError
 
-DB_USER = 'grigorevsi'
-system = 'app'
-DB_HOST = 'db.profcomff.com'
-DB_NAME = 'dev'
-DB_PORT = '25432'
+load_dotenv()
+
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_HOST = os.getenv("DB_HOST")
+DB_NAME = os.getenv("DB_NAME")
+DB_PORT = os.getenv("DB_PORT")
 
 
-def get_pass(system: str, username: str):
-    return keyring.get_password(system, username)
+def connect():
+    engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}", echo=True)
+
+    meta = MetaData(engine)
+
+    timetable = Table('timetable', meta, autoload=True)
+
+    try:
+        engine.connect()
+        print('Connection successful')
+    except SQLAlchemyError as e:
+        print(f"The error '{e}' occurred")
+    return timetable, engine
 
 
-DB_PASS = get_pass("app", "grigorevsi")
-
-engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}", echo=True)
-
-meta = MetaData(engine)
-
-timetable = Table('timetable', meta, autoload=True)
-
-try:
-    conn = engine.connect()
-    print('Connection successful')
-except SQLAlchemyError as e:
-    print(f"The error '{e}' occurred")
-
+timetable, engine = connect()
