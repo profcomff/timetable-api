@@ -5,8 +5,8 @@ app = FastAPI()
 
 
 @app.get('/timetable/group/{group_num}')
-async def get_timetable_by_group(group: str = Query(..., description="Group number")):
-    s = timetable.select().where(timetable.columns.group == group)
+async def get_timetable_by_group(group_num: str = Query(..., description="Group number")):
+    s = timetable.select().where(timetable.columns.group == group_num)
     result = engine.execute(s).fetchall()
     if not result:
         raise HTTPException(status_code=404, detail="Timetable not found")
@@ -14,8 +14,8 @@ async def get_timetable_by_group(group: str = Query(..., description="Group numb
 
 
 @app.get('/timetable/teacher/{teacher_name}')
-async def get_timetable_by_teacher(teacher: str = Query(..., description="Teacher name")):
-    s = timetable.select().where(timetable.columns.teacher == teacher)
+async def get_timetable_by_teacher(teacher_name: str = Query(..., description="Teacher name")):
+    s = timetable.select().where(timetable.columns.teacher == teacher_name)
     result = engine.execute(s).fetchall()
     if not result:
         raise HTTPException(status_code=404, detail="Timetable not found")
@@ -23,8 +23,8 @@ async def get_timetable_by_teacher(teacher: str = Query(..., description="Teache
 
 
 @app.get('/timetable/audience/{audience_num}')
-async def get_timetable_by_place(place: str = Query(..., description="Audience number")):
-    s = timetable.select().where(timetable.columns.place == place)
+async def get_timetable_by_place(audience_num: str = Query(..., description="Audience number")):
+    s = timetable.select().where(timetable.columns.place == audience_num)
     result = engine.execute(s).fetchall()
     if not result:
         raise HTTPException(status_code=404, detail="Timetable not found")
