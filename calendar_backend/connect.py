@@ -1,30 +1,34 @@
 import os
 from dotenv import load_dotenv
+from pydantic import BaseModel
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.exc import SQLAlchemyError
+from pydantic.networks import PostgresDsn
 
 load_dotenv()
 
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
-DB_HOST = os.getenv("DB_HOST")
-DB_NAME = os.getenv("DB_NAME")
-DB_PORT = os.getenv("DB_PORT")
+
+class Settings(BaseModel):
+    DB_DSN: PostgresDsn = os.getenv("DB_DSN")
+
+    class Config:
+        env_file = '.env'
 
 
-def connect():
-    engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}", echo=True)
+settings = Settings()
 
+
+def connect(table_name):
+    engine = create_engine(f"{settings.DB_DSN}", echo=True)
     meta = MetaData(engine)
-
-    timetable = Table('timetable', meta, autoload=True)
+    tablepython = Table(table_name, meta, autoload = True)
 
     try:
         engine.connect()
         print('Connection successful')
     except SQLAlchemyError as e:
         print(f"The error '{e}' occurred")
-    return timetable, engine
+    return tablepython, engine
 
 
-timetable, engine = connect()
+timetable, engine = connect('timetable')
