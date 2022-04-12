@@ -1,19 +1,6 @@
-import os
-from dotenv import load_dotenv
-from pydantic import BaseModel
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.exc import SQLAlchemyError
-from pydantic.networks import PostgresDsn
-
-load_dotenv()
-
-
-class Settings(BaseModel):
-    DB_DSN: PostgresDsn = os.getenv("DB_DSN")
-
-    class Config:
-        env_file = '.env'
-
+from settings import Settings
 
 settings = Settings()
 
@@ -21,7 +8,7 @@ settings = Settings()
 def connect(table_name):
     engine = create_engine(f"{settings.DB_DSN}", echo=True)
     meta = MetaData(engine)
-    tablepython = Table(table_name, meta, autoload = True)
+    tablepython = Table(table_name, meta, autoload=True)
 
     try:
         engine.connect()
@@ -31,4 +18,4 @@ def connect(table_name):
     return tablepython, engine
 
 
-timetable, engine = connect('timetable')
+timetable, engine = connect(settings.TIMETABLE_NAME)
