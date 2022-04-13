@@ -59,7 +59,7 @@ async def get_user_calendar(group: str):
                     teacher = "-"
                 event.add("summary", f"{timetable_of_day[i]['subject']}, {teacher}")
                 event.add("dtstart",
-                          datetime(date.year, date.month, date.day, hour_start, hour_end, 0, tzinfo=pytz.UTC))
+                          datetime(date.year, date.month, date.day, hour_start, mins_start, 0, tzinfo=pytz.UTC))
                 event.add("dtend", datetime(date.year, date.month, date.day, hour_end, mins_end, 0, tzinfo=pytz.UTC))
                 if timetable_of_day[i]["place"] is not None:
                     place = timetable_of_day[i]["place"]
@@ -77,10 +77,11 @@ async def create_user_calendar_file(user_calendar: Calendar):
         f = open(settings.ICS_PATH, 'wb')
         try:
             f.write(user_calendar.to_ical())
-            print("okay")
             return settings.ICS_PATH
-        except OSError as e:
-            print(f"The error '{e}' occurred")
+        except OSError as e1:
+            print(f"The error '{e1}' occurred")
+        except FileNotFoundError as e2:
+            print(f"The error '{e2}' occurred")
         finally:
             f.close()
     except OSError as e:
