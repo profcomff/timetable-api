@@ -76,14 +76,13 @@ async def get_user_calendar(group: str):
 
 
 async def create_user_calendar_file(user_calendar: Calendar, group: str):
-    async with asyncio.Lock():
-        try:
-            with open(f"{settings.ICS_PATH}{group}", 'wb') as f:
-                f.write(user_calendar.to_ical())
-                return f"{settings.ICS_PATH}{group}"
-        except Exception:
-            os.remove(f"{settings.ICS_PATH}{group}")
-            print(f"The error '{e}' occurred")
+    try:
+        with open(f"{settings.ICS_PATH}{group}", 'wb') as f:
+            f.write(user_calendar.to_ical())
+            return f"{settings.ICS_PATH}{group}"
+    except Exception:
+        os.remove(f"{settings.ICS_PATH}{group}")
+        print(f"The error '{e}' occurred")
 
 
 def get_end_of_semester_date():
@@ -98,7 +97,7 @@ def check_file_for_creation_date(path_file: str):
         try:
             c_time = os.path.getctime(path_file)
             date_time_of_creation = datetime.strptime(time.ctime(c_time), "%c")
-            if (datetime.today()-date_time_of_creation).days >= 1:
+            if (datetime.today() - date_time_of_creation).days >= 1:
                 return True
             else:
                 return False

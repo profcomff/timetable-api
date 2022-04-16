@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import and_
@@ -52,5 +54,6 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
     if list_calendar.check_file_for_creation_date(f"{settings.ICS_PATH}{group}") is False:
         return FileResponse(f"{settings.ICS_PATH}{group}")
     else:
-        user_calendar = await list_calendar.get_user_calendar(group)
-        return FileResponse(await list_calendar.create_user_calendar_file(user_calendar, group))
+        async with asyncio.Lock():
+            user_calendar = await list_calendar.get_user_calendar(group)
+            return FileResponse(await list_calendar.create_user_calendar_file(user_calendar, group))
