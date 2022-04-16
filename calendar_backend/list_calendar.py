@@ -1,4 +1,3 @@
-import asyncio
 import time
 from datetime import date as datedatetime
 from datetime import datetime, timedelta
@@ -82,7 +81,7 @@ async def create_user_calendar_file(user_calendar: Calendar, group: str):
             return f"{settings.ICS_PATH}{group}"
     except Exception:
         os.remove(f"{settings.ICS_PATH}{group}")
-        print(f"The error '{e}' occurred")
+        print(f"The error occurred")
 
 
 def get_end_of_semester_date():
