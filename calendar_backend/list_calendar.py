@@ -1,3 +1,5 @@
+import asyncio
+import time
 from datetime import date as datedatetime
 from datetime import datetime, timedelta
 
@@ -7,6 +9,7 @@ from icalendar import Calendar, Event, vText
 import app
 from service import get_calendar_service
 from settings import Settings
+import os
 
 settings = Settings()
 
@@ -72,20 +75,15 @@ async def get_user_calendar(group: str):
     return user_calendar
 
 
-async def create_user_calendar_file(user_calendar: Calendar):
-    try:
-        f = open(settings.ICS_PATH, 'wb')
+async def create_user_calendar_file(user_calendar: Calendar, group: str):
+    async with asyncio.Lock():
         try:
-            f.write(user_calendar.to_ical())
-            return settings.ICS_PATH
-        except OSError as e1:
-            print(f"The error '{e1}' occurred")
-        except FileNotFoundError as e2:
-            print(f"The error '{e2}' occurred")
-        finally:
-            f.close()
-    except OSError as e:
-        print(f"The error '{e}' occurred")
+            with open(f"{settings.ICS_PATH}{group}", 'wb') as f:
+                f.write(user_calendar.to_ical())
+                return f"{settings.ICS_PATH}{group}"
+        except Exception:
+            os.remove(f"{settings.ICS_PATH}{group}")
+            print(f"The error '{e}' occurred")
 
 
 def get_end_of_semester_date():
@@ -93,3 +91,18 @@ def get_end_of_semester_date():
         return datedatetime(datedatetime.today().year, 5, 24)
     elif datetime.today().month in range(9, 13):
         return datedatetime(datedatetime.today().year, 12, 24)
+
+
+def check_file_for_creation_date(path_file: str):
+    if os.path.exists(path_file):
+        try:
+            c_time = os.path.getctime(path_file)
+            date_time_of_creation = datetime.strptime(time.ctime(c_time), "%c")
+            if (datetime.today()-date_time_of_creation).days >= 1:
+                return True
+            else:
+                return False
+        except OSError as e:
+            print(f"The error '{e}' occurred")
+    else:
+        return True
