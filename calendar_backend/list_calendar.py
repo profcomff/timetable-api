@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 import pytz
 from fastapi import HTTPException
 from icalendar import Calendar, Event, vText
+from sqlalchemy.exc import DBAPIError
+
 import app
 from service import get_calendar_service
 from settings import Settings
@@ -79,8 +81,11 @@ async def create_user_calendar_file(user_calendar: Calendar, group: str):
         with open(f"{settings.ICS_PATH}{group}", 'wb') as f:
             f.write(user_calendar.to_ical())
             return f"{settings.ICS_PATH}{group}"
-    except Exception:
-        os.remove(f"{settings.ICS_PATH}{group}")
+    except DBAPIError:
+        try:
+            os.remove(f"{settings.ICS_PATH}{group}")
+        except OSError:
+            print(f"The error occurred")
         print(f"The error occurred")
 
 
@@ -89,6 +94,8 @@ def get_end_of_semester_date():
         return datedatetime(datedatetime.today().year, 5, 24)
     elif datetime.today().month in range(9, 13):
         return datedatetime(datedatetime.today().year, 12, 24)
+    else:
+        return datedatetime(datedatetime.today().year, datedatetime.today().month, datedatetime.today().day)
 
 
 def check_file_for_creation_date(path_file: str):
