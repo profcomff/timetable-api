@@ -1,9 +1,15 @@
-from fastapi import FastAPI, Query, HTTPException
-from sqlalchemy import and_
+import asyncio
 
+from fastapi import FastAPI, Query, HTTPException
+from fastapi.responses import FileResponse
+from sqlalchemy import and_
+from settings import Settings
+
+import list_calendar
 from connect import timetable, engine
 
 app = FastAPI()
+settings = Settings()
 
 
 @app.get('/timetable/group/{group_num}')
@@ -41,3 +47,13 @@ async def get_timetable_by_group_and_weekday(group: str = Query(..., description
     if not result:
         raise HTTPException(status_code=404, detail="Timetable not found")
     return result
+
+
+@app.get('/timetable/icsfile/{group}')
+async def download_ics_file(group: str = Query(..., description="Group number")):
+    if list_calendar.check_file_for_creation_date(f"{settings.ICS_PATH}{group}") is False:
+        return FileResponse(f"{settings.ICS_PATH}{group}")
+    else:
+        async with asyncio.Lock():
+            user_calendar = await list_calendar.get_user_calendar(group)
+            return FileResponse(await list_calendar.create_user_calendar_file(user_calendar, group))
