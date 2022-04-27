@@ -16,7 +16,7 @@ settings = Settings()
 
 
 def main():
-    service = get_calendar_service()
+    service = get_calendar_service(44)
     # Call the Calendar API
     print('Getting list of calendars')
     calendars_result = service.calendarList().list().execute()
