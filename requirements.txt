@@ -1,8 +1,10 @@
-fastapi
+fastapi~=0.75.2
 fastapi-sqlalchemy
 psycopg2-binary
-pydantic[dotenv]
+pydantic[dotenv]~=1.9.0
 uvicorn
 alembic
 jinja2
 aiofiles
+
+SQLAlchemy~=1.4.35

@@ -4,8 +4,12 @@ from dataclasses import dataclass, asdict
 from fastapi_sqlalchemy import db
 from connect import connect
 from settings import Settings
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from db import Timetable
 
 settings = Settings()
+session = Session(create_engine(settings.DB_DSN))
 
 
 @dataclass()
@@ -18,7 +22,6 @@ class Event:
     recurrence: list
     attendees: list
     reminders: dict
-
 
 
 def create_google_calendar_event(summary: str,
@@ -54,10 +57,8 @@ def create_google_calendar_event(summary: str,
 
 
 def create_google_event_from_db(group: int) -> dict:
-    timetable, engine = connect(settings.TIMETABLE_NAME)
-
-
-
+    group_subjects = session.query(Timetable).filter(Timetable.group == str(group)).all()
+    pass
 
 def test_can_create_google_type_event():
     print(create_google_calendar_event('subject', '2015-05-28T09:00:00-07:00', '2015-05-28T17:00:00-07:00'))
@@ -65,4 +66,4 @@ def test_can_create_google_type_event():
 
 if __name__ == '__main__':
     # test_can_create_google_type_event()
-    create_google_event_from_db(116)
+    create_google_event_from_db(101)

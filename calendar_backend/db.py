@@ -38,3 +38,17 @@ class Credentials(BaseModel):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
+class Timetable(BaseModel):
+    start = Column(String, nullable=False)
+    end = Column(String, nullable=False)
+    odd = Column(Boolean, nullable=False)
+    even = Column(Boolean, nullable=False)
+    type = Column(String, nullable=False)
+    weekday = Column(Integer, nullable=False)
+    num = Column(Integer, nullable=False)
+    group = Column(String, nullable=False)
+    id = Column(String, nullable=False, primary_key=True)
+    subject = Column(String, nullable=False)
+    place = Column(String, nullable=True)
+    teacher = Column(String, nullable=True)
