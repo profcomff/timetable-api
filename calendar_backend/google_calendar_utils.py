@@ -106,7 +106,7 @@ def create_google_events_from_db(group: int) -> list[dict]:
     return dict_of_subjects
 
 
-def create_timetable_calendar(service, group) -> str:
+def create_calendar(service, group) -> str:
     """
     Creates a new calendar for timetable on user's account (if not exist)
     returns calendarId
@@ -135,33 +135,40 @@ def insert_event(service: googleapiclient.discovery.Resource,
     return f"Event {status.get('summary')} created"
 
 
-def get_event():
-    service = get_calendar_service(44)
-    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-    events = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-    print(events['items'][0])
+def create_calendar_with_timetable(service, group):
+    calendarId: str = create_calendar(service, int(group))
+    events: list[dict] = create_google_events_from_db(int(group))
+    for event in events:
+        status = insert_event(service, calendarId, event)
+        print(status)
 
+def create_timetable_calendar_for_user(token, group):
+    """
+    For background tasks
+    !NOT TESTED!
+    """
+    credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(json.loads(token), SCOPES)
+    service = build('calendar', 'v3', credentials=credentials)
+    create_calendar_with_timetable(service, int(group))
 
-def test_can_create_timetable_calendar():
+def test_can_create_calendar_with_timetable():
     service = get_calendar_service(44)
-    id = create_timetable_calendar(service)
+    group = '116' # group is a String type in db
+    create_calendar_with_timetable(service, group)
+
+def test_can_create_empty_calendar():
+    service = get_calendar_service(44)
+    id = create_calendar(service)
     print('id:', id)
     event = create_google_event_from_db(116)
     print(event)
     status = insert_event(service, id, event)
     calendar = service.calendars().get(calendarId=id).execute()
     print(calendar)
-    print(status)
-
 
 
 if __name__ == '__main__':
     # test_can_create_google_type_event()
-    #create_google_event_from_db(101)
-    subjects = create_google_events_from_db(101)
-    for subject in subjects:
-        print(subject['summary'])
-        print()
-    #test_can_create_timetable_calendar()
+    # create_google_event_from_db(101)
+    # test_can_create_timetable_calendar()
+    test_can_create_calendar_with_timetable()
