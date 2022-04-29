@@ -98,14 +98,6 @@ def get_end_of_semester_date():
         return datedatetime(datedatetime.today().year, datedatetime.today().month, datedatetime.today().day)
 
 
-def get_start_of_semester_date():
-    if datedatetime.today().month in range(2, 6):
-        return datedatetime(datedatetime.today().year, 1, 24)
-    elif datetime.today().month in range(9, 13):
-        return datedatetime(datedatetime.today().year, 9, 1)
-    else:
-        return datedatetime(datedatetime.today().year, datedatetime.today().month, datedatetime.today().day)
-
 
 def check_file_for_creation_date(path_file: str):
     if os.path.exists(path_file):

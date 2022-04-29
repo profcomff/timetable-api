@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from db import Timetable
 import datetime
-from list_calendar import get_end_of_semester_date, get_start_of_semester_date
+from list_calendar import get_end_of_semester_date
 
 
 settings = Settings()
@@ -30,29 +30,25 @@ class Event:
 def create_google_calendar_event(summary: str,
                                  start_time: str,
                                  end_time: str,
-                                 location='physics dept',
-                                 description='a subject for students') -> dict:
+                                 location: str,
+                                 description: str) -> dict:
     """
     Creates a dict with a Google calendar params
     """
-    start_sem_date = get_start_of_semester_date()
-    end_sem_date = get_end_of_semester_date()
-    time_zone = "+03:00"
-    event_start_time = f"{start_sem_date}:{start_time}{time_zone}"
-    event_end_time = f"{start_sem_date}:{end_time}{time_zone}"
+    end_sem_date = f"{str(get_end_of_semester_date()).replace('-','')}T235900Z"
     event = Event(summary=summary,
                   location=location,
                   description=description,
                   start={
-                      'dateTime': event_start_time,
+                      'dateTime': start_time,
                       'timeZone': 'Europe/Moscow',
                   },
                   end={
-                      'dateTime': event_end_time,
+                      'dateTime': end_time,
                       'timeZone': 'Europe/Moscow',
                   },
                   recurrence=[
-                     # f"RRULE:FREQ=WEEKLY;UNTIL={end_sem_date};INTERVAL=2"
+                     #f"RRULE:FREQ=WEEKLY;UNTIL={end_sem_date};INTERVAL=2"
                   ],
                   attendees=[],
                   reminders={'useDefault': False}
@@ -60,23 +56,63 @@ def create_google_calendar_event(summary: str,
     return asdict(event)
 
 
-def create_google_event_from_db(group: int) -> dict:
+def create_google_events_from_db(group: int) -> list[dict]:
+    """
+    Creates a timetable for certain group from db timetable.
+    Returns list[dict] of events/subjects
+    """
     group_subjects = session.query(Timetable).filter(Timetable.group == str(group)).all()
-    subject = group_subjects[4]
-    teacher = subject.teacher
-    summary = f"{subject.subject}\n{teacher}"
-    start_time = f"{subject.start}:00.000"
-    end_time = f"{subject.end}:00.000"
-    return create_google_calendar_event(summary, start_time, end_time)
+    now = datetime.date.today()
+    start_of_week = (now - datetime.timedelta(days=now.weekday())) #start of current week
+    is_week_even = start_of_week.isocalendar()[1] % 2 == 0
+    time_zone = "+03:00"
+    dict_of_subjects = []
+    for subject in group_subjects:
+        start_date = start_of_week + datetime.timedelta(days=(subject.weekday - 1))
+        if is_week_even:
+            if subject.even:
+                dict_of_subjects.append(create_google_calendar_event(
+                    summary=subject.subject,
+                    start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
+                    end_time=f"{start_date.isoformat()}T{subject.end}:00{time_zone}",
+                    location=subject.place,
+                    description=subject.teacher))
+        else:
+            if subject.odd:
+                dict_of_subjects.append(create_google_calendar_event(
+                    summary=subject.subject,
+                    start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
+                    end_time=f"{start_date.isoformat()}T{subject.end}:00{time_zone}",
+                    location=subject.place,
+                    description=subject.teacher))
+    for subject in group_subjects:
+        start_date = start_of_week + datetime.timedelta(days=(7 + subject.weekday - 1))
+        if is_week_even:
+            if subject.odd:
+                dict_of_subjects.append(create_google_calendar_event(
+                    summary=subject.subject,
+                    start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
+                    end_time=f"{start_date.isoformat()}T{subject.end}:00{time_zone}",
+                    location=subject.place,
+                    description=subject.teacher))
+        else:
+            if subject.even:
+                dict_of_subjects.append(create_google_calendar_event(
+                    summary=subject.subject,
+                    start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
+                    end_time=f"{start_date.isoformat()}T{subject.end}:00{time_zone}",
+                    location=subject.place,
+                    description=subject.teacher))
+    return dict_of_subjects
 
 
-def create_timetable_calendar(service) -> str:
+def create_timetable_calendar(service, group) -> str:
     """
     Creates a new calendar for timetable on user's account (if not exist)
     returns calendarId
     """
     timetable_calendar = {
-        'summary': 'Расписание на физфаке',
+        'summary': f'Расписание на физфаке для {group} группы',
         'timeZone': 'Europe/Moscow'
     }
     calendars =  service.calendarList().list().execute().get('items', [])
@@ -86,6 +122,19 @@ def create_timetable_calendar(service) -> str:
     created_calendar = service.calendars().insert(body=timetable_calendar).execute()
     return created_calendar['id']
 
+
+def insert_event(service: googleapiclient.discovery.Resource,
+                 calendarId: str,
+                 event: dict) -> str:
+    """
+    Inserts an event to calendar.
+    API allows inserting events only partially.
+    Returns status string with event summary.
+    """
+    status = service.events().insert(calendarId=calendarId, body=event).execute()
+    return f"Event {status.get('summary')} created"
+
+
 def get_event():
     service = get_calendar_service(44)
     now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
@@ -94,30 +143,25 @@ def get_event():
                                               orderBy='startTime').execute()
     print(events['items'][0])
 
-def insert_event(event: dict):
-    service = get_calendar_service(44)
-
-
-def test_can_create_google_type_event():
-    print(create_google_calendar_event('subject', '2015-05-28T09:00:00-07:00', '2015-05-28T17:00:00-07:00'))
-
 
 def test_can_create_timetable_calendar():
     service = get_calendar_service(44)
     id = create_timetable_calendar(service)
     print('id:', id)
+    event = create_google_event_from_db(116)
+    print(event)
+    status = insert_event(service, id, event)
     calendar = service.calendars().get(calendarId=id).execute()
-    events = service.events().list(calendarId=id).execute()
-    print(events)
     print(calendar)
+    print(status)
 
 
 
 if __name__ == '__main__':
     # test_can_create_google_type_event()
-    # create_google_event_from_db(101)
-    # get_event()
-    # print(datetime.datetime.utcnow().isoformat())
-    # print(datetime.date.weekday(datetime.date.today()))
-    # print(get_end_of_semester_date(), get_start_of_semester_date())
-    test_can_create_timetable_calendar()
+    #create_google_event_from_db(101)
+    subjects = create_google_events_from_db(101)
+    for subject in subjects:
+        print(subject['summary'])
+        print()
+    #test_can_create_timetable_calendar()
