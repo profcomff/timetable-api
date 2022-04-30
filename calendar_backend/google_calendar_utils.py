@@ -48,7 +48,7 @@ def create_google_calendar_event(summary: str,
                       'timeZone': 'Europe/Moscow',
                   },
                   recurrence=[
-                     #f"RRULE:FREQ=WEEKLY;UNTIL={end_sem_date};INTERVAL=2"
+                     f"RRULE:FREQ=WEEKLY;UNTIL={end_sem_date};INTERVAL=2"
                   ],
                   attendees=[],
                   reminders={'useDefault': False}
@@ -124,25 +124,26 @@ def create_calendar(service, group) -> str:
 
 
 def insert_event(service: googleapiclient.discovery.Resource,
-                 calendarId: str,
+                 calendar_id: str,
                  event: dict) -> str:
     """
     Inserts an event to calendar.
     API allows inserting events only partially.
     Returns status string with event summary.
     """
-    status = service.events().insert(calendarId=calendarId, body=event).execute()
+    status = service.events().insert(calendarId=calendar_id, body=event).execute()
     return f"Event {status.get('summary')} created"
 
 
 def create_calendar_with_timetable(service, group):
-    calendarId: str = create_calendar(service, int(group))
+    calendar_id: str = create_calendar(service, int(group))
     events: list[dict] = create_google_events_from_db(int(group))
     for event in events:
-        status = insert_event(service, calendarId, event)
+        status = insert_event(service, calendar_id, event)
         print(status)
 
-def create_timetable_calendar_for_user(token, group):
+
+def create_timetable_calendar_for_user(token: str, group: str) -> None:
     """
     For background tasks
     !NOT TESTED!
@@ -151,18 +152,17 @@ def create_timetable_calendar_for_user(token, group):
     service = build('calendar', 'v3', credentials=credentials)
     create_calendar_with_timetable(service, int(group))
 
+
 def test_can_create_calendar_with_timetable():
     service = get_calendar_service(44)
     group = '116' # group is a String type in db
     create_calendar_with_timetable(service, group)
 
+
 def test_can_create_empty_calendar():
     service = get_calendar_service(44)
-    id = create_calendar(service)
-    print('id:', id)
-    event = create_google_event_from_db(116)
-    print(event)
-    status = insert_event(service, id, event)
+    _id = create_calendar(service, '116')
+    print('id:', _id)
     calendar = service.calendars().get(calendarId=id).execute()
     print(calendar)
 
