@@ -60,12 +60,12 @@ def create_google_calendar_event(summary: str,
     return asdict(event)
 
 
-def create_google_events_from_db(group: int) -> list[dict]:
+def create_google_events_from_db(group: str) -> list[dict]:
     """
     Creates a timetable for certain group from db timetable.
     Returns list[dict] of events/subjects
     """
-    group_subjects = session.query(Timetable).filter(Timetable.group == str(group)).all()
+    group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
     now = datetime.date.today()
     start_of_week = (now - datetime.timedelta(days=now.weekday())) #start of current week
     is_week_even = start_of_week.isocalendar()[1] % 2 == 0
