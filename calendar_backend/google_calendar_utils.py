@@ -9,6 +9,11 @@ from sqlalchemy import create_engine
 from db import Timetable
 import datetime
 from list_calendar import get_end_of_semester_date
+# async libraries
+import aiohttp
+import asyncio
+from aiogoogle import Aiogoogle
+from aiogoogle.sessions import aiohttp_session
 
 
 settings = Settings()
@@ -25,7 +30,6 @@ class Event:
     recurrence: list
     attendees: list
     reminders: dict
-
 
 def create_google_calendar_event(summary: str,
                                  start_time: str,
@@ -118,7 +122,7 @@ def create_calendar(service, group) -> str:
     calendars =  service.calendarList().list().execute().get('items', [])
     for calendar in calendars:
         if calendar['summary'] == timetable_calendar['summary']:
-            return calendar['id']
+            service.calendars().delete(calendarId=calendar['id']).execute()
     created_calendar = service.calendars().insert(body=timetable_calendar).execute()
     return created_calendar['id']
 
