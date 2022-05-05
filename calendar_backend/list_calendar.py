@@ -51,26 +51,26 @@ async def get_user_calendar(group: str):
         if date.isoweekday() != 7:
             try:
                 timetable_of_day = await app.get_timetable_by_group_and_weekday(group, date.isoweekday())
+                for i in range(0, len(timetable_of_day)):
+                    teacher = "-"
+                    place = "-"
+                    hour_start, mins_start = parse_time_from_db(timetable_of_day[i]["start"])
+                    hour_end, mins_end = parse_time_from_db(timetable_of_day[i]["end"])
+                    event = Event()
+                    if timetable_of_day[i]["teacher"] is not None:
+                        teacher = timetable_of_day[i]["teacher"]
+                    event.add("summary", f"{timetable_of_day[i]['subject']}, {teacher}")
+                    event.add("dtstart",
+                              datetime(date.year, date.month, date.day, hour_start, mins_start, 0, tzinfo=pytz.UTC))
+                    event.add("dtend",
+                              datetime(date.year, date.month, date.day, hour_end, mins_end, 0, tzinfo=pytz.UTC))
+                    if timetable_of_day[i]["place"] is not None:
+                        place = timetable_of_day[i]["place"]
+                    event["location"] = vText(place)
+                    user_calendar.add_component(event)
             except HTTPException as e:
                 print(f"The error '{e}' occurred")
-            for i in range(0, len(timetable_of_day)):
-                hour_start, mins_start = parse_time_from_db(timetable_of_day[i]["start"])
-                hour_end, mins_end = parse_time_from_db(timetable_of_day[i]["end"])
-                event = Event()
-                if timetable_of_day[i]["teacher"] is not None:
-                    teacher = timetable_of_day[i]["teacher"]
-                elif timetable_of_day[i]["teacher"] is None:
-                    teacher = "-"
-                event.add("summary", f"{timetable_of_day[i]['subject']}, {teacher}")
-                event.add("dtstart",
-                          datetime(date.year, date.month, date.day, hour_start, mins_start, 0, tzinfo=pytz.UTC))
-                event.add("dtend", datetime(date.year, date.month, date.day, hour_end, mins_end, 0, tzinfo=pytz.UTC))
-                if timetable_of_day[i]["place"] is not None:
-                    place = timetable_of_day[i]["place"]
-                elif timetable_of_day[i]["place"] is None:
-                    place = "-"
-                event["location"] = vText(place)
-                user_calendar.add_component(event)
+
         elif date.isoweekday() == 7:
             pass
     return user_calendar
@@ -96,7 +96,6 @@ def get_end_of_semester_date():
         return datedatetime(datedatetime.today().year, 12, 24)
     else:
         return datedatetime(datedatetime.today().year, datedatetime.today().month, datedatetime.today().day)
-
 
 
 def check_file_for_creation_date(path_file: str):

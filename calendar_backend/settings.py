@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
     GROUPS: List[str] = ["101", "102"]
     TIMETABLE_NAME: str = 'timetable'
-    #ICS_PATH: str
+    ICS_PATH: str
 
     class Config:
         """Pydantic BaseSettings config"""
