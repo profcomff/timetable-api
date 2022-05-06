@@ -7,4 +7,9 @@ alembic
 jinja2
 aiofiles
 
-SQLAlchemy~=1.4.35
+SQLAlchemy
+asyncio
+pytz
+icalendar
+aiohttp
+aiogoogle

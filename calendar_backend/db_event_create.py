@@ -1,15 +1,10 @@
-import googleapiclient.discovery
-from service import get_calendar_service
-from dataclasses import dataclass, asdict
-from fastapi_sqlalchemy import db
-from connect import connect
+import datetime
 from settings import Settings
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from db import Timetable
-import datetime
-from list_calendar import get_end_of_semester_date
+from event import create_google_calendar_event
 
 
 settings = Settings()
@@ -26,7 +21,7 @@ def create_google_events_from_db(group: str) -> list[dict]:
     """
     group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
     now = datetime.date.today()
-    start_of_week = (now - datetime.timedelta(days=now.weekday())) #start of current week
+    start_of_week = (now - datetime.timedelta(days=now.weekday()))  # start of current week
     is_week_even = start_of_week.isocalendar()[1] % 2 == 0
     time_zone = "+03:00"
     dict_of_subjects = []

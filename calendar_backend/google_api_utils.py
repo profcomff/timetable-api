@@ -1,17 +1,12 @@
 import googleapiclient.discovery
-from service import get_calendar_service
-from dataclasses import dataclass, asdict
-from fastapi_sqlalchemy import db
-from connect import connect
 from settings import Settings
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
-from db import Timetable
-import datetime
-from list_calendar import get_end_of_semester_date
+from db_event_create import *
 
 
-def create_calendar(service, group) -> str:
+settings = Settings()
+
+
+def create_calendar(service: googleapiclient.discovery.Resource, group: str) -> str:
     """
     Creates a new calendar for timetable on user's account (if not exist)
     returns calendarId
@@ -20,7 +15,7 @@ def create_calendar(service, group) -> str:
         'summary': f'Расписание на физфаке для {group} группы',
         'timeZone': 'Europe/Moscow'
     }
-    calendars =  service.calendarList().list().execute().get('items', [])
+    calendars = service.calendarList().list().execute().get('items', [])
     for calendar in calendars:
         if calendar['summary'] == timetable_calendar['summary']:
             service.calendars().delete(calendarId=calendar['id']).execute()
@@ -40,9 +35,9 @@ def insert_event(service: googleapiclient.discovery.Resource,
     return f"Event {status.get('summary')} created"
 
 
-def create_calendar_with_timetable(service, group):
-    calendar_id: str = create_calendar(service, int(group))
-    events: list[dict] = create_google_events_from_db(int(group))
+def create_calendar_with_timetable(service: googleapiclient.discovery.Resource, group: str):
+    calendar_id: str = create_calendar(service, group)
+    events: list[dict] = create_google_events_from_db(group)
     for event in events:
         status = insert_event(service, calendar_id, event)
         print(status)
