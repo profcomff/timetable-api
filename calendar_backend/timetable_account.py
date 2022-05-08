@@ -56,7 +56,7 @@ def find_timetable_account_id() -> int:
             return emails[0].id
         else:
             with open('timetable_token.json', 'w') as token_file:
-                json.dump(emails[0].token, token_file)
+                token_file.write(emails[0].token)
             return emails[0].id
     else:
         print('Token for timetable account not found. Please register it manually')
@@ -75,4 +75,7 @@ def get_timetable_account_service() -> googleapiclient.discovery.Resource:
 if __name__ == "__main__":
     # create_timetable_for_all_groups()
     # print(get_all_groups_from_db(), len(get_all_groups_from_db()))
-    print(find_timetable_account_id())
+    # print(find_timetable_account_id())
+    asyncio.run(copy_timetable_to_user_calendar_list(get_timetable_account_service(),
+                                                     '102',
+                                                     'mmikee00800@gmail.com'))

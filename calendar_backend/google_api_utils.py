@@ -1,8 +1,15 @@
+import json
+
 import googleapiclient.discovery
 from settings import Settings
 from db_event_create import *
 from googleapiclient.errors import HttpError
 from typing import Optional
+# async libs for Google API
+import asyncio
+from aiogoogle import Aiogoogle
+
+
 settings = Settings()
 
 
@@ -14,7 +21,7 @@ def create_calendar(service: googleapiclient.discovery.Resource, group: str) -> 
     timetable_calendar = {
         'summary': f'Расписание на физфаке для {group} группы',
         'timeZone': 'Europe/Moscow'
-    }  
+    }
     calendars = service.calendarList().list().execute().get('items', [])
     for calendar in calendars:
         if calendar['summary'] == timetable_calendar['summary']:
@@ -43,18 +50,27 @@ def create_calendar_with_timetable(service: googleapiclient.discovery.Resource, 
         print(status)
 
 
-def create_timetable_calendar_for_user(token: str, group: str) -> None:
-    """
-    For background tasks
-    !NOT TESTED!
-    """
-    credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(json.loads(token), SCOPES)
-    service = build('calendar', 'v3', credentials=credentials)
-    create_calendar_with_timetable(service, group)
-
-
-async def copy_timetable_to_user_calendar_list(user_service: googleapiclient.discovery.Resource,
-                                         user_group: str,
-                                         timetable_service: googleapiclient.discovery.Resource):
+async def copy_timetable_to_user_calendar_list(timetable_service: googleapiclient.discovery.Resource,
+                                               user_group: str,
+                                               user_email: str) -> str:
     """Creates a copy of timetable in user calendar list with read-only access type."""
-    pass
+    timetable_id = ''
+    rule = {
+        'scope': {
+            'type': "user",
+            'value': user_email,
+        },
+        'role': "reader"
+    }
+    timetable_list = timetable_service.calendarList().list().execute().get('items', [])
+    is_found: bool = False
+    for timetable in timetable_list:
+        if timetable['summary'] == f'Расписание на физфаке для {user_group} группы':
+            timetable_id = timetable['id']
+            is_found = True
+            break
+    if is_found:
+        created_rule = timetable_service.acl().insert(calendarId=timetable_id, body=rule).execute()
+        return created_rule['id']
+    else:
+        return 'not found'
