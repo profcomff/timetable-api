@@ -3,7 +3,6 @@ from settings import Settings
 import datetime
 from list_calendar import get_end_of_semester_date
 
-settings = Settings()
 
 
 @dataclass()

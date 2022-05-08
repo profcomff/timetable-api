@@ -4,6 +4,7 @@ import os.path
 import json
 
 import google.oauth2.credentials
+import googleapiclient.discovery
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -21,11 +22,15 @@ connection = create_engine(settings.DB_DSN)
 db = sessionmaker(bind=connection)()
 
 
-def get_calendar_service(id: int):
+def get_calendar_service(id: int) -> googleapiclient.discovery.Resource:
     user_data = db.query(Credentials).filter_by(id=id).one()
     credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(json.loads(user_data.token), SCOPES)
     service = build('calendar', 'v3', credentials=credentials)
     return service
+
+
+def get_calendar_service_from_token(token: str) -> googleapiclient.discovery.Resource:
+    return build('calendar', 'v3', credentials=json.loads(token))
 
 
 if __name__ == '__main__':

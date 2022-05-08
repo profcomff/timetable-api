@@ -1,8 +1,8 @@
 import googleapiclient.discovery
 from settings import Settings
 from db_event_create import *
-
-
+from googleapiclient.errors import HttpError
+from typing import Optional
 settings = Settings()
 
 
@@ -14,7 +14,7 @@ def create_calendar(service: googleapiclient.discovery.Resource, group: str) -> 
     timetable_calendar = {
         'summary': f'Расписание на физфаке для {group} группы',
         'timeZone': 'Europe/Moscow'
-    }
+    }  
     calendars = service.calendarList().list().execute().get('items', [])
     for calendar in calendars:
         if calendar['summary'] == timetable_calendar['summary']:
@@ -32,7 +32,7 @@ def insert_event(service: googleapiclient.discovery.Resource,
     Returns status string with event summary.
     """
     status = service.events().insert(calendarId=calendar_id, body=event).execute()
-    return f"Event {status.get('summary')} created"
+    return f"Event {status.get('summary')} inserted"
 
 
 def create_calendar_with_timetable(service: googleapiclient.discovery.Resource, group: str):
@@ -50,4 +50,11 @@ def create_timetable_calendar_for_user(token: str, group: str) -> None:
     """
     credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(json.loads(token), SCOPES)
     service = build('calendar', 'v3', credentials=credentials)
-    create_calendar_with_timetable(service, int(group))
+    create_calendar_with_timetable(service, group)
+
+
+async def copy_timetable_to_user_calendar_list(user_service: googleapiclient.discovery.Resource,
+                                         user_group: str,
+                                         timetable_service: googleapiclient.discovery.Resource):
+    """Creates a copy of timetable in user calendar list with read-only access type."""
+    pass
