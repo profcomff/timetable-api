@@ -7,7 +7,7 @@ from typing import List, Optional
 class Settings(BaseSettings):
     """Application settings"""
 
-    DB_DSN: PostgresDsn = os.getenv('FFPOSTGRES_DSN')
+    DB_DSN: PostgresDsn
     GOOGLE_CREDS: Json
     PATH_TO_GOOGLE_CREDS: str = '/Users/new/PycharmProjects/timetable-backend-2/client_secret.json'
     APP_URL: Optional[AnyHttpUrl] = None
@@ -22,4 +22,4 @@ class Settings(BaseSettings):
         """Pydantic BaseSettings config"""
 
         case_sensitive = True
-        env_file = "../.env"
+        env_file = ".env"

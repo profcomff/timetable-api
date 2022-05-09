@@ -62,15 +62,18 @@ async def copy_timetable_to_user_calendar_list(timetable_service: googleapiclien
         },
         'role': "reader"
     }
-    timetable_list = timetable_service.calendarList().list().execute().get('items', [])
-    is_found: bool = False
-    for timetable in timetable_list:
-        if timetable['summary'] == f'Расписание на физфаке для {user_group} группы':
-            timetable_id = timetable['id']
-            is_found = True
-            break
-    if is_found:
-        created_rule = timetable_service.acl().insert(calendarId=timetable_id, body=rule).execute()
-        return created_rule['id']
-    else:
-        return 'not found'
+    try:
+        timetable_list = timetable_service.calendarList().list().execute().get('items', [])
+        is_found: bool = False
+        for timetable in timetable_list:
+            if timetable['summary'] == f'Расписание на физфаке для {user_group} группы':
+                timetable_id = timetable['id']
+                is_found = True
+                break
+        if is_found:
+            created_rule = timetable_service.acl().insert(calendarId=timetable_id, body=rule).execute()
+            return created_rule['id']
+        else:
+            return 'not found'
+    except googleapiclient.errors.Error:
+        print('error copying calendar')
