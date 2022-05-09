@@ -1,15 +1,16 @@
-fastapi~=0.75.2
+fastapi
 fastapi-sqlalchemy
 psycopg2-binary
-pydantic[dotenv]~=1.9.0
+pydantic[dotenv]
 uvicorn
 alembic
 jinja2
 aiofiles
 
-SQLAlchemy~=1.4.35
-asyncio~=3.4.3
-pytz~=2022.1
-icalendar~=4.0.9
+google-api-python-client google-auth-httplib2 google-auth-oauthlib
+SQLAlchemy
+asyncio
+pytz
+icalendar
 aiohttp
 aiogoogle

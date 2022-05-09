@@ -11,7 +11,6 @@ from db import Timetable, Credentials
 from settings import Settings
 
 
-
 settings = Settings()
 try:
     session = Session(create_engine(settings.DB_DSN))

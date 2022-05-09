@@ -1,23 +1,18 @@
 import asyncio
-
-from fastapi import FastAPI, Query, HTTPException
-from fastapi.responses import FileResponse
-from sqlalchemy import and_
-from settings import Settings
-
 import list_calendar
-from connect import timetable, engine
+import os
+import datetime
 import json
 from email import message
 from urllib.parse import unquote
-import os
-import datetime
-from fastapi import FastAPI, Request, BackgroundTasks
+from connect import timetable, engine
+from fastapi import FastAPI, Query, HTTPException, Request, BackgroundTasks
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.exceptions import HTTPException
-from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware, db
 from fastapi_sqlalchemy.exceptions import SessionNotInitialisedError, MissingSessionError
+from sqlalchemy import and_
 from fastapi.templating import Jinja2Templates
 from google_auth_oauthlib.flow import Flow
 import google.oauth2.credentials
