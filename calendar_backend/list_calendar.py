@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from icalendar import Calendar, Event, vText
 from sqlalchemy.exc import DBAPIError
 
-import app
+# import app
 from service import get_calendar_service
 from settings import Settings
 import os

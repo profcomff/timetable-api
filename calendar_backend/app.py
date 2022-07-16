@@ -27,16 +27,12 @@ from settings import Settings
 
 settings = Settings()
 app = FastAPI(root_path=settings.APP_URL)
-templates = Jinja2Templates(directory="/Users/new/PycharmProjects/timetable-backend-2/templates")
+templates = Jinja2Templates(directory=f"{os.path.dirname(os.path.dirname(__file__))}/templates")
 app.add_middleware(DBSessionMiddleware, db_url=settings.DB_DSN)
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
-user_flow = Flow.from_client_secrets_file(
-    client_secrets_file=settings.PATH_TO_GOOGLE_CREDS,
-    scopes=settings.SCOPES,
-    state=settings.DEFAULT_GROUP_STATE,
-    redirect_uri='http://localhost:8000/credentials'
-)
 timetable_service = get_timetable_account_service()
+user_flow = None
+
 
 @app.get('/timetable/group/{group_num}')
 async def get_timetable_by_group(group_num: str = Query(..., description="Group number")) -> list[dict[str]]:
@@ -98,11 +94,12 @@ def home(request: Request):
 
 @app.get("/flow")
 def get_user_flow(state: str):
+    global user_flow
     user_flow = Flow.from_client_secrets_file(
         client_secrets_file=settings.PATH_TO_GOOGLE_CREDS,
         scopes=settings.SCOPES,
         state=state,
-        redirect_uri='http://localhost:8000/credentials'
+        redirect_uri=f'{settings.REDIRECT_URL}/credentials'
     )
     return RedirectResponse(user_flow.authorization_url()[0])
 

@@ -12,10 +12,7 @@ from settings import Settings
 
 
 settings = Settings()
-try:
-    session = Session(create_engine(settings.DB_DSN))
-except SQLAlchemyError as e:
-    print(f"The error '{e}' occurred")
+session = Session(create_engine(settings.DB_DSN))
 
 
 def get_all_groups_from_db():
@@ -51,10 +48,10 @@ def find_timetable_account_id() -> int:
     """
     emails = session.query(Credentials).filter(Credentials.email == 'profcomff.timetable@gmail.com').all()
     if len(emails):
-        if os.path.exists('timetable_token.json'):
+        if os.path.exists('../timetable_token.json'):
             return emails[0].id
         else:
-            with open('timetable_token.json', 'w') as token_file:
+            with open('../timetable_token.json', 'w') as token_file:
                 token_file.write(emails[0].token)
             return emails[0].id
     else:
@@ -63,11 +60,13 @@ def find_timetable_account_id() -> int:
 
 
 def get_timetable_account_service() -> googleapiclient.discovery.Resource:
-    if os.path.exists('timetable_token.json'):
-        with open('timetable_token.json', 'r') as token_file:
+    if os.path.exists('../timetable_token.json'):
+        print('нашел, вссё окей')
+        with open('../timetable_token.json', 'r') as token_file:
             token = token_file.read()
         return get_calendar_service_from_token(token)
     else:
+        print('не нашел бля')
         return get_calendar_service(find_timetable_account_id())
 
 
@@ -75,6 +74,3 @@ if __name__ == "__main__":
     create_timetable_for_all_groups()
     # print(get_all_groups_from_db(), len(get_all_groups_from_db()))
     # print(find_timetable_account_id())
-    """asyncio.run(copy_timetable_to_user_calendar_list(get_timetable_account_service(),
-                                                     '102',
-                                                     'mmikee00800@gmail.com'))"""

@@ -8,11 +8,8 @@ from event import create_google_calendar_event
 
 
 settings = Settings()
-try:
-    session = Session(create_engine(settings.DB_DSN))
-except SQLAlchemyError as e:
-    print(f"The error '{e}' occurred")
-    
+session = Session(create_engine(settings.DB_DSN))
+
 
 def create_google_events_from_db(group: str) -> list[dict]:
     """

@@ -1,6 +1,9 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9-slim
+
 ENV APP_NAME=calendar_backend
+
 ENV APP_MODULE=${APP_NAME}.app:app
+
 COPY ./calendar_backend /app
 COPY ./requirements.txt /app/
 COPY ./alembic.ini /app/alembic.ini
