@@ -54,6 +54,7 @@ async def copy_timetable_to_user_calendar_list(
     user_email: str,
 ) -> str:
     """Creates a copy of timetable in user calendar list with read-only access type."""
+
     timetable_id = ""
     rule = {
         "scope": {
