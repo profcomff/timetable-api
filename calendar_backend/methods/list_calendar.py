@@ -9,7 +9,6 @@ from icalendar import Calendar, Event, vText
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
-from calendar_backend import NotFound
 from calendar_backend.methods import getters
 from calendar_backend.settings import get_settings
 
