@@ -43,12 +43,9 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
     for date in daterange(startday, get_end_of_semester_date()):
         is_week_even = date.isocalendar()[1] % 2 == 0
         if date.isoweekday() != 7:
-            try:
-                timetable_of_day = await getters.get_timetable_by_group_and_weekday(
-                    group, date.isoweekday(), session=session
+            timetable_of_day = await getters.get_timetable_by_group_and_weekday(
+                group, date.isoweekday(), session=session
                 )
-            except NotFound as e:
-                print(f"The error '{e}' occurred")
             for subject in timetable_of_day:
                 if (is_week_even and not subject.even) or (
                     not is_week_even and subject.odd
