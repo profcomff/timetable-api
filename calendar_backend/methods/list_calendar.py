@@ -5,18 +5,18 @@ from datetime import datetime, timedelta
 from typing import Iterator
 
 import pytz
-from fastapi import HTTPException
 from icalendar import Calendar, Event, vText
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
+from calendar_backend import NotFound
 from calendar_backend.methods import getters
 from calendar_backend.settings import get_settings
 
 settings = get_settings()
 
 
-def daterange(start_date: date_, end_date: date_) -> Iterator:
+def daterange(start_date: date_, end_date: date_) -> Iterator[date_]:
     """
     Date iterator
     """
@@ -41,24 +41,27 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
     user_calendar = Calendar()
     startday = date_(date_.today().year, date_.today().month, date_.today().day)
     for date in daterange(startday, get_end_of_semester_date()):
+        is_week_even = date.isocalendar()[1] % 2 == 0
         if date.isoweekday() != 7:
             try:
                 timetable_of_day = await getters.get_timetable_by_group_and_weekday(
                     group, date.isoweekday(), session=session
                 )
-            except HTTPException as e:
+            except NotFound as e:
                 print(f"The error '{e}' occurred")
-            for i in range(0, len(timetable_of_day)):
-                hour_start, mins_start = parse_time_from_db(
-                    timetable_of_day[i]["start"]
-                )
-                hour_end, mins_end = parse_time_from_db(timetable_of_day[i]["end"])
+            for subject in timetable_of_day:
+                if (is_week_even and not subject.even) or (
+                    not is_week_even and subject.odd
+                ):
+                    continue
+                (
+                    hour_start,
+                    mins_start,
+                ) = parse_time_from_db(subject.start)
+                hour_end, mins_end = parse_time_from_db(subject.end)
                 event = Event()
-                if timetable_of_day[i]["teacher"] is not None:
-                    teacher = timetable_of_day[i]["teacher"]
-                elif timetable_of_day[i]["teacher"] is None:
-                    teacher = "-"
-                event.add("summary", f"{timetable_of_day[i]['subject']}, {teacher}")
+                teacher = subject.teacher or "-"
+                event.add("summary", f"{subject.subject}, {teacher}")
                 event.add(
                     "dtstart",
                     datetime(
@@ -83,14 +86,11 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
                         tzinfo=pytz.UTC,
                     ),
                 )
-                if timetable_of_day[i]["place"] is not None:
-                    place = timetable_of_day[i]["place"]
-                elif timetable_of_day[i]["place"] is None:
-                    place = "-"
+                place = subject.place or "-"
                 event["location"] = vText(place)
                 user_calendar.add_component(event)
         elif date.isoweekday() == 7:
-            pass
+            continue
     return user_calendar
 
 

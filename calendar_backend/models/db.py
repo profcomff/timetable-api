@@ -10,6 +10,7 @@ from .base import Base
 
 class Credentials(Base):
     """User credentials"""
+
     id = Column(Integer, primary_key=True)
     group = Column(String, nullable=False)
     email = Column(String, nullable=False)
@@ -25,6 +26,7 @@ class Timetable(Base):
     """
     Timetable
     """
+
     start = Column(String, nullable=False)
     end = Column(String, nullable=False)
     odd = Column(Boolean, nullable=False)
