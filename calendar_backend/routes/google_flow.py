@@ -70,9 +70,8 @@ def get_credentials(
         raise HTTPException(404, "No group found")
     service = build("oauth2", "v2", credentials=creds)
     email = service.userinfo().get().execute()["email"]
-
     background_tasks.add_task(
-        create_calendar_with_timetable, get_calendar_service_from_token(token), group
+        create_calendar_with_timetable, get_calendar_service_from_token(token), group, db.session
     )
     try:
         db_records = db.session.query(Credentials).filter(Credentials.email == email)

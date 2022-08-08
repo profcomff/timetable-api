@@ -1,19 +1,21 @@
 import datetime
+
+from sqlalchemy.orm import Session
+
+from ..models import Timetable
 from ..settings import get_settings
-from fastapi_sqlalchemy import db
-from ..models.db import Timetable
 from .event import create_google_calendar_event
 
 
 settings = get_settings()
 
 
-def create_google_events_from_db(group: str) -> list[dict]:
+def create_google_events_from_db(group: str, session: Session) -> list[dict]:
     """
     Creates a timetable for certain group from db timetable.
     Returns list[dict] of events/subjects
     """
-    group_subjects = db.session.query(Timetable).filter(Timetable.group == group).all()
+    group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
     now = datetime.date.today()
     start_of_week = now - datetime.timedelta(
         days=now.weekday()

@@ -1,4 +1,4 @@
-from ..methods.list_calendar import get_end_of_semester_date
+from ..methods import get_end_of_semester_date
 from dataclasses import dataclass, asdict
 
 
