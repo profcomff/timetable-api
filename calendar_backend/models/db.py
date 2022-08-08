@@ -35,7 +35,7 @@ class Timetable(Base):
     weekday = Column(Integer, nullable=False)
     num = Column(Integer, nullable=False)
     group = Column(String, nullable=False)
-    id = Column(String, nullable=False, primary_key=True)
+    id = Column(String, primary_key=True)
     subject = Column(String, nullable=False)
     place = Column(String, nullable=True)
     teacher = Column(String, nullable=True)
