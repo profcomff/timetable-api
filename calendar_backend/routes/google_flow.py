@@ -61,12 +61,13 @@ def get_credentials(
 ):
     scope = scope.split(unquote("%20"))
     group = str(state.get("group"))
-    get_flow().fetch_token(code=code)
-    creds = get_flow().credentials
+    flow = get_flow()
+    flow.fetch_token(code=code)
+    creds = flow.credentials
     token: Json = creds.to_json()
     # build service to get an email address
     if group not in settings.GROUPS:
-        raise HTTPException(403, "No group provided")
+        raise HTTPException(404, "No group found")
     service = build("oauth2", "v2", credentials=creds)
     email = service.userinfo().get().execute()["email"]
 
