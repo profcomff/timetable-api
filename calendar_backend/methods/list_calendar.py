@@ -47,8 +47,8 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
                 group, date.isoweekday(), session=session
                 )
             for subject in timetable_of_day:
-                if (is_week_even and not subject.even) or (
-                    not is_week_even and subject.odd
+                if (is_week_even and subject.odd) or (
+                    not is_week_even and subject.even
                 ):
                     continue
                 (
