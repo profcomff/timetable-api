@@ -1,8 +1,7 @@
-from pydantic import BaseSettings, Json, PostgresDsn, AnyHttpUrl
-from typing import List, Optional
-from functools import lru_cache
 import json
-from os import path
+from functools import lru_cache
+
+from pydantic import BaseSettings, Json, PostgresDsn, AnyHttpUrl, FilePath, DirectoryPath
 
 
 class Settings(BaseSettings):
@@ -10,14 +9,14 @@ class Settings(BaseSettings):
 
     DB_DSN: PostgresDsn
     GOOGLE_CREDS: Json
-    PATH_TO_GOOGLE_CREDS: str
-    APP_URL: Optional[AnyHttpUrl] = None
+    PATH_TO_GOOGLE_CREDS: FilePath
+    APP_URL: AnyHttpUrl | None
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
-    GROUPS: List[str] = []
+    GROUPS: list[str] = []
     TIMETABLE_NAME: str
-    ICS_PATH: str
-    TAMPLATES_PATH: str
-    SCOPES: List[str] = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email']
+    ICS_PATH: DirectoryPath
+    TAMPLATES_PATH: DirectoryPath
+    SCOPES: list[str] = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email']
 
     class Config:
         """Pydantic BaseSettings config"""
