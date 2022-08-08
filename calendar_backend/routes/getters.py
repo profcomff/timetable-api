@@ -86,11 +86,11 @@ async def http_get_timetable_by_group_and_weekday(
 async def download_ics_file(group: str = Query(..., description="Group number")):
     if (
         calendar_backend.methods.list_calendar.check_file_for_creation_date(
-            f"{settings.ICS_PATH}{group}"
+            f"{settings.ICS_PATH}/{group}"
         )
         is False
     ):
-        return FileResponse(f"{settings.ICS_PATH}{group}")
+        return FileResponse(f"{settings.ICS_PATH}/{group}")
     else:
         async with asyncio.Lock():
             try:

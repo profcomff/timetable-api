@@ -99,12 +99,12 @@ async def create_user_calendar_file(user_calendar: Calendar, group: str) -> str:
     Creating .ics file from iCalendar object
     """
     try:
-        with open(f"{settings.ICS_PATH}{group}", "wb") as f:
+        with open(f"{settings.ICS_PATH}/{group}", "wb") as f:
             f.write(user_calendar.to_ical())
-            return f"{settings.ICS_PATH}{group}"
+            return f"{settings.ICS_PATH}/{group}"
     except DBAPIError:
         try:
-            os.remove(f"{settings.ICS_PATH}{group}")
+            os.remove(f"{settings.ICS_PATH}/{group}")
         except OSError:
             print(f"The error occurred")
         print(f"The error occurred")
