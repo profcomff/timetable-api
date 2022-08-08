@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     PATH_TO_GOOGLE_CREDS: FilePath
     APP_URL: AnyHttpUrl | None
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
-    GROUPS: list[str] = []
+    GROUPS: list[str]
     TIMETABLE_NAME: str
     ICS_PATH: DirectoryPath
     TAMPLATES_PATH: DirectoryPath
