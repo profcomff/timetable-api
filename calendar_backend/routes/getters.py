@@ -9,7 +9,7 @@ import calendar_backend.methods.list_calendar
 from calendar_backend.methods import getters
 from calendar_backend.settings import get_settings
 from .models import Timetable
-from calendar_backend.exceptions import (
+from calendar_backend import (
     NotFound,
     NoAudienceFoundError,
     NoTeacherFoundError,

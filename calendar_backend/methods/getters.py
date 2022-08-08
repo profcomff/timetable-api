@@ -1,12 +1,7 @@
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-from calendar_backend.models.db import Timetable
-from calendar_backend.exceptions import (
-    NoGroupFoundError,
-    NoAudienceFoundError,
-    NoTeacherFoundError,
-    NotFound,
-)
+from calendar_backend.models import Timetable
+from calendar_backend import NotFound, NoAudienceFoundError, NoTeacherFoundError, NoGroupFoundError
 
 
 async def get_timetable_by_group(group: str, session: Session) -> list[Timetable]:

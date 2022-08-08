@@ -1,20 +1,19 @@
 from functools import lru_cache
-from fastapi import APIRouter
-from fastapi import HTTPException, Request, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from pydantic.types import Json
 from urllib.parse import unquote
 from googleapiclient.discovery import build
 from fastapi_sqlalchemy import db
 from google_auth_oauthlib.flow import Flow
-from ..google_engine.api_utils import create_calendar_with_timetable
+from ..google_engine import create_calendar_with_timetable
 from fastapi_sqlalchemy.exceptions import (
     SessionNotInitialisedError,
     MissingSessionError,
 )
-from ..models.db import Credentials
-from ..settings import get_settings
-from ..google_engine.service import get_calendar_service_from_token
+from ..models import Credentials
+from .. import get_settings
+from ..google_engine import get_calendar_service_from_token
 from fastapi.templating import Jinja2Templates
 import os
 
@@ -74,7 +73,6 @@ def get_credentials(
     background_tasks.add_task(create_calendar_with_timetable, get_calendar_service_from_token(token), group)
     try:
         db_records = db.session.query(Credentials).filter(Credentials.email == email)
-
         if not db_records.count():
             db.session.add(
                 Credentials(
