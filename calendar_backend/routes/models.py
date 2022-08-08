@@ -4,6 +4,9 @@ from pydantic import BaseModel
 
 
 class Timetable(BaseModel):
+    """
+    User-friendly timetable format
+    """
     start: datetime.time
     end: datetime.time
     odd: bool

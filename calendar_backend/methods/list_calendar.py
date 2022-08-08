@@ -2,7 +2,7 @@ import os
 import time
 from datetime import date as date_
 from datetime import datetime, timedelta
-from typing import Iterator, Tuple
+from typing import Iterator
 
 import pytz
 from fastapi import HTTPException
@@ -16,12 +16,18 @@ from calendar_backend.settings import get_settings
 settings = get_settings()
 
 
-def daterange(start_date, end_date) -> Iterator:
+def daterange(start_date: date_, end_date: date_) -> Iterator:
+    """
+    Date iterator
+    """
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
 
 def parse_time_from_db(time: str) -> tuple[int, int]:
+    """
+    Parrsing time from db to datetime format
+    """
     try:
         return int(time[: (time.index(":"))]), int(time[(time.index(":") + 1) :])
     except ValueError as e:
@@ -29,6 +35,9 @@ def parse_time_from_db(time: str) -> tuple[int, int]:
 
 
 async def get_user_calendar(group: str, session: Session) -> Calendar:
+    """
+    Returns event iCalendar object
+    """
     user_calendar = Calendar()
     startday = date_(date_.today().year, date_.today().month, date_.today().day)
     for date in daterange(startday, get_end_of_semester_date()):
@@ -86,6 +95,9 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
 
 
 async def create_user_calendar_file(user_calendar: Calendar, group: str) -> str:
+    """
+    Creating .ics file from iCalendar object
+    """
     try:
         with open(f"{settings.ICS_PATH}{group}", "wb") as f:
             f.write(user_calendar.to_ical())
@@ -99,6 +111,9 @@ async def create_user_calendar_file(user_calendar: Calendar, group: str) -> str:
 
 
 def get_end_of_semester_date() -> date_:
+    """
+    Returns last day of the semester
+    """
     if date_.today().month in range(2, 6):
         return date_(date_.today().year, 5, 24)
     elif datetime.today().month in range(9, 13):
@@ -112,6 +127,9 @@ def get_end_of_semester_date() -> date_:
 
 
 def check_file_for_creation_date(path_file: str) -> bool:
+    """
+    Checks that the file was created no more than one day ago
+    """
     if os.path.exists(path_file):
         try:
             c_time = os.path.getctime(path_file)

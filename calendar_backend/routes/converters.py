@@ -3,6 +3,9 @@ import calendar_backend.routes.models
 
 
 def timetable_converter(timetable_server: calendar_backend.models.db.Timetable) -> dict:
+    """
+    Converting database format to user-friendly format
+    """
     return {
         "start": timetable_server.start,
         "end": timetable_server.end,
