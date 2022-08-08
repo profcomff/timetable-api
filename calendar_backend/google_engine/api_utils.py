@@ -52,7 +52,7 @@ async def copy_timetable_to_user_calendar_list(
     timetable_service: googleapiclient.discovery.Resource,
     user_group: str,
     user_email: str,
-) -> str:
+) -> str | None:
     """Creates a copy of timetable in user calendar list with read-only access type."""
 
     timetable_id = ""
@@ -81,6 +81,6 @@ async def copy_timetable_to_user_calendar_list(
             )
             return created_rule["id"]
         else:
-            return "not found"
+            return None
     except googleapiclient.errors.Error:
         print("error copying calendar")
