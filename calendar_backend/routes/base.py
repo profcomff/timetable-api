@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_sqlalchemy import DBSessionMiddleware
 
-from calendar_backend.settings import get_settings
+from calendar_backend import get_settings
 from .getters import getters_router
 from .google_flow import google_flow_router
 

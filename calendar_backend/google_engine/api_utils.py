@@ -40,7 +40,7 @@ def insert_event(
 
 async def create_calendar_with_timetable(
     service: googleapiclient.discovery.Resource, group: str
-):
+) -> None:
     calendar_id: str = create_calendar(service, group)
     events: list[dict] = create_google_events_from_db(group)
     for event in events:
