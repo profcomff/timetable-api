@@ -20,14 +20,14 @@ import os
 
 google_flow_router = APIRouter(tags=["Auth"])
 settings = get_settings()
-templates = Jinja2Templates(directory=settings.TAMPLATES_PATH)
+templates = Jinja2Templates(directory='calendar_backend/templates')
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
 
 @lru_cache
 def get_flow(state=""):
     return Flow.from_client_secrets_file(
-        client_secrets_file=settings.PATH_TO_GOOGLE_CREDS,
+        client_secrets_file=str(settings.PATH_TO_GOOGLE_CREDS),
         scopes=settings.SCOPES,
         state=state,
         redirect_uri=f"{settings.REDIRECT_URL}/credentials",

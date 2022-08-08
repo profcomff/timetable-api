@@ -22,7 +22,6 @@ class Settings(BaseSettings):
     GROUPS: list[str]
     TIMETABLE_NAME: str
     ICS_PATH: DirectoryPath
-    TAMPLATES_PATH: DirectoryPath
     SCOPES: list[str] = [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
