@@ -46,5 +46,3 @@ async def create_calendar_with_timetable(
     for event in events:
         status = insert_event(service, calendar_id, event)
         print(status)
-
-

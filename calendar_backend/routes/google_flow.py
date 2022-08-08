@@ -21,7 +21,7 @@ import os
 google_flow_router = APIRouter(tags=["Auth"])
 settings = get_settings()
 templates = Jinja2Templates(directory=settings.TAMPLATES_PATH)
-os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
 
 @lru_cache
@@ -71,7 +71,9 @@ def get_credentials(
     service = build("oauth2", "v2", credentials=creds)
     email = service.userinfo().get().execute()["email"]
 
-    background_tasks.add_task(create_calendar_with_timetable, get_calendar_service_from_token(token), group)
+    background_tasks.add_task(
+        create_calendar_with_timetable, get_calendar_service_from_token(token), group
+    )
     try:
         db_records = db.session.query(Credentials).filter(Credentials.email == email)
         if not db_records.count():

@@ -30,9 +30,7 @@ def parse_time_from_db(time: str) -> tuple[int, int]:
 
 async def get_user_calendar(group: str, session: Session) -> Calendar:
     user_calendar = Calendar()
-    startday = date_(
-        date_.today().year, date_.today().month, date_.today().day
-    )
+    startday = date_(date_.today().year, date_.today().month, date_.today().day)
     for date in daterange(startday, get_end_of_semester_date()):
         if date.isoweekday() != 7:
             try:

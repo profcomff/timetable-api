@@ -1,7 +1,14 @@
 import json
 from functools import lru_cache
 
-from pydantic import BaseSettings, Json, PostgresDsn, AnyHttpUrl, FilePath, DirectoryPath
+from pydantic import (
+    BaseSettings,
+    Json,
+    PostgresDsn,
+    AnyHttpUrl,
+    FilePath,
+    DirectoryPath,
+)
 
 
 class Settings(BaseSettings):
@@ -16,7 +23,10 @@ class Settings(BaseSettings):
     TIMETABLE_NAME: str
     ICS_PATH: DirectoryPath
     TAMPLATES_PATH: DirectoryPath
-    SCOPES: list[str] = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/userinfo.email']
+    SCOPES: list[str] = [
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/userinfo.email",
+    ]
 
     class Config:
         """Pydantic BaseSettings config"""
