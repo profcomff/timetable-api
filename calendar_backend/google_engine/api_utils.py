@@ -1,7 +1,7 @@
 import googleapiclient.discovery
-from ..settings import get_settings
+
 from .event_from_db import create_google_events_from_db
-from googleapiclient.errors import HttpError
+from ..settings import get_settings
 
 # async libs for Google API
 
