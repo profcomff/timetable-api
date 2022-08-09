@@ -29,6 +29,6 @@ def get_calendar_service(id: int) -> googleapiclient.discovery.Resource:
 
 def get_calendar_service_from_token(token) -> googleapiclient.discovery.Resource:
     credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(
-        json.loads(token), SCOPES
+        json.loads(token), settings.SCOPES
     )
     return build("calendar", "v3", credentials=credentials)
