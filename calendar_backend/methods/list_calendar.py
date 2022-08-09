@@ -10,7 +10,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from calendar_backend.methods import getters
-from calendar_backend.settings import get_settings
+from calendar_backend import get_settings
 
 settings = get_settings()
 
@@ -44,7 +44,7 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
         if date.isoweekday() != 7:
             timetable_of_day = await getters.get_timetable_by_group_and_weekday(
                 group, date.isoweekday(), session=session
-                )
+            )
             for subject in timetable_of_day:
                 if (is_week_even and subject.odd) or (
                     not is_week_even and subject.even

@@ -2,7 +2,7 @@ import googleapiclient.discovery
 from sqlalchemy.orm import Session
 
 from .event_from_db import create_google_events_from_db
-from ..settings import get_settings
+from .. import get_settings
 
 # async libs for Google API
 

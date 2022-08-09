@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoResultFound
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from calendar_backend.models.db import Credentials
-from calendar_backend.settings import get_settings
+from calendar_backend.models import Credentials
+from calendar_backend import get_settings
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ["https://www.googleapis.com/auth/calendar"]

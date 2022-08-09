@@ -2,10 +2,9 @@ from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from calendar_backend.models import Timetable
 from calendar_backend import (
-    NotFound,
-    NoAudienceFoundError,
-    NoTeacherFoundError,
-    NoGroupFoundError,
+    AudienceTimetableNotFound,
+    TeacherTimetableNotFound,
+    GroupTimetableNotFound,
 )
 
 
@@ -15,7 +14,7 @@ async def get_timetable_by_group(group: str, session: Session) -> list[Timetable
     """
     result = session.query(Timetable).filter(Timetable.group == group).all()
     if not result:
-        raise NoGroupFoundError(group=group)
+        raise GroupTimetableNotFound(group=group)
     return result
 
 
@@ -25,7 +24,7 @@ async def get_timetable_by_teacher(teacher: str, session: Session) -> list[Timet
     """
     result = session.query(Timetable).filter(Timetable.teacher == teacher).all()
     if not result:
-        raise NoTeacherFoundError(teacher=teacher)
+        raise TeacherTimetableNotFound(teacher=teacher)
     return result
 
 
@@ -35,7 +34,7 @@ async def get_timetable_by_audience(audience: str, session: Session) -> list[Tim
     """
     result = session.query(Timetable).filter(Timetable.place == audience).all()
     if not result:
-        raise NoAudienceFoundError(audience=audience)
+        raise AudienceTimetableNotFound(audience=audience)
     return result
 
 
@@ -51,5 +50,5 @@ async def get_timetable_by_group_and_weekday(
         .all()
     )
     if not result:
-        raise NotFound()
+        raise GroupTimetableNotFound(group=group)
     return result

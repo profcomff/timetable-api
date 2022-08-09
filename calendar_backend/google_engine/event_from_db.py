@@ -3,7 +3,7 @@ import datetime
 from sqlalchemy.orm import Session
 
 from ..models import Timetable
-from ..settings import get_settings
+from .. import get_settings
 from .event import create_google_calendar_event
 
 

@@ -1,6 +1,6 @@
 import uvicorn
 
-from calendar_backend.routes.base import app
+from calendar_backend.routes import app
 
 
 if __name__ == "__main__":

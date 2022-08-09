@@ -10,10 +10,9 @@ from calendar_backend.methods import getters
 from calendar_backend.settings import get_settings
 from .models import Timetable
 from calendar_backend import (
-    NotFound,
-    NoAudienceFoundError,
-    NoTeacherFoundError,
-    NoGroupFoundError,
+    AudienceTimetableNotFound,
+    TeacherTimetableNotFound,
+    GroupTimetableNotFound,
 )
 from .converters import timetable_converter
 
@@ -32,7 +31,7 @@ async def http_get_timetable_by_group(
                 group=group_num, session=db.session
             )
         ]
-    except NoGroupFoundError:
+    except GroupTimetableNotFound:
         raise HTTPException(status_code=404, detail="Timetable not found")
 
 
@@ -47,7 +46,7 @@ async def http_get_timetable_by_teacher(
                 teacher=teacher_name, session=db.session
             )
         ]
-    except NoTeacherFoundError:
+    except TeacherTimetableNotFound:
         raise HTTPException(status_code=404, detail="Timetable not found")
 
 
@@ -62,7 +61,7 @@ async def http_get_timetable_by_place(
                 audience=audience_num, session=db.session
             )
         ]
-    except NoAudienceFoundError:
+    except AudienceTimetableNotFound:
         raise HTTPException(status_code=404, detail="Timetable not found")
 
 
@@ -78,7 +77,7 @@ async def http_get_timetable_by_group_and_weekday(
                 group=group, weekday=weekday, session=db.session
             )
         ]
-    except NotFound:
+    except GroupTimetableNotFound:
         raise HTTPException(status_code=404, detail="Timetable not found")
 
 
@@ -99,7 +98,7 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
                         group, session=db.session
                     )
                 )
-            except NotFound:
+            except GroupTimetableNotFound:
                 raise HTTPException(status_code=404, detail="Timetable not found")
             return FileResponse(
                 await calendar_backend.methods.list_calendar.create_user_calendar_file(

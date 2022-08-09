@@ -4,6 +4,10 @@ from .exceptions import (
     NoTeacherFoundError,
     NoGroupFoundError,
     NotFound,
+    TimetableNotFound,
+    AudienceTimetableNotFound,
+    TeacherTimetableNotFound,
+    GroupTimetableNotFound,
 )
 
 __all__ = [
@@ -12,4 +16,8 @@ __all__ = [
     "NotFound",
     "NoAudienceFoundError",
     "NoTeacherFoundError",
+    "TimetableNotFound",
+    "AudienceTimetableNotFound",
+    "TeacherTimetableNotFound",
+    "GroupTimetableNotFound",
 ]
