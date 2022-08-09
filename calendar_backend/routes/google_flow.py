@@ -57,10 +57,10 @@ def get_credentials(
     background_tasks: BackgroundTasks,
     code: str,
     scope: str,
-    state: Json,
+    state: str,
 ):
     scope = scope.split(unquote("%20"))
-    group = str(state.get("group"))
+    group = state
     flow = get_flow()
     flow.fetch_token(code=code)
     creds = flow.credentials

@@ -2,8 +2,6 @@ import json
 
 import google.oauth2.credentials
 import googleapiclient.discovery
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import NoResultFound
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials

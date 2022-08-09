@@ -21,7 +21,7 @@
         function send_request() {
             let group = document.getElementById("group-name").value;
             let flow_url = new URL(location.origin + '/flow');
-            flow_url.searchParams.set('state', `{"group": ${group}}`);
+            flow_url.searchParams.set('state', group);
               //console.log(flow_url);
             window.location.href = flow_url.href;
             return false;
