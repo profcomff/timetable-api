@@ -9,19 +9,17 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from calendar_backend.models import Credentials
 from calendar_backend import get_settings
+from fastapi_sqlalchemy import db
 
-# If modifying these scopes, delete the file token.pickle.
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
+
 settings = get_settings()
-connection = create_engine(settings.DB_DSN)
-db = sessionmaker(bind=connection)()
 
 
 def get_calendar_service(id: int) -> googleapiclient.discovery.Resource:
     try:
         user_data = db.query(Credentials).filter_by(id=id).one()
         credentials = google.oauth2.credentials.Credentials.from_authorized_user_info(
-            json.loads(user_data.token), SCOPES
+            json.loads(user_data.token), settings.SCOPES
         )
         service = build("calendar", "v3", credentials=credentials)
         return service
