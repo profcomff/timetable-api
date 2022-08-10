@@ -24,7 +24,7 @@ templates = Jinja2Templates(directory="calendar_backend/templates")
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
 
-@lru_cache
+@lru_cache(2)
 def get_flow(state=""):
     return Flow.from_client_secrets_file(
         client_secrets_file=str(settings.PATH_TO_GOOGLE_CREDS),
@@ -77,8 +77,8 @@ def get_credentials(
         db.session,
     )
     try:
-        db_records = db.session.query(Credentials).filter(Credentials.email == email)
-        if not db_records.count():
+        db_records = db.session.query(Credentials).filter(Credentials.email == email).all()
+        if len(db_records) == 0:
             db.session.add(
                 Credentials(
                     group=group,

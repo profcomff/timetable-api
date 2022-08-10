@@ -2,10 +2,10 @@ import googleapiclient.discovery
 from sqlalchemy.orm import Session
 
 from .event_from_db import create_google_events_from_db
+from .event import Event
 from .. import get_settings
-
+from dataclasses import asdict
 # async libs for Google API
-
 
 settings = get_settings()
 
@@ -41,7 +41,7 @@ async def create_calendar_with_timetable(
     service: googleapiclient.discovery.Resource, group: str, session: Session
 ) -> None:
     calendar_id: str = create_calendar(service, group)
-    events: list[dict] = create_google_events_from_db(group, session=session)
+    events: list[Event] = create_google_events_from_db(group, session=session)
     for event in events:
-        status = insert_event(service, calendar_id, event)
-        print(status)
+        status = insert_event(service, calendar_id, asdict(event))
+        print(status['summary'])

@@ -4,28 +4,28 @@ from sqlalchemy.orm import Session
 
 from ..models import Timetable
 from .. import get_settings
-from .event import create_google_calendar_event
+from .event import create_google_calendar_event, Event
 
 
 settings = get_settings()
 
 
-def create_google_events_from_db(group: str, session: Session) -> list[dict]:
+def create_google_events_from_db(group: str, session: Session) -> list[Event]:
     """
     Creates a timetable for certain group from db timetable.
-    Returns list[dict] of events/subjects
+    Returns list[Event] of events/subjects
     """
     group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
     now = datetime.date.today()
     start_of_week = now - datetime.timedelta(days=now.weekday())  # start of current week
     is_week_even = start_of_week.isocalendar()[1] % 2 == 0
     time_zone = "+03:00"
-    dict_of_subjects = []
+    list_of_subjects = []
     for subject in group_subjects:
         start_date = start_of_week + datetime.timedelta(days=(subject.weekday - 1))
         if is_week_even:
             if subject.even:
-                dict_of_subjects.append(
+                list_of_subjects.append(
                     create_google_calendar_event(
                         summary=subject.subject,
                         start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
@@ -36,7 +36,7 @@ def create_google_events_from_db(group: str, session: Session) -> list[dict]:
                 )
         else:
             if subject.odd:
-                dict_of_subjects.append(
+                list_of_subjects.append(
                     create_google_calendar_event(
                         summary=subject.subject,
                         start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
@@ -49,7 +49,7 @@ def create_google_events_from_db(group: str, session: Session) -> list[dict]:
         start_date = start_of_week + datetime.timedelta(days=(7 + subject.weekday - 1))
         if is_week_even:
             if subject.odd:
-                dict_of_subjects.append(
+                list_of_subjects.append(
                     create_google_calendar_event(
                         summary=subject.subject,
                         start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
@@ -60,7 +60,7 @@ def create_google_events_from_db(group: str, session: Session) -> list[dict]:
                 )
         else:
             if subject.even:
-                dict_of_subjects.append(
+                list_of_subjects.append(
                     create_google_calendar_event(
                         summary=subject.subject,
                         start_time=f"{start_date.isoformat()}T{subject.start}:00{time_zone}",
@@ -69,4 +69,4 @@ def create_google_events_from_db(group: str, session: Session) -> list[dict]:
                         description=subject.teacher,
                     )
                 )
-    return dict_of_subjects
+    return list_of_subjects

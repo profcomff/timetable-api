@@ -1,20 +1,21 @@
 from ..methods import get_end_of_semester_date
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
+from pydantic.dataclasses import dataclass
 
 
-@dataclass()
+@dataclass
 class Event:
     summary: str
     location: str
     description: str
-    start: dict
-    end: dict
-    recurrence: list
-    attendees: list
-    reminders: dict
+    start: dict[str, str]
+    end: dict[str, str]
+    recurrence: list[str]
+    attendees: list[str]
+    reminders: dict[str, bool]
 
 
-def create_google_calendar_event(summary: str, start_time: str, end_time: str, location: str, description: str) -> dict:
+def create_google_calendar_event(summary: str, start_time: str, end_time: str, location: str, description: str) -> Event:
     """
     Creates a dict with a Google calendar params
     """
@@ -35,4 +36,4 @@ def create_google_calendar_event(summary: str, start_time: str, end_time: str, l
         attendees=[],
         reminders={"useDefault": False},
     )
-    return asdict(event)
+    return event
