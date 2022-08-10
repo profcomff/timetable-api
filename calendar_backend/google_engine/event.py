@@ -13,7 +13,9 @@ class Event(BaseModel):
     reminders: dict[str, bool]
 
 
-def create_google_calendar_event(summary: str, start_time: str, end_time: str, location: str, description: str) -> Event:
+def create_google_calendar_event(
+    summary: str, start_time: str, end_time: str, location: str, description: str
+) -> Event:
     """
     Creates a dict with a Google calendar params
     """

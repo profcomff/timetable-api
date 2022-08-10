@@ -61,8 +61,15 @@ async def get_room_by_name(room_name: str, session: Session) -> Room:
 
 
 async def get_lecturer_by_name(first_name: str, middle_name: str, last_name: str, session: Session) -> Lecturer:
-    result = session.query(Lecturer).filter(and_(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name,
-                                                 Lecturer.last_name == last_name)).one_or_none()
+    result = (
+        session.query(Lecturer)
+        .filter(
+            and_(
+                Lecturer.first_name == first_name, Lecturer.middle_name == middle_name, Lecturer.last_name == last_name
+            )
+        )
+        .one_or_none()
+    )
     if not result:
         raise exceptions.NoTeacherFoundError
     return result
@@ -80,36 +87,50 @@ async def get_lessons_by_room(room: Room) -> list[Lesson]:
     return room.lessons
 
 
-async def update_room(room: Room, new_name: str | None, session: Session) -> Room:
-    room.name = (new_name if new_name else room.name)
+async def update_room(room: Room, session: Session, new_name: str | None = None) -> Room:
+    room.name = new_name or room.name
     session.flush()
     return room
 
 
-async def update_group(group: Group, new_number: str | None, new_name: str | None, session: Session) -> Group:
-    group.number = (new_number if new_number else group.number)
-    group.name = (new_name if new_name else group.name)
+async def update_group(
+    group: Group, session: Session, new_number: str | None = None, new_name: str | None = None
+) -> Group:
+    group.number = new_number or group.number
+    group.name = new_name or group.name
     session.flush()
     return group
 
 
-async def update_lecturer(lecturer: Lecturer, new_first_name: str | None, new_middle_name: str | None,
-                          new_last_name: str | None, session: Session) -> Lecturer:
-    lecturer.first_name = (new_first_name if new_first_name else lecturer.first_name)
-    lecturer.middle_name = (new_middle_name if new_middle_name else lecturer.middle_name)
-    lecturer.last_name = (new_last_name if new_last_name else lecturer.last_name)
+async def update_lecturer(
+    lecturer: Lecturer,
+    session: Session,
+    new_first_name: str | None = None,
+    new_middle_name: str | None = None,
+    new_last_name: str | None = None,
+) -> Lecturer:
+    lecturer.first_name = new_first_name or lecturer.first_name
+    lecturer.middle_name = new_middle_name or lecturer.middle_name
+    lecturer.last_name = new_last_name or lecturer.last_name
     session.flush()
     return lecturer
 
 
-async def update_lesson(lesson: Lesson, new_name: str | None, new_room: Room | None, new_group: Group | None,
-                        new_lecturer: Lecturer | None, new_start_ts: datetime.time | None,
-                        new_end_ts: datetime.time | None, session: Session) -> Lesson:
-    lesson.name = (new_name if new_name else lesson.name)
-    lesson.group = (new_group.id if new_group else lesson.group)
-    lesson.room = (new_room.id if new_room else lesson.room)
-    lesson.lecturer = (new_lecturer.id if new_lecturer else lesson.lecturer)
-    lesson.start_ts = (new_start_ts if new_start_ts else lesson.start_ts)
-    lesson.end_ts = (new_end_ts if new_end_ts else lesson.end_ts)
+async def update_lesson(
+    lesson: Lesson,
+    session: Session,
+    new_name: str | None,
+    new_room: Room | None,
+    new_group: Group | None,
+    new_lecturer: Lecturer | None,
+    new_start_ts: datetime.time | None,
+    new_end_ts: datetime.time | None,
+) -> Lesson:
+    lesson.name = new_name or lesson.name
+    lesson.group = new_group or lesson.group
+    lesson.room_id = new_room.id or lesson.room_id
+    lesson.lecturer_id = new_lecturer.id or lesson.lecturer_id
+    lesson.start_ts = new_start_ts or lesson.start_ts
+    lesson.end_ts = new_end_ts or lesson.end_ts
     session.flush()
     return lesson

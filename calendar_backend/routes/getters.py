@@ -21,8 +21,7 @@ async def http_get_timetable_by_group(group_num: str = Query(..., description="G
     try:
         logger.debug(f"Getting timetable for {group_num}...")
         return [
-            Timetable.from_orm(row)
-            for row in await getters.get_timetable_by_group(group=group_num, session=db.session)
+            Timetable.from_orm(row) for row in await getters.get_timetable_by_group(group=group_num, session=db.session)
         ]
     except exceptions.GroupTimetableNotFound:
         logger.info(f"Timetable for group {group_num} not found (404)")
