@@ -48,7 +48,7 @@ class Lesson(Base):
 
     room: Room = sqlalchemy.orm.relationship("room", foreign_keys="lesson.room_id")
     group: Group = sqlalchemy.orm.relationship("group", foreign_keys="lesson.group_id")
-    lecturer: Lecturer = sqlalchemy.orm.relationship("lecturer", forreign_keys="lesson.lecturer_id")
+    lecturer: Lecturer = sqlalchemy.orm.relationship("lecturer", foreign_keys="lesson.lecturer_id")
 
     def __repr__(self):
         return f"Lesson:{self.name}, room:{self.room.name}, group:{self.group.number}," \
