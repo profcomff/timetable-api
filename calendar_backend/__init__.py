@@ -1,5 +1,5 @@
 from .settings import get_settings
-import exceptions
+import calendar_backend.exceptions
 
 __all__ = [
     "get_settings",
