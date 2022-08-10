@@ -2,7 +2,7 @@ import datetime
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-from calendar_backend.models import Timetable, Group, Lesson, Lecturer, Room, Direction
+from calendar_backend.models import Timetable, Group, Lesson, Lecturer, Room
 from calendar_backend import exceptions
 
 
