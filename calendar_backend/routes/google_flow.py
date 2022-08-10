@@ -101,7 +101,7 @@ def get_credentials(
         print("Missing db session")
 
     return templates.TemplateResponse(
-        "calendar created.html",
+        "calendar_created.html",
         {
             "request": request,
         },
