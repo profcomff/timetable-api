@@ -6,11 +6,10 @@ from typing import Iterator
 
 import pytz
 from icalendar import Calendar, Event, vText
-from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
-from calendar_backend.methods import getters
 from calendar_backend import get_settings
+from calendar_backend.methods import getters
 
 settings = get_settings()
 
@@ -46,9 +45,7 @@ async def get_user_calendar(group: str, session: Session) -> Calendar:
                 group, date.isoweekday(), session=session
             )
             for subject in timetable_of_day:
-                if (is_week_even and subject.odd) or (
-                    not is_week_even and subject.even
-                ):
+                if (is_week_even and subject.odd) or (not is_week_even and subject.even):
                     continue
                 (
                     hour_start,

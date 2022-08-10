@@ -17,9 +17,7 @@ class Credentials(Base):
     scope = Column(JSON, nullable=False)
     token = Column(JSON, nullable=False)
     create_ts = Column(DateTime, nullable=False, default=datetime.utcnow)
-    update_ts = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    update_ts = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Timetable(Base):

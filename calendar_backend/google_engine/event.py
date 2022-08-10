@@ -14,9 +14,7 @@ class Event:
     reminders: dict
 
 
-def create_google_calendar_event(
-    summary: str, start_time: str, end_time: str, location: str, description: str
-) -> dict:
+def create_google_calendar_event(summary: str, start_time: str, end_time: str, location: str, description: str) -> dict:
     """
     Creates a dict with a Google calendar params
     """

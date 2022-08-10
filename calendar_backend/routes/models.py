@@ -17,3 +17,6 @@ class Timetable(BaseModel):
     subject: str
     place: str | None
     teacher: str | None
+
+    class Config:
+        orm_mode = True

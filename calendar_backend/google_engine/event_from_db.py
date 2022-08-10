@@ -17,9 +17,7 @@ def create_google_events_from_db(group: str, session: Session) -> list[dict]:
     """
     group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
     now = datetime.date.today()
-    start_of_week = now - datetime.timedelta(
-        days=now.weekday()
-    )  # start of current week
+    start_of_week = now - datetime.timedelta(days=now.weekday())  # start of current week
     is_week_even = start_of_week.isocalendar()[1] % 2 == 0
     time_zone = "+03:00"
     dict_of_subjects = []

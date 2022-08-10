@@ -27,9 +27,7 @@ def create_calendar(service: googleapiclient.discovery.Resource, group: str) -> 
     return created_calendar["id"]
 
 
-def insert_event(
-    service: googleapiclient.discovery.Resource, calendar_id: str, event: dict
-):
+def insert_event(service: googleapiclient.discovery.Resource, calendar_id: str, event: dict):
     """
     Inserts an event to calendar.
     API allows inserting events only partially.

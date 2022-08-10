@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from calendar_backend.models import Timetable
 from calendar_backend import exceptions
 
+
 async def get_timetable_by_group(group: str, session: Session) -> list[Timetable]:
     """
     Returns the group's timetable
@@ -33,17 +34,11 @@ async def get_timetable_by_audience(audience: str, session: Session) -> list[Tim
     return result
 
 
-async def get_timetable_by_group_and_weekday(
-    group: str, weekday: int, session: Session
-) -> list[Timetable]:
+async def get_timetable_by_group_and_weekday(group: str, weekday: int, session: Session) -> list[Timetable]:
     """
     Returns the schedule of the group on this day of the week
     """
-    result = (
-        session.query(Timetable)
-        .filter(and_(Timetable.group == group, Timetable.weekday == weekday))
-        .all()
-    )
+    result = session.query(Timetable).filter(and_(Timetable.group == group, Timetable.weekday == weekday)).all()
     if not result:
         raise exceptions.GroupTimetableNotFound(group=group)
     return result
