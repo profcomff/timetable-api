@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import enum
 
 import sqlalchemy.orm
@@ -17,6 +19,8 @@ class Room(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     direction = sqlalchemy.Column(sqlalchemy.Enum, nullable=False)
+    lessons: list[Lesson] = sqlalchemy.orm.relationship("lesson", foreign_keys="lesson.room_id",
+                                                         order_by="desc(lesson.id)")
 
     def __repr__(self):
         return f"Room:{self.name}, direction:{self.direction}"
@@ -27,6 +31,8 @@ class Lecturer(Base):
     first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    lessons: list[Lesson] = sqlalchemy.orm.relationship("lesson", foreign_keys="lesson.lecturer_id",
+                                                         order_by="desc(lesson.id)")
 
     def __repr__(self):
         return f"Lecturer's name:{self.name}, middle name:{self.middle_name}, last name:{self.last_name}"
@@ -35,6 +41,7 @@ class Lecturer(Base):
 class Group(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     number = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    lessons: list[Lesson] = sqlalchemy.orm.relationship("lesson", foreign_keys="lesson.group_id", order_by="desc(lesson.id)")
 
     def __repr__(self):
         return f"Group number:{self.number}"
@@ -56,3 +63,4 @@ class Lesson(Base):
     def __repr__(self):
         return f"Lesson:{self.name}, room:{self.room.name}, group:{self.group.number}," \
                f" lecturer:{self.lecturer.__repr__()}"
+
