@@ -12,3 +12,4 @@ google-auth-oauthlib
 pytz
 icalendar
 SQLAlchemy
+gunicorn
