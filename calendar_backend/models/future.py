@@ -5,6 +5,9 @@ import sqlalchemy.orm
 from .base import Base
 
 
+# TODO: Tests
+
+
 class Direction(enum.Enum, str):
     NORTH = "North"
     SOUTH = "South"
