@@ -121,6 +121,8 @@ def get_end_of_semester_date() -> date_:
 def check_file_for_creation_date(path_file: str) -> bool:
     """
     Checks that the file was created no more than one day ago
+    True: if the file needs to be recreated/created
+    False: if file exists and created last day
     """
     if os.path.exists(path_file):
         try:
@@ -134,4 +136,4 @@ def check_file_for_creation_date(path_file: str) -> bool:
             print(f"The error '{e}' occurred")
             return False
     else:
-        return False
+        return True
