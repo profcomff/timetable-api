@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Iterator
 
 import pytz
+import logging
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,7 @@ from calendar_backend import get_settings
 from calendar_backend.methods import getters
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def daterange(start_date: date_, end_date: date_) -> Iterator[date_]:
@@ -24,18 +26,20 @@ def daterange(start_date: date_, end_date: date_) -> Iterator[date_]:
 
 def parse_time_from_db(time: str) -> tuple[int, int]:
     """
-    Parrsing time from db to datetime format
+    Parsing time from db to datetime format
     """
+    logger.debug("Parsing time from db...")
     try:
         return int(time[: (time.index(":"))]), int(time[(time.index(":") + 1) :])
     except ValueError as e:
-        print(f"The error '{e}' occurred")
+        logger.info(f"The error '{e}' occurred")
 
 
 async def get_user_calendar(group: str, session: Session) -> Calendar:
     """
     Returns event iCalendar object
     """
+    logger.debug(f"Getting user calendar (iCal) for group {group}")
     user_calendar = Calendar()
     startday = date_(date_.today().year, date_.today().month, date_.today().day)
     for date in daterange(startday, get_end_of_semester_date()):
@@ -91,12 +95,13 @@ async def create_user_calendar_file(user_calendar: Calendar, group: str) -> str:
     """
     Creating .ics file from iCalendar object
     """
+    logger.debug(f"Creating .ics file from iCalendar {user_calendar.name}")
     try:
         with open(f"{settings.ICS_PATH}/{group}", "wb") as f:
             f.write(user_calendar.to_ical())
         return f"{settings.ICS_PATH}/{group}"
-    except OSError:
-        print(f"The error occurred")
+    except OSError as e:
+        logger.info(f"The error {e} occurred")
 
 
 def get_end_of_semester_date() -> date_:
@@ -121,6 +126,7 @@ def check_file_for_creation_date(path_file: str) -> bool:
     True: if the file needs to be recreated/created
     False: if file exists and created last day
     """
+    logger.debug(f"Checking file {path_file} for creation date/existing...")
     if os.path.exists(path_file):
         try:
             c_time = os.path.getctime(path_file)
@@ -130,7 +136,7 @@ def check_file_for_creation_date(path_file: str) -> bool:
             else:
                 return False
         except OSError as e:
-            print(f"The error '{e}' occurred")
+            logger.info(f"The error '{e}' occurred")
             return False
     else:
         return True

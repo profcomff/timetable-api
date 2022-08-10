@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 from ..models import Timetable
 from .. import get_settings
 from .event import create_google_calendar_event, Event
-
+import logging
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def create_google_events_from_db(group: str, session: Session) -> list[Event]:
@@ -21,6 +22,7 @@ def create_google_events_from_db(group: str, session: Session) -> list[Event]:
     is_week_even = start_of_week.isocalendar()[1] % 2 == 0
     time_zone = "+03:00"
     list_of_subjects = []
+    logger.debug(f"Getting list of subjects for {group}...")
     for subject in group_subjects:
         start_date = start_of_week + datetime.timedelta(days=(subject.weekday - 1))
         if is_week_even:

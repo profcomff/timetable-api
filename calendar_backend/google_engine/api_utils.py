@@ -5,9 +5,10 @@ from .event_from_db import create_google_events_from_db
 from .event import Event
 from .. import get_settings
 from dataclasses import asdict
-# async libs for Google API
+import logging
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def create_calendar(service: googleapiclient.discovery.Resource, group: str) -> str:
@@ -24,6 +25,7 @@ def create_calendar(service: googleapiclient.discovery.Resource, group: str) -> 
         if calendar["summary"] == timetable_calendar["summary"]:
             service.calendars().delete(calendarId=calendar["id"]).execute()
     created_calendar = service.calendars().insert(body=timetable_calendar).execute()
+    logger.debug(f"Calendar for {group} created")
     return created_calendar["id"]
 
 
@@ -34,6 +36,7 @@ def insert_event(service: googleapiclient.discovery.Resource, calendar_id: str, 
     Returns status string with event summary.
     """
     status = service.events().insert(calendarId=calendar_id, body=event).execute()
+    logger.debug(f"Event {status['summary']} inserted")
     return status
 
 
@@ -42,6 +45,6 @@ async def create_calendar_with_timetable(
 ) -> None:
     calendar_id: str = create_calendar(service, group)
     events: list[Event] = create_google_events_from_db(group, session=session)
+    logger.debug(f"Getting events for {calendar_id} ...")
     for event in events:
-        status = insert_event(service, calendar_id, event.dict())
-        print(status['summary'])
+        insert_event(service, calendar_id, event.dict())

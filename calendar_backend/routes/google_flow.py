@@ -16,16 +16,19 @@ from .. import get_settings
 from ..google_engine import get_calendar_service_from_token
 from fastapi.templating import Jinja2Templates
 import os
+import logging
 
 
 google_flow_router = APIRouter(tags=["Auth"])
 settings = get_settings()
 templates = Jinja2Templates(directory="calendar_backend/templates")
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
+logger = logging.getLogger(__name__)
 
 
 @lru_cache(2)
 def get_flow(state=""):
+    logger.debug(f"Getting flow with state '{state}'")
     return Flow.from_client_secrets_file(
         client_secrets_file=str(settings.PATH_TO_GOOGLE_CREDS),
         scopes=settings.SCOPES,
@@ -66,10 +69,12 @@ def get_credentials(
     creds = flow.credentials
     token: Json = creds.to_json()
     # build service to get an email address
-    if group not in settings.GROUPS:
-        raise HTTPException(404, "No group found")
     service = build("oauth2", "v2", credentials=creds)
     email = service.userinfo().get().execute()["email"]
+    if group not in settings.GROUPS:
+        logger.info(f"No group found 404 for user {email}")
+        raise HTTPException(404, "No group found")
+
     background_tasks.add_task(
         create_calendar_with_timetable,
         get_calendar_service_from_token(token),
@@ -79,6 +84,7 @@ def get_credentials(
     try:
         db_records = db.session.query(Credentials).filter(Credentials.email == email).all()
         if len(db_records) == 0:
+            logger.debug(f"User {email} not found in db. Adding...")
             db.session.add(
                 Credentials(
                     group=group,
@@ -88,17 +94,18 @@ def get_credentials(
                 )
             )
         else:
+            logger.debug(f"User {email} is already in db. Updating...")
             db_records.update(
                 dict(
                     group=group,
                     scope=scope,
                 )
             )
-
+        logger.debug("DB session OK")
     except SessionNotInitialisedError:
-        print("DB session not initialized")
+        logger.critical("DB session not initialized")
     except MissingSessionError:
-        print("Missing db session")
+        logger.critical("Missing db session")
 
     return templates.TemplateResponse(
         "calendar_created.html",
