@@ -43,5 +43,5 @@ async def create_calendar_with_timetable(
     calendar_id: str = create_calendar(service, group)
     events: list[Event] = create_google_events_from_db(group, session=session)
     for event in events:
-        status = insert_event(service, calendar_id, asdict(event))
+        status = insert_event(service, calendar_id, event.dict())
         print(status['summary'])

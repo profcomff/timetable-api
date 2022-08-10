@@ -1,13 +1,11 @@
 from ..methods import get_end_of_semester_date
-from dataclasses import asdict
-from pydantic.dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Event:
+class Event(BaseModel):
     summary: str
-    location: str
-    description: str
+    location: str | None
+    description: str | None
     start: dict[str, str]
     end: dict[str, str]
     recurrence: list[str]
