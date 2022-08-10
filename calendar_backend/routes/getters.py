@@ -96,6 +96,8 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
                 )
             except exceptions.GroupTimetableNotFound:
                 raise HTTPException(status_code=404, detail="Timetable not found")
+            if not user_calendar:
+                return HTTPException(status_code=500, detail="Failed to create .ics file")
             return FileResponse(
                 await calendar_backend.methods.list_calendar.create_user_calendar_file(
                     user_calendar, group
