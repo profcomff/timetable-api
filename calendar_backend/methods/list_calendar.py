@@ -134,4 +134,4 @@ def check_file_for_creation_date(path_file: str) -> bool:
             print(f"The error '{e}' occurred")
             return False
     else:
-        return True
+        return False
