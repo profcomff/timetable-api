@@ -30,7 +30,7 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
                 user_calendar = await calendar_backend.methods.list_calendar.get_user_calendar(
                     group, session=db.session
                 )
-            except exceptions.GroupTimetableNotFound:
+            except exceptions.NoGroupFoundError:
                 logger.info(f"Timetable for group {group} not found")
                 raise HTTPException(status_code=404, detail="Timetable not found")
             if not user_calendar:

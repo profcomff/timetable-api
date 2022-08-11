@@ -16,25 +16,6 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-# def daterange(start_date: date_, end_date: date_) -> Iterator[date_]:
-#     """
-#     Date iterator
-#     """
-#     for n in range(int((end_date - start_date).days)):
-#         yield start_date + timedelta(n)
-
-
-# def parse_time_from_db(time: str) -> tuple[int, int]:
-#     """
-#     Parsing time from db to datetime format
-#     """
-#     logger.debug("Parsing time from db...")
-#     try:
-#         return int(time[: (time.index(":"))]), int(time[(time.index(":") + 1) :])
-#     except ValueError as e:
-#         logger.info(f"The error '{e}' occurred")
-
-
 async def get_user_calendar(group_number: str, session: Session) -> Calendar:
     """
     Returns event iCalendar object
