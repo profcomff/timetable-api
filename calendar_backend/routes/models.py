@@ -23,16 +23,25 @@ class Timetable(BaseModel):
 
 
 class Room(BaseModel):
-    pass
+    name: str
+    direction: str
 
 
 class Group(BaseModel):
-    pass
+    name: str
+    number: str
 
 
 class Lecturer(BaseModel):
-    pass
+    first_name: str
+    middle_name: str
+    last_name: str
 
 
 class Lesson(BaseModel):
-    pass
+    name: str
+    room: Room
+    group: Group
+    lecturer: Lecturer
+    start_ts: datetime.time
+    end_ts: datetime.time
