@@ -16,30 +16,33 @@ logger = logging.getLogger(__name__)
 
 @cud_router.post("/create/room/", response_model=Room)
 async def http_create_room(room_pydantic: Room) -> Room:
+    logger.debug(f"Creating {room_pydantic}")
     try:
         return Room.from_orm(
             await utils.create_room(name=room_pydantic.name, direrction=room_pydantic.direction, session=db.session)
         )
     except ValueError as e:
         logger.info(
-            f"Creating room name:{room_pydantic.name}, direction:{room_pydantic.direction} failed with error: {e}"
+            f"Creating {room_pydantic} failed with error: {e}"
         )
         raise HTTPException(status_code=500, detail=e)
 
 
 @cud_router.post("/create/group/", response_model=Group)
 async def http_create_group(group_pydantic: Group) -> Group:
+    logger.debug(f"Creating {group_pydantic}")
     try:
         return Group.from_orm(
             await utils.create_group(number=group_pydantic.number, name=group_pydantic.name, session=db.session)
         )
     except ValueError as e:
-        logger.info(f"Creating group name:{group_pydantic.name}, number:{group_pydantic.number} failed with error: {e}")
+        logger.info(f"Creating {group_pydantic} failed with error: {e}")
         raise HTTPException(status_code=500, detail=e)
 
 
 @cud_router.post("/create/lecturer/", response_model=Lecturer)
 async def http_create_lecturer(lecturer_pydantic: Lecturer) -> Lecturer:
+    logger.debug(f"Creating {lecturer_pydantic}")
     try:
         return Lecturer.from_orm(
             await utils.create_lecturer(
@@ -50,16 +53,13 @@ async def http_create_lecturer(lecturer_pydantic: Lecturer) -> Lecturer:
             )
         )
     except ValueError as e:
-        logger.info(
-            f"Creating lecturer first name:{lecturer_pydantic.first_name},"
-            f" middle name:{lecturer_pydantic.middle_name},"
-            f" last name:{lecturer_pydantic.last_name} failed with error: {e}"
-        )
+        logger.info(f"Creating {lecturer_pydantic} failed with error: {e}")
         raise HTTPException(status_code=500, detail=e)
 
 
 @cud_router.post("/create/lesson/", response_model=Lesson)
 async def http_create_lesson(lesson_pydantic: Lesson) -> Lesson:
+    logger.debug(f"Creating {lesson_pydantic}")
     try:
         room = await utils.get_room_by_name(lesson_pydantic.room.name, session=db.session)
         lecturer = await utils.get_lecturer_by_name(
@@ -81,32 +81,30 @@ async def http_create_lesson(lesson_pydantic: Lesson) -> Lesson:
             )
         )
     except exceptions.NoAudienceFoundError as e:
+        logger.info(f"Creating {lesson_pydantic} failed with error: {e}")
         raise HTTPException(status_code=404, detail="No room found")
     except exceptions.NoGroupFoundError as e:
+        logger.info(f"Creating {lesson_pydantic} failed with error: {e}")
         raise HTTPException(status_code=404, detail="No group found")
     except exceptions.NoTeacherFoundError as e:
+        logger.info(f"Creating {lesson_pydantic} failed with error: {e}")
         raise HTTPException(status_code=404, detail="No lecturer found")
     except ValueError as e:
-        logger.info(
-            f"Creating lesson name:{lesson_pydantic.name},"
-            f"room:{lesson_pydantic.room},"
-            f"lecturer: {lesson_pydantic.lecturer},"
-            f"group: {lesson_pydantic.group},"
-            f" start_ts:{lesson_pydantic.start_ts},"
-            f" end_ts:{lesson_pydantic.end_ts}failed with error: {e}"
-        )
+        logger.info(f"Creating {lesson_pydantic} failed with error: {e}")
         raise HTTPException(status_code=500, detail=e)
 
 
 @cud_router.patch("/patch/room/", response_model=Room)
 async def http_patch_room(room_pydantic: Room, new_name: str | None = None) -> Room:
+    logger.debug(f"Patching {room_pydantic}")
     try:
         room = await utils.get_room_by_name(room_pydantic.name, session=db.session)
         return Room.from_orm(await utils.update_room(room, session=db.session, new_name=new_name))
-    except exceptions.NoAudienceFoundError:
+    except exceptions.NoAudienceFoundError as e:
+        logger.info(f"Patching {room_pydantic} failed with error: {e}")
         raise HTTPException(status_code=404, detail="No room found")
     except ValueError as e:
-        logger.info(f"Failed to patch room: {room_pydantic.name}, {room_pydantic.direction} with error: {e}")
+        logger.info(f"Patching {room_pydantic} failed with error: {e}")
         raise HTTPException(status_code=500, detail=e)
 
 
