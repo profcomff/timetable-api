@@ -158,5 +158,3 @@ async def delete_lesson(lesson: Lesson, session: Session) -> None:
     session.delete(lesson)
     session.flush()
     return None
-
-

@@ -18,7 +18,7 @@ class Direction(str, enum.Enum):
 class Room(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    direction = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    direction = sqlalchemy.Column(sqlalchemy.Enum(Direction.SOUTH, Direction.NORTH), nullable=False)
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", foreign_keys="Lesson.room_id", order_by="desc(Lesson.id)"
     )
