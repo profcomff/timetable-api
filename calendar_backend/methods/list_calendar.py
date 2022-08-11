@@ -2,15 +2,14 @@ import logging
 import os
 import time
 from datetime import date as date_
-from datetime import datetime, timedelta
-from typing import Iterator
+from datetime import datetime
 
 import pytz
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
-from . import utils
 
 from calendar_backend import get_settings
+from . import utils
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
