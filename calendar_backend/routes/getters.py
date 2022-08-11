@@ -12,7 +12,7 @@ from calendar_backend.methods import utils
 from calendar_backend.settings import get_settings
 from .models import Room, Lecturer, Group, Lesson
 
-getters_router = APIRouter(prefix="/timetable", tags=["Timetable"])
+getters_router = APIRouter(prefix="/timetable/get", tags=["Timetable"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ async def http_get_room(room_name: str) -> Room:
         raise HTTPException(status_code=500, detail=e)
 
 
-@getters_router.get("/lessons/group")
+@getters_router.get("/group/lessons", response_model=list[Lesson])
 async def http_get_group_lessons(group: Group) -> list[Lesson]:
     try:
         return [Lesson.from_orm(row) for row in await utils.get_lessons_by_group(group=group)]
@@ -96,15 +96,23 @@ async def http_get_group_lessons(group: Group) -> list[Lesson]:
         raise HTTPException(status_code=500, detail=e)
 
 
-@getters_router.get("/lessons/room")
+@getters_router.get("/room/lessons", response_model=list[Lesson])
 async def http_get_room_lessons(room: Room) -> list[Lesson]:
     try:
         return [Lesson.from_orm(row) for row in await utils.get_lessons_by_room(room=room)]
-    except exceptions.NoGroupFoundError:
+    except exceptions.NoAudienceFoundError:
         raise HTTPException(status_code=404, detail="No room found")
     except ValueError as e:
         logger.info(f"Failed to get room lessons {room}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
 
-# @getters_router.get("/lessons/")
+@getters_router.get("/lecturer/lessons", response_model=list[Lesson])
+async def http_get_lecturer_lessons(lecturer: Lecturer) -> list[Lesson]:
+    try:
+        return [Lesson.from_orm(row) for row in await utils.get_lessons_by_lecturer(lecturer=lecturer)]
+    except exceptions.NoTeacherFoundError:
+        raise HTTPException(status_code=404, detail="No lecturer found")
+    except ValueError as e:
+        logger.info(f"Failed to get room lessons {lecturer}, error {e} occurred")
+        raise HTTPException(status_code=500, detail=e)
