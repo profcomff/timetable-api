@@ -22,9 +22,7 @@ async def http_create_room(room_pydantic: Room) -> Room:
             await utils.create_room(name=room_pydantic.name, direrction=room_pydantic.direction, session=db.session)
         )
     except ValueError as e:
-        logger.info(
-            f"Creating {room_pydantic} failed with error: {e}"
-        )
+        logger.info(f"Creating {room_pydantic} failed with error: {e}")
         raise HTTPException(status_code=500, detail=e)
 
 
@@ -195,6 +193,7 @@ async def http_patch_lesson(
     except ValueError as e:
         logger.info(f"Patching {lesson_pydantic} failed with error: {e}")
         raise HTTPException(status_code=500, detail=e)
+
 
 @cud_router.delete("/delete/room/")
 async def http_delete_room(room_pydantic: Room) -> None:
