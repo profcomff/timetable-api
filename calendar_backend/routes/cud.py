@@ -9,7 +9,7 @@ from calendar_backend import get_settings
 from calendar_backend.routes.models import Room, Group, Lecturer, Lesson
 from calendar_backend.methods import utils
 
-cud_router = APIRouter(prefix="/auth-nedeed/timetable/", tags=["CUD"])
+cud_router = APIRouter(prefix="/auth-nedeed/timetable", tags=["CUD"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 

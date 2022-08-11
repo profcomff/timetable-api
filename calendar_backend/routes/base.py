@@ -5,6 +5,7 @@ from fastapi_sqlalchemy import DBSessionMiddleware
 from calendar_backend import get_settings
 from .getters import getters_router
 from .google_flow import google_flow_router
+from .cud import cud_router
 
 settings = get_settings()
 app = FastAPI()
@@ -25,3 +26,4 @@ app.add_middleware(
 
 app.include_router(getters_router)
 app.include_router(google_flow_router)
+app.include_router(cud_router)
