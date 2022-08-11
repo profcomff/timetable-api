@@ -8,6 +8,7 @@ from typing import Iterator
 import pytz
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
+from . import utils
 
 from calendar_backend import get_settings
 
@@ -15,78 +16,69 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-def daterange(start_date: date_, end_date: date_) -> Iterator[date_]:
-    """
-    Date iterator
-    """
-    for n in range(int((end_date - start_date).days)):
-        yield start_date + timedelta(n)
+# def daterange(start_date: date_, end_date: date_) -> Iterator[date_]:
+#     """
+#     Date iterator
+#     """
+#     for n in range(int((end_date - start_date).days)):
+#         yield start_date + timedelta(n)
 
 
-def parse_time_from_db(time: str) -> tuple[int, int]:
-    """
-    Parsing time from db to datetime format
-    """
-    logger.debug("Parsing time from db...")
-    try:
-        return int(time[: (time.index(":"))]), int(time[(time.index(":") + 1) :])
-    except ValueError as e:
-        logger.info(f"The error '{e}' occurred")
+# def parse_time_from_db(time: str) -> tuple[int, int]:
+#     """
+#     Parsing time from db to datetime format
+#     """
+#     logger.debug("Parsing time from db...")
+#     try:
+#         return int(time[: (time.index(":"))]), int(time[(time.index(":") + 1) :])
+#     except ValueError as e:
+#         logger.info(f"The error '{e}' occurred")
 
 
-async def get_user_calendar(group: str, session: Session) -> Calendar:
+async def get_user_calendar(group_number: str, session: Session) -> Calendar:
     """
     Returns event iCalendar object
     """
-    logger.debug(f"Getting user calendar (iCal) for group {group}")
+    logger.debug(f"Getting user calendar (iCal) for group {group_number}")
+    group = await utils.get_group_by_name(group_num=group_number, session=session)
     user_calendar = Calendar()
     startday = date_(date_.today().year, date_.today().month, date_.today().day)
-    for date in daterange(startday, get_end_of_semester_date()):
-        is_week_even = date.isocalendar()[1] % 2 == 0
-        if date.isoweekday() != 7:
-            timetable_of_day = await getters.get_timetable_by_group_and_weekday(
-                group, date.isoweekday(), session=session
-            )
-            for subject in timetable_of_day:
-                if (is_week_even and subject.odd) or (not is_week_even and subject.even):
-                    continue
-                (
-                    hour_start,
-                    mins_start,
-                ) = parse_time_from_db(subject.start)
-                hour_end, mins_end = parse_time_from_db(subject.end)
-                event = Event()
-                teacher = subject.teacher or "-"
-                event.add("summary", f"{subject.subject}, {teacher}")
-                event.add(
-                    "dtstart",
-                    datetime(
-                        date.year,
-                        date.month,
-                        date.day,
-                        hour_start,
-                        mins_start,
-                        0,
-                        tzinfo=pytz.UTC,
-                    ),
-                )
-                event.add(
-                    "dtend",
-                    datetime(
-                        date.year,
-                        date.month,
-                        date.day,
-                        hour_end,
-                        mins_end,
-                        0,
-                        tzinfo=pytz.UTC,
-                    ),
-                )
-                place = subject.place or "-"
-                event["location"] = vText(place)
-                user_calendar.add_component(event)
-        elif date.isoweekday() == 7:
-            continue
+    timetable = await utils.get_lessons_by_group_from_date(group, startday)
+    for lesson in timetable:
+        teacher = (
+            f"{lesson.lecturer.first_name} {lesson.lecturer.middle_name} {lesson.lecturer.last_name}"
+            if lesson.lecturer
+            else "-"
+        )
+        place = f"{lesson.room.name}" if lesson.room else "-"
+        event = Event()
+        event.add("summary", f"{lesson.name}, {teacher}")
+        event.add(
+            "dtstart",
+            datetime(
+                lesson.start_ts.date().year,
+                lesson.start_ts.date().month,
+                lesson.start_ts.date().day,
+                lesson.start_ts.time().hour,
+                lesson.start_ts.time().minute,
+                0,
+                tzinfo=pytz.UTC,
+            ),
+        )
+        event.add(
+            "dtend",
+            datetime(
+                lesson.end_ts.date().year,
+                lesson.end_ts.date().month,
+                lesson.end_ts.date().day,
+                lesson.end_ts.time().hour,
+                lesson.end_ts.time().min,
+                0,
+                tzinfo=pytz.UTC,
+            ),
+        )
+        event["location"] = vText(place)
+        user_calendar.add_component(event)
     return user_calendar
 
 

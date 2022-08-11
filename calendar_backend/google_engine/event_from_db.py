@@ -2,7 +2,6 @@ import datetime
 
 from sqlalchemy.orm import Session
 
-from ..models import Timetable
 from .. import get_settings
 from .event import create_google_calendar_event, Event
 import logging
@@ -16,7 +15,8 @@ def create_google_events_from_db(group: str, session: Session) -> list[Event]:
     Creates a timetable for certain group from db timetable.
     Returns list[Event] of events/subjects
     """
-    group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
+    group_subjects = []
+    # group_subjects = session.query(Timetable).filter(Timetable.group == group).all()
     now = datetime.date.today()
     start_of_week = now - datetime.timedelta(days=now.weekday())  # start of current week
     is_week_even = start_of_week.isocalendar()[1] % 2 == 0

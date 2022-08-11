@@ -1,5 +1,6 @@
 import asyncio
 import logging
+
 from fastapi import APIRouter
 from fastapi import Query, HTTPException
 from fastapi.responses import FileResponse
@@ -9,65 +10,11 @@ import calendar_backend.methods.list_calendar
 from calendar_backend import exceptions
 from calendar_backend.methods import utils
 from calendar_backend.settings import get_settings
-from .models import Timetable, Room, Lesson, Lecturer, Group
+from .models import Room, Lecturer, Group
 
 getters_router = APIRouter(prefix="/timetable", tags=["Timetable"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
-
-
-@getters_router.get("/group/{group_num}", response_model=list[Timetable])
-async def http_get_timetable_by_group(group_num: str = Query(..., description="Group number")) -> list[Timetable]:
-    try:
-        logger.debug(f"Getting timetable for {group_num}...")
-        return [
-            Timetable.from_orm(row) for row in await utils.get_timetable_by_group(group=group_num, session=db.session)
-        ]
-    except exceptions.GroupTimetableNotFound:
-        logger.info(f"Timetable for group {group_num} not found (404)")
-        raise HTTPException(status_code=404, detail="Timetable not found")
-
-
-@getters_router.get("teacher/{teacher_name}", response_model=list[Timetable])
-async def http_get_timetable_by_teacher(teacher_name: str = Query(..., description="Teacher name")) -> list[Timetable]:
-    try:
-        logger.debug(f"Getting timetable by teacher {teacher_name}...")
-        return [
-            Timetable.from_orm(row)
-            for row in await utils.get_timetable_by_teacher(teacher=teacher_name, session=db.session)
-        ]
-    except exceptions.TeacherTimetableNotFound:
-        logger.info(f"Timetable for teacher {teacher_name} not found (404)")
-        raise HTTPException(status_code=404, detail="Timetable not found")
-
-
-@getters_router.get("/audience/{audience_num}", response_model=list[Timetable])
-async def http_get_timetable_by_place(audience_num: str = Query(..., description="Audience number")) -> list[Timetable]:
-    try:
-        logger.debug(f"Getting timetable by place {audience_num}...")
-        return [
-            Timetable.from_orm(row)
-            for row in await utils.get_timetable_by_audience(audience=audience_num, session=db.session)
-        ]
-    except exceptions.AudienceTimetableNotFound:
-        logger.info(f"Timetable for place {audience_num} not found (404)")
-        raise HTTPException(status_code=404, detail="Timetable not found")
-
-
-@getters_router.get("/group_weeakday/{group},{weekday}", response_model=list[Timetable])
-async def http_get_timetable_by_group_and_weekday(
-    group: str = Query(..., description="Group number"),
-    weekday: int = Query(..., description="Weekday"),
-) -> list[Timetable]:
-    try:
-        logger.debug(f"Getting timetable by group {group} and weekday {weekday}...")
-        return [
-            Timetable.from_orm(row)
-            for row in await utils.get_timetable_by_group_and_weekday(group=group, weekday=weekday, session=db.session)
-        ]
-    except exceptions.GroupTimetableNotFound:
-        logger.info(f"Timetable for group {group} and weekday {weekday} not found (404)")
-        raise HTTPException(status_code=404, detail="Timetable not found")
 
 
 @getters_router.get("/icsfile/{group}")
@@ -123,4 +70,3 @@ async def http_get_room(room_name: str) -> Room:
         raise HTTPException(status_code=404, detail="Room not found")
     except ValueError as e:
         logger.info(f"Failed to get room {room_name}, error {e} occurred")
-

@@ -10,22 +10,6 @@ class Base(BaseModel):
         orm_mode = True
 
 
-class Timetable(Base):
-    """
-    User-friendly timetable format
-    """
-
-    start: datetime.time
-    end: datetime.time
-    odd: bool
-    even: bool
-    weekday: int
-    group: str
-    subject: str
-    place: str | None
-    teacher: str | None
-
-
 class Room(Base):
     name: str
     direction: str
