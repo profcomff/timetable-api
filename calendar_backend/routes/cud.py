@@ -205,7 +205,7 @@ async def http_delete_lecturer(lecturer_pydantic: Lecturer) -> None:
             lecturer_pydantic.first_name, lecturer_pydantic.middle_name, lecturer_pydantic.last_name, session=db.session
         )
         return await utils.delete_lecturer(lecture, session=db.session)
-    except exceptions.NoAudienceFoundError:
+    except exceptions.NoTeacherFoundError:
         raise HTTPException(status_code=404, detail="No lecturer found")
 
 
