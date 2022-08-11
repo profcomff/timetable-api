@@ -9,7 +9,7 @@ from fastapi_sqlalchemy import db
 import calendar_backend.methods.list_calendar
 from calendar_backend import exceptions
 from calendar_backend.methods import utils
-from calendar_backend.settings import get_settings
+from calendar_backend import get_settings
 from .models import Room, Lecturer, Group, Lesson
 
 getters_router = APIRouter(prefix="/timetable/get", tags=["Timetable"])
