@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from pydantic.types import Json
 from urllib.parse import unquote
-from googleapiclient.discovery import build
+from googleapiclient.discovery import build, UnknownApiNameOrVersion
 from fastapi_sqlalchemy import db
 from google_auth_oauthlib.flow import Flow
 from ..google_engine import create_calendar_with_timetable
@@ -65,16 +65,22 @@ def get_credentials(
     scope = scope.split(unquote("%20"))
     group = state
     flow = get_flow()
-    flow.fetch_token(code=code)
-    creds = flow.credentials
-    token: Json = creds.to_json()
-    # build service to get an email address
-    service = build("oauth2", "v2", credentials=creds)
-    email = service.userinfo().get().execute()["email"]
-    if group not in settings.GROUPS:
-        logger.info(f"No group found 404 for user {email}")
-        raise HTTPException(404, "No group found")
-
+    try:
+        flow.fetch_token(code=code)
+        creds = flow.credentials
+        token: Json = creds.to_json()
+    except ValueError as e:
+        logger.info(f"Invalid oauth2 flow session: {e}")
+        raise HTTPException(400, "Bad request")
+    try:
+        # build service to get an email address
+        service = build("oauth2", "v2", credentials=creds)
+        email = service.userinfo().get().execute()["email"]
+        if group not in settings.GROUPS:
+            logger.info(f"No group found 404 for user {email}")
+            raise HTTPException(404, "No group found")
+    except UnknownApiNameOrVersion as e:
+        logger.info(f"Invalid Google service: {e}")
     background_tasks.add_task(
         create_calendar_with_timetable,
         get_calendar_service_from_token(token),
