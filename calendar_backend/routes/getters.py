@@ -106,4 +106,5 @@ async def http_get_room_lessons(room: Room) -> list[Lesson]:
         logger.info(f"Failed to get room lessons {room}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
+
 # @getters_router.get("/lessons/")
