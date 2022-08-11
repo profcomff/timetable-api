@@ -9,7 +9,7 @@ import calendar_backend.methods.list_calendar
 from calendar_backend import exceptions
 from calendar_backend.methods import utils
 from calendar_backend.settings import get_settings
-from .models import Timetable
+from .models import Timetable, Room, Lesson, Lecturer, Group
 
 getters_router = APIRouter(prefix="/timetable", tags=["Timetable"])
 settings = get_settings()

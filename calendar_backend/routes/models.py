@@ -5,7 +5,12 @@ from pydantic import BaseModel, validator
 from calendar_backend.models import Direction, LectureRooms
 
 
-class Timetable(BaseModel):
+class Base(BaseModel):
+    class Config:
+        orm_mode = True
+
+
+class Timetable(Base):
     """
     User-friendly timetable format
     """
@@ -20,11 +25,8 @@ class Timetable(BaseModel):
     place: str | None
     teacher: str | None
 
-    class Config:
-        orm_mode = True
 
-
-class Room(BaseModel):
+class Room(Base):
     name: str
     direction: str
 
@@ -49,7 +51,7 @@ class Room(BaseModel):
         return v
 
 
-class Group(BaseModel):
+class Group(Base):
     name: str
     number: str
 
@@ -63,13 +65,13 @@ class Group(BaseModel):
         return v
 
 
-class Lecturer(BaseModel):
+class Lecturer(Base):
     first_name: str
     middle_name: str
     last_name: str
 
 
-class Lesson(BaseModel):
+class Lesson(Base):
     name: str
     room: Room
     group: Group
