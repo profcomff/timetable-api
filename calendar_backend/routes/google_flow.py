@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 def get_flow(state=""):
     logger.debug(f"Getting flow with state '{state}'")
     return Flow.from_client_secrets_file(
-        client_secrets_file=str(settings.PATH_TO_GOOGLE_CREDS),
+        client_secrets_file="client_secret.json",
         scopes=settings.SCOPES,
         state=state,
         redirect_uri=f"{settings.REDIRECT_URL}/credentials",

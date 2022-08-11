@@ -15,12 +15,9 @@ class Settings(BaseSettings):
     """Application settings"""
 
     DB_DSN: PostgresDsn
-    GOOGLE_CREDS: Json
-    PATH_TO_GOOGLE_CREDS: FilePath
-    APP_URL: AnyHttpUrl | None
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
     GROUPS: list[str]
-    TIMETABLE_NAME: str
+    TIMETABLE_NAME: str = "timetable"
     ICS_PATH: DirectoryPath
     SCOPES: list[str] = [
         "https://www.googleapis.com/auth/calendar",
