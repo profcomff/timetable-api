@@ -212,7 +212,7 @@ async def http_delete_lecturer(lecturer_pydantic: Lecturer) -> None:
 @cud_router.delete("/delete/group/")
 async def http_delete_group(group_pydantic: Group) -> None:
     try:
-        group = await utils.get_group_by_name(group_pydantic.name, session=db.session)
+        group = await utils.get_group_by_name(group_pydantic.number, session=db.session)
         return await utils.delete_group(group, session=db.session)
     except exceptions.NoGroupFoundError:
         raise HTTPException(status_code=404, detail="No group found")
