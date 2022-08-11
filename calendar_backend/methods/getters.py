@@ -119,12 +119,12 @@ async def update_lecturer(
 async def update_lesson(
     lesson: Lesson,
     session: Session,
-    new_name: str | None,
-    new_room: Room | None,
-    new_group: Group | None,
-    new_lecturer: Lecturer | None,
-    new_start_ts: datetime.time | None,
-    new_end_ts: datetime.time | None,
+    new_name: str | None = None,
+    new_room: Room | None = None,
+    new_group: Group | None = None,
+    new_lecturer: Lecturer | None = None,
+    new_start_ts: datetime.time | None = None,
+    new_end_ts: datetime.time | None = None,
 ) -> Lesson:
     lesson.name = new_name or lesson.name
     lesson.group = new_group or lesson.group
@@ -134,3 +134,29 @@ async def update_lesson(
     lesson.end_ts = new_end_ts or lesson.end_ts
     session.flush()
     return lesson
+
+
+async def delete_room(room: Room, session: Session) -> None:
+    session.delete(room)
+    session.flush()
+    return None
+
+
+async def delete_group(group: Group, session: Session) -> None:
+    session.delete(group)
+    session.flush()
+    return None
+
+
+async def delete_lecturer(lecturer: Lecturer, session: Session) -> None:
+    session.delete(lecturer)
+    session.flush()
+    return None
+
+
+async def delete_lesson(lesson: Lesson, session: Session) -> None:
+    session.delete(lesson)
+    session.flush()
+    return None
+
+
