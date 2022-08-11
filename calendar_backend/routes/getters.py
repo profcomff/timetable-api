@@ -44,6 +44,7 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
 
 @getters_router.get("/group/{group_number}", response_model=Group)
 async def http_get_group(group_number: str) -> Group:
+    logger.debug(f"Getting group number:{group_number}")
     try:
         Group.number_validate(group_number)
     except ValueError as e:
@@ -51,7 +52,8 @@ async def http_get_group(group_number: str) -> Group:
         raise HTTPException(status_code=400, detail=e)
     try:
         return Group.from_orm(await utils.get_group_by_name(group_number, session=db.session))
-    except exceptions.NoGroupFoundError:
+    except exceptions.NoGroupFoundError as e:
+        logger.info(f"Failed to get group:{group_number} with error {e}")
         raise HTTPException(status_code=404, detail="No group found")
     except ValueError as e:
         logger.info(f"Failed to get group {group_number}, error {e} occurred")
