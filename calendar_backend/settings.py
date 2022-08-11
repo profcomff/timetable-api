@@ -1,4 +1,5 @@
 import json
+import os.path
 from functools import lru_cache
 
 from pydantic import (
@@ -18,7 +19,7 @@ class Settings(BaseSettings):
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
     GROUPS: list[str]
     TIMETABLE_NAME: str = "timetable"
-    ICS_PATH: DirectoryPath
+    ICS_PATH: DirectoryPath = 'cache'
     SCOPES: list[str] = [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
