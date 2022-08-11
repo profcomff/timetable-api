@@ -170,3 +170,31 @@ async def create_lesson(
     session.add(lesson)
     session.flush()
     return lesson
+
+
+async def get_lesson(
+    name: str,
+    room: Room,
+    group: Group,
+    lecturer: Lecturer,
+    start_ts: datetime.datetime,
+    end_ts: datetime.datetime,
+    session: Session,
+) -> Lesson:
+    result = (
+        session.query(Lesson)
+        .filter(
+            and_(
+                Lesson.name == name,
+                Lesson.group_id == group.id,
+                Lesson.room_id == room.id,
+                Lesson.lecturer_id == lecturer.id,
+                Lesson.start_ts == start_ts,
+                Lesson.end_ts == end_ts,
+            )
+        )
+        .one_or_none()
+    )
+    if not result:
+        raise exceptions.TimetableNotFound()
+    return result
