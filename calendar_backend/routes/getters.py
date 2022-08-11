@@ -31,7 +31,7 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
                     group, session=db.session
                 )
             except exceptions.NoGroupFoundError:
-                logger.info(f"Timetable for group {group} not found")
+                logger.info(f"Group {group} not found")
                 raise HTTPException(status_code=404, detail="Timetable not found")
             if not user_calendar:
                 logger.info(f"Failed to create .ics file for group {group} (500)")
@@ -42,7 +42,7 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
             )
 
 
-@getters_router.get("/group/future/{group_number}", response_model=Group)
+@getters_router.get("/group//{group_number}", response_model=Group)
 async def http_get_group(group_number: str) -> Group:
     try:
         return Group.from_orm(utils.get_group_by_name(group_number, session=db.session))
@@ -52,21 +52,21 @@ async def http_get_group(group_number: str) -> Group:
         logger.info(f"Failed to get group {group_number}, error {e} occurred")
 
 
-@getters_router.get("/lecturer/future", response_model=Lecturer)
+@getters_router.get("/lecturer/", response_model=Lecturer)
 async def http_get_lecturer(lecturer: Lecturer) -> Lecturer:
     try:
         return Lecturer.from_orm(utils.get_lecturer_by_name(**lecturer.dict(), session=db.session))
-    except exceptions.TeacherTimetableNotFound:
+    except exceptions.NoTeacherFoundError:
         raise HTTPException(status_code=404, detail="Lecturer not found")
     except ValueError as e:
         logger.info(f"Failed to get lecturer {lecturer}, error {e} occurred")
 
 
-@getters_router.get("/room/future", response_model=Room)
+@getters_router.get("/room/{room_name}", response_model=Room)
 async def http_get_room(room_name: str) -> Room:
     try:
         return Room.from_orm(utils.get_room_by_name(room_name, session=db.session))
-    except exceptions.AudienceTimetableNotFound:
+    except exceptions.NoAudienceFoundError:
         raise HTTPException(status_code=404, detail="Room not found")
     except ValueError as e:
         logger.info(f"Failed to get room {room_name}, error {e} occurred")
