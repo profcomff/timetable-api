@@ -1,5 +1,5 @@
 from .db import Timetable, Credentials
-from .future import Group, Lecturer, Lesson, Room, Direction
+from .future import Group, Lecturer, Lesson, Room, Direction, LectureRooms
 
 __all__ = [
     "Timetable",
@@ -9,4 +9,5 @@ __all__ = [
     "Lesson",
     "Room",
     "Direction",
+    "LectureRooms",
 ]

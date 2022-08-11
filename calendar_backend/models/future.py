@@ -15,6 +15,12 @@ class Direction(str, enum.Enum):
     SOUTH: str = "South"
 
 
+class LectureRooms(str, enum.Enum):
+    NPA: str = "СФА"
+    CPA: str = "ЦФА"
+    SPA: str = "ЮФА"
+
+
 class Room(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
