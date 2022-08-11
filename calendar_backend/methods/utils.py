@@ -36,7 +36,7 @@ async def get_lecturer_by_name(first_name: str, middle_name: str, last_name: str
         .one_or_none()
     )
     if not result:
-        raise exceptions.NoTeacherFoundError
+        raise exceptions.NoTeacherFoundError(teacher=f"{first_name} {middle_name} {last_name}")
     return result
 
 

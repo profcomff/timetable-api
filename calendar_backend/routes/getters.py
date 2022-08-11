@@ -59,13 +59,17 @@ async def http_get_group(group_number: str) -> Group:
 
 
 @getters_router.get("/lecturer/", response_model=Lecturer)
-async def http_get_lecturer(lecturer: Lecturer) -> Lecturer:
+async def http_get_lecturer(first_name: str, middle_name: str, last_name: str) -> Lecturer:
     try:
-        return Lecturer.from_orm(await utils.get_lecturer_by_name(**lecturer.dict(), session=db.session))
+        return Lecturer.from_orm(
+            await utils.get_lecturer_by_name(
+                first_name=first_name, middle_name=middle_name, last_name=last_name, session=db.session
+            )
+        )
     except exceptions.NoTeacherFoundError:
         raise HTTPException(status_code=404, detail="Lecturer not found")
     except ValueError as e:
-        logger.info(f"Failed to get lecturer {lecturer}, error {e} occurred")
+        logger.info(f"Failed to get lecturer {first_name} {middle_name} {last_name}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
 
