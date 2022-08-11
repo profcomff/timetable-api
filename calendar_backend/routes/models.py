@@ -17,14 +17,14 @@ class Room(Base):
     @classmethod
     @validator("direction")
     def direction_validate(cls, v: str):
-        if v not in Direction:
+        if v not in [Direction.SOUTH, Direction.NORTH]:
             raise ValueError(f"Direction must be either {Direction.NORTH} or {Direction.SOUTH}")
         return v
 
     @classmethod
     @validator("name")
     def name_validate(cls, v: str):
-        if v in LectureRooms:
+        if v in [LectureRooms.CPA, LectureRooms.NPA, LectureRooms.SPA]:
             return v
         if len(v) != 4:
             raise ValueError("Room name must contain 4 characters")
