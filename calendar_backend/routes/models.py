@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 from pydantic import BaseModel, validator
 
@@ -60,5 +61,5 @@ class Lesson(Base):
     room: Room
     group: Group
     lecturer: Lecturer
-    start_ts: datetime.time
-    end_ts: datetime.time
+    start_ts: datetime.datetime
+    end_ts: datetime.datetime
