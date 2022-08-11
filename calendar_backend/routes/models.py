@@ -1,5 +1,4 @@
 import datetime
-from curses.ascii import isdigit
 
 from pydantic import BaseModel, validator
 
