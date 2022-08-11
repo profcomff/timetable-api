@@ -61,17 +61,26 @@ async def http_create_lecturer(lecturer_pydantic: Lecturer) -> Lecturer:
 @cud_router.post("/create/lesson/", response_model=Lesson)
 async def http_create_lesson(lesson_pydantic: Lesson) -> Lesson:
     try:
+        room = await utils.get_room_by_name(lesson_pydantic.room.name, session=db.session)
+        lecturer = await utils.get_lecturer_by_name(lesson_pydantic.lecturer.first_name, lesson_pydantic.lecturer.middle_name, lesson_pydantic.lecturer.last_name, session=db.session)
+        group = await utils.get_group_by_name(lesson_pydantic.group.number, session=db.session)
         return Lesson.from_orm(
             await utils.create_lesson(
                 name=lesson_pydantic.name,
-                room=lesson_pydantic.room,
-                lecturer=lesson_pydantic.lecturer,
-                group=lesson_pydantic.group,
+                room=room,
+                lecturer=lecturer,
+                group=group,
                 start_ts=lesson_pydantic.start_ts,
                 end_ts=lesson_pydantic.end_ts,
                 session=db.session,
             )
         )
+    except exceptions.NoAudienceFoundError as e:
+        raise HTTPException(status_code=404, detail="No room found")
+    except exceptions.NoGroupFoundError as e:
+        raise HTTPException(status_code=404, detail="No group found")
+    except exceptions.NoTeacherFoundError as e:
+        raise HTTPException(status_code=404, detail="No lecturer found")
     except ValueError as e:
         logger.info(
             f"Creating lesson name:{lesson_pydantic.name},"
@@ -99,7 +108,7 @@ async def http_patch_room(room_pydantic: Room, new_name: str | None = None) -> R
 @cud_router.patch("/patch/group/", response_model=Group)
 async def http_patch_group(group_pydantic: Group, new_number: str | None = None, new_name: str | None = None) -> Group:
     try:
-        group = await utils.get_group_by_name(group_pydantic.name, session=db.session)
+        group = await utils.get_group_by_name(group_pydantic.number, session=db.session)
         return Group.from_orm(
             await utils.update_group(group, session=db.session, new_name=new_name, new_number=new_number)
         )
