@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from datetime import date as date_
@@ -5,12 +6,10 @@ from datetime import datetime, timedelta
 from typing import Iterator
 
 import pytz
-import logging
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
 
 from calendar_backend import get_settings
-from calendar_backend.methods import getters
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

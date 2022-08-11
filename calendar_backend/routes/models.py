@@ -20,3 +20,19 @@ class Timetable(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Room(BaseModel):
+    pass
+
+
+class Group(BaseModel):
+    pass
+
+
+class Lecturer(BaseModel):
+    pass
+
+
+class Lesson(BaseModel):
+    pass

@@ -46,6 +46,10 @@ async def get_timetable_by_group_and_weekday(group: str, weekday: int, session: 
     return result
 
 
+# Future
+# TODO: Tests
+
+
 async def get_group_by_name(group_num: str, session: Session) -> Group:
     result = session.query(Group).filter(Group.name == group_num).one_or_none()
     if not result:
@@ -158,3 +162,41 @@ async def delete_lesson(lesson: Lesson, session: Session) -> None:
     session.delete(lesson)
     session.flush()
     return None
+
+
+async def create_room(name: str, direrction: str, session: Session) -> Room:
+    room = Room(name=name, direction=direrction)
+    session.add(room)
+    session.flush()
+    return room
+
+
+async def create_group(number: str, name: str, session: Session) -> Group:
+    group = Group(number=number, name=name)
+    session.add(group)
+    session.flush()
+    return group
+
+
+async def create_lecturer(first_name: str, middle_name: str, last_name: str, session: Session) -> Lecturer:
+    lecturer = Lecturer(first_name=first_name, middle_name=middle_name, last_name=last_name)
+    session.add(lecturer)
+    session.flush()
+    return lecturer
+
+
+async def create_lesson(
+    room: Room,
+    lecturer: Lecturer,
+    group: Group,
+    name: str,
+    start_ts: datetime.time,
+    end_ts: datetime.time,
+    session: Session,
+) -> Lesson:
+    lesson = Lesson(
+        name=name, room_id=room.id, lecturer_id=lecturer.id, group_id=group.id, start_ts=start_ts, end_ts=end_ts
+    )
+    session.add(lesson)
+    session.flush()
+    return lesson

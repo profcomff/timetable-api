@@ -1,4 +1,4 @@
-from .getters import (
+from .utils import (
     get_timetable_by_group_and_weekday,
     get_timetable_by_group,
     get_timetable_by_audience,
