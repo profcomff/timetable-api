@@ -73,5 +73,7 @@ class Lesson(Base):
     end_ts: datetime.datetime
 
     def __repr__(self):
-        return f"<Lesson name:{self.name}, room:{self.room}, group:{self.group}" \
-               f", lecturer:{self.lecturer}, start_ts:{self.start_ts}, end_ts:{self.end_ts}"
+        return (
+            f"<Lesson name:{self.name}, room:{self.room}, group:{self.group}"
+            f", lecturer:{self.lecturer}, start_ts:{self.start_ts}, end_ts:{self.end_ts}"
+        )

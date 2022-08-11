@@ -43,7 +43,7 @@ class Room(Base):
     )
 
     def __repr__(self):
-        return f"Room:{self.name}, direction:{self.direction}"
+        return f"<Room id:{self.id}, name:{self.name}, direction:{self.direction}>"
 
 
 class Lecturer(Base):
@@ -56,7 +56,10 @@ class Lecturer(Base):
     )
 
     def __repr__(self):
-        return f"Lecturer's name:{self.name}, middle name:{self.middle_name}, last name:{self.last_name}"
+        return (
+            f"<Lecturer id:{self.id}, first_name:{self.first_name},"
+            f" middle_name:{self.middle_name}, last_name:{self.last_name}"
+        )
 
 
 class Group(Base):
@@ -68,7 +71,7 @@ class Group(Base):
     )
 
     def __repr__(self):
-        return f"Group number:{self.number}"
+        return f"<Group id:{self.id}, name:{self.name}, number:{self.number}>"
 
 
 class Lesson(Base):
@@ -88,6 +91,7 @@ class Lesson(Base):
 
     def __repr__(self):
         return (
-            f"Lesson:{self.name}, room:{self.room.name}, group:{self.group.number},"
-            f" lecturer:{self.lecturer.__repr__()}"
+            f"<Lesson id:{self.id}, name:{self.name},"
+            f" room:{self.room}, group:{self.group},"
+            f" lecturer:{self.lecturer}, start_ts:{self.start_ts}, end_ts:{self.end_ts}>"
         )
