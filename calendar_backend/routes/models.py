@@ -1,6 +1,6 @@
 import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class Timetable(BaseModel):
@@ -26,10 +26,25 @@ class Room(BaseModel):
     name: str
     direction: str
 
+    @classmethod
+    @validator("direction")
+    def direction_validate(cls, v):
+        pass
+
+    @classmethod
+    @validator("name")
+    def name_validate(cls, v):
+        pass
+
 
 class Group(BaseModel):
     name: str
     number: str
+
+    @classmethod
+    @validator("number")
+    def number_validate(cls, v):
+        pass
 
 
 class Lecturer(BaseModel):
