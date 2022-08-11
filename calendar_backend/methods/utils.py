@@ -97,8 +97,8 @@ async def update_lesson(
     new_room: Room | None = None,
     new_group: Group | None = None,
     new_lecturer: Lecturer | None = None,
-    new_start_ts: datetime.time | None = None,
-    new_end_ts: datetime.time | None = None,
+    new_start_ts: datetime.datetime | None = None,
+    new_end_ts: datetime.datetime | None = None,
 ) -> Lesson:
     lesson.name = new_name or lesson.name
     lesson.group = new_group or lesson.group
@@ -160,8 +160,8 @@ async def create_lesson(
     lecturer: Lecturer,
     group: Group,
     name: str,
-    start_ts: datetime.time,
-    end_ts: datetime.time,
+    start_ts: datetime.datetime,
+    end_ts: datetime.datetime,
     session: Session,
 ) -> Lesson:
     lesson = Lesson(
