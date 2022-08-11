@@ -10,7 +10,7 @@ import calendar_backend.methods.list_calendar
 from calendar_backend import exceptions
 from calendar_backend.methods import utils
 from calendar_backend.settings import get_settings
-from .models import Room, Lecturer, Group
+from .models import Room, Lecturer, Group, Lesson
 
 getters_router = APIRouter(prefix="/timetable", tags=["Timetable"])
 settings = get_settings()
@@ -45,11 +45,17 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
 @getters_router.get("/group//{group_number}", response_model=Group)
 async def http_get_group(group_number: str) -> Group:
     try:
+        Group.number_validate(group_number)
+    except ValueError as e:
+        logger.info(f"Value error(pydantic) {group_number}, error: {e}")
+        raise HTTPException(status_code=400, detail=e)
+    try:
         return Group.from_orm(utils.get_group_by_name(group_number, session=db.session))
     except exceptions.NoGroupFoundError:
         raise HTTPException(status_code=404, detail="No group found")
     except ValueError as e:
         logger.info(f"Failed to get group {group_number}, error {e} occurred")
+        raise HTTPException(status_code=500, detail=e)
 
 
 @getters_router.get("/lecturer/", response_model=Lecturer)
@@ -60,13 +66,44 @@ async def http_get_lecturer(lecturer: Lecturer) -> Lecturer:
         raise HTTPException(status_code=404, detail="Lecturer not found")
     except ValueError as e:
         logger.info(f"Failed to get lecturer {lecturer}, error {e} occurred")
+        raise HTTPException(status_code=500, detail=e)
 
 
 @getters_router.get("/room/{room_name}", response_model=Room)
 async def http_get_room(room_name: str) -> Room:
+    try:
+        Room.name_validate(room_name)
+    except ValueError as e:
+        logger.info(f"Value error(pydantic) {room_name}, error: {e}")
+        raise HTTPException(status_code=400, detail=e)
     try:
         return Room.from_orm(utils.get_room_by_name(room_name, session=db.session))
     except exceptions.NoAudienceFoundError:
         raise HTTPException(status_code=404, detail="Room not found")
     except ValueError as e:
         logger.info(f"Failed to get room {room_name}, error {e} occurred")
+        raise HTTPException(status_code=500, detail=e)
+
+
+@getters_router.get("/lessons/group")
+async def http_get_group_lessons(group: Group) -> list[Lesson]:
+    try:
+        return [Lesson.from_orm(row) for row in await utils.get_lessons_by_group(group=group)]
+    except exceptions.NoGroupFoundError:
+        raise HTTPException(status_code=404, detail="No group found")
+    except ValueError as e:
+        logger.info(f"Failed to get group lessons {group}, error {e} occurred")
+        raise HTTPException(status_code=500, detail=e)
+
+
+@getters_router.get("/lessons/room")
+async def http_get_room_lessons(room: Room) -> list[Lesson]:
+    try:
+        return [Lesson.from_orm(row) for row in await utils.get_lessons_by_room(room=room)]
+    except exceptions.NoGroupFoundError:
+        raise HTTPException(status_code=404, detail="No room found")
+    except ValueError as e:
+        logger.info(f"Failed to get room lessons {room}, error {e} occurred")
+        raise HTTPException(status_code=500, detail=e)
+
+# @getters_router.get("/lessons/")
