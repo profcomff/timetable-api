@@ -12,7 +12,7 @@ from calendar_backend.models import Group, Lesson, Lecturer, Room
 
 
 async def get_group_by_name(group_num: str, session: Session) -> Group:
-    result = session.query(Group).filter(Group.name == group_num).one_or_none()
+    result = session.query(Group).filter(Group.number == group_num).one_or_none()
     if not result:
         raise exceptions.NoGroupFoundError(group=group_num)
     return result

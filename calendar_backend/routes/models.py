@@ -36,7 +36,7 @@ class Room(Base):
 
 
 class Group(Base):
-    name: str
+    name: str | None
     number: str
 
     @classmethod

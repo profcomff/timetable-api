@@ -42,7 +42,7 @@ async def download_ics_file(group: str = Query(..., description="Group number"))
             )
 
 
-@getters_router.get("/group//{group_number}", response_model=Group)
+@getters_router.get("/group/{group_number}", response_model=Group)
 async def http_get_group(group_number: str) -> Group:
     try:
         Group.number_validate(group_number)
@@ -50,7 +50,7 @@ async def http_get_group(group_number: str) -> Group:
         logger.info(f"Value error(pydantic) {group_number}, error: {e}")
         raise HTTPException(status_code=400, detail=e)
     try:
-        return Group.from_orm(utils.get_group_by_name(group_number, session=db.session))
+        return Group.from_orm(await utils.get_group_by_name(group_number, session=db.session))
     except exceptions.NoGroupFoundError:
         raise HTTPException(status_code=404, detail="No group found")
     except ValueError as e:
@@ -61,7 +61,7 @@ async def http_get_group(group_number: str) -> Group:
 @getters_router.get("/lecturer/", response_model=Lecturer)
 async def http_get_lecturer(lecturer: Lecturer) -> Lecturer:
     try:
-        return Lecturer.from_orm(utils.get_lecturer_by_name(**lecturer.dict(), session=db.session))
+        return Lecturer.from_orm(await utils.get_lecturer_by_name(**lecturer.dict(), session=db.session))
     except exceptions.NoTeacherFoundError:
         raise HTTPException(status_code=404, detail="Lecturer not found")
     except ValueError as e:
@@ -77,7 +77,7 @@ async def http_get_room(room_name: str) -> Room:
         logger.info(f"Value error(pydantic) {room_name}, error: {e}")
         raise HTTPException(status_code=400, detail=e)
     try:
-        return Room.from_orm(utils.get_room_by_name(room_name, session=db.session))
+        return Room.from_orm(await utils.get_room_by_name(room_name, session=db.session))
     except exceptions.NoAudienceFoundError:
         raise HTTPException(status_code=404, detail="Room not found")
     except ValueError as e:
