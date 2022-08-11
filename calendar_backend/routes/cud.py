@@ -62,7 +62,12 @@ async def http_create_lecturer(lecturer_pydantic: Lecturer) -> Lecturer:
 async def http_create_lesson(lesson_pydantic: Lesson) -> Lesson:
     try:
         room = await utils.get_room_by_name(lesson_pydantic.room.name, session=db.session)
-        lecturer = await utils.get_lecturer_by_name(lesson_pydantic.lecturer.first_name, lesson_pydantic.lecturer.middle_name, lesson_pydantic.lecturer.last_name, session=db.session)
+        lecturer = await utils.get_lecturer_by_name(
+            lesson_pydantic.lecturer.first_name,
+            lesson_pydantic.lecturer.middle_name,
+            lesson_pydantic.lecturer.last_name,
+            session=db.session,
+        )
         group = await utils.get_group_by_name(lesson_pydantic.group.number, session=db.session)
         return Lesson.from_orm(
             await utils.create_lesson(
