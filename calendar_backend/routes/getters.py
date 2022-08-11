@@ -90,33 +90,38 @@ async def http_get_room(room_name: str) -> Room:
 
 
 @getters_router.post("/group/lessons", response_model=list[Lesson])
-async def http_get_group_lessons(group: Group) -> list[Lesson]:
+async def http_get_group_lessons(group_pydantic: Group) -> list[Lesson]:
     try:
+        group = await utils.get_group_by_name(group_pydantic.number, session=db.session)
         return [Lesson.from_orm(row) for row in await utils.get_lessons_by_group(group=group)]
     except exceptions.NoGroupFoundError:
         raise HTTPException(status_code=404, detail="No group found")
     except ValueError as e:
-        logger.info(f"Failed to get group lessons {group}, error {e} occurred")
+        logger.info(f"Failed to get group lessons {group_pydantic}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
 
 @getters_router.post("/room/lessons", response_model=list[Lesson])
-async def http_get_room_lessons(room: Room) -> list[Lesson]:
+async def http_get_room_lessons(room_pydantic: Room) -> list[Lesson]:
     try:
+        room = await utils.get_room_by_name(room_name=room_pydantic.name, session=db.session)
         return [Lesson.from_orm(row) for row in await utils.get_lessons_by_room(room=room)]
     except exceptions.NoAudienceFoundError:
         raise HTTPException(status_code=404, detail="No room found")
     except ValueError as e:
-        logger.info(f"Failed to get room lessons {room}, error {e} occurred")
+        logger.info(f"Failed to get room lessons {room_pydantic}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
 
 @getters_router.post("/lecturer/lessons", response_model=list[Lesson])
-async def http_get_lecturer_lessons(lecturer: Lecturer) -> list[Lesson]:
+async def http_get_lecturer_lessons(lecturer_pydantic: Lecturer) -> list[Lesson]:
     try:
+        lecturer = await utils.get_lecturer_by_name(
+            lecturer_pydantic.first_name, lecturer_pydantic.middle_name, lecturer_pydantic.last_name, session=db.session
+        )
         return [Lesson.from_orm(row) for row in await utils.get_lessons_by_lecturer(lecturer=lecturer)]
     except exceptions.NoTeacherFoundError:
         raise HTTPException(status_code=404, detail="No lecturer found")
     except ValueError as e:
-        logger.info(f"Failed to get room lessons {lecturer}, error {e} occurred")
+        logger.info(f"Failed to get room lessons {lecturer_pydantic}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
