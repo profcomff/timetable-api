@@ -52,7 +52,7 @@ async def get_user_calendar(group_number: str, session: Session) -> Calendar:
                 lesson.end_ts.date().month,
                 lesson.end_ts.date().day,
                 lesson.end_ts.time().hour,
-                lesson.end_ts.time().min,
+                lesson.end_ts.time().minute,
                 0,
                 tzinfo=pytz.UTC,
             ),
