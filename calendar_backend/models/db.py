@@ -65,7 +65,7 @@ class Lecturer(Base):
 class Group(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    number = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    number = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", foreign_keys="Lesson.group_id", order_by="(Lesson.start_ts)"
     )
