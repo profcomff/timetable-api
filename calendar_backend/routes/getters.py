@@ -167,7 +167,7 @@ async def http_get_lecturer_lessons_in_daterange(
             Lesson.from_orm(row)
             for row in await utils.get_lecturer_lessons_in_daterange(lecturer, date_start, date_end)
         ]
-    except exceptions.NoAudienceFoundError as e:
+    except exceptions.NoTeacherFoundError as e:
         logger.info(f"Failed to get lessons for {lecturer_pydantic}, error {e} occurred")
         raise HTTPException(status_code=404, detail="No room found")
     except ValueError as e:
@@ -184,7 +184,7 @@ async def http_get_group_lessons_in_daterange(
         return [
             Lesson.from_orm(row) for row in await utils.get_group_lessons_in_daterange(group, date_start, date_end)
         ]
-    except exceptions.NoAudienceFoundError as e:
+    except exceptions.NoGroupFoundError as e:
         logger.info(f"Failed to get lessons for {group_pydantic}, error {e} occurred")
         raise HTTPException(status_code=404, detail="No room found")
     except ValueError as e:
