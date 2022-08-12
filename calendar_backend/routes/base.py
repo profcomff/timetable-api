@@ -19,6 +19,7 @@ async def http_value_error_handler(exc):
     logger.critical(f"Critical error occurred:{exc}")
     raise exc
 
+
 app.add_middleware(
     DBSessionMiddleware,
     db_url=settings.DB_DSN,
