@@ -1,4 +1,5 @@
 import datetime
+from typing import overload
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -198,3 +199,31 @@ async def get_lesson(
     if not result:
         raise exceptions.TimetableNotFound()
     return result
+
+
+async def get_group_lessons_in_daterange(group: Group, date_start: datetime.date, date_end: datetime.date) -> list[Lesson]:
+    lessons_list = []
+    lessons = group.lessons
+    for lesson in lessons:
+        if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
+            lessons_list.append(lesson)
+    return lessons_list
+
+
+async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, date_end: datetime.date) -> list[Lesson]:
+    lessons_list = []
+    lessons = room.lessons
+    for lesson in lessons:
+        if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
+            lessons_list.append(lesson)
+    return lessons_list
+
+
+async def get_lecturer_lessons_in_daterange(lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date) -> list[Lesson]:
+    lessons_list = []
+    lessons = lecturer.lessons
+    for lesson in lessons:
+        if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
+            lessons_list.append(lesson)
+    return lessons_list
+
