@@ -15,7 +15,7 @@ app = FastAPI()
 
 
 @app.exception_handler(Exception)
-async def http_value_error_handler(exc):
+async def http_critical_error_handler(exc):
     logger.critical(f"Critical error occurred:{exc}")
     raise exc
 
