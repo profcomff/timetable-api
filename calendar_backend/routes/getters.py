@@ -176,7 +176,7 @@ async def http_get_lecturer_lessons_in_daterange(
 
 
 @getters_router.post("/group/lessons/by-daterange")
-async def http_get_room_lessons_in_daterange(
+async def http_get_group_lessons_in_daterange(
     group_pydantic: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     try:
