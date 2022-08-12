@@ -20,15 +20,18 @@ async def create_google_events_from_db(group_name: str, session: Session) -> lis
     group: Group = await get_group_by_name(group_name, session)
     group_lessons: list[Lesson] = await get_lessons_by_group_from_date(group, datetime.date.today())
     list_of_lessons: list[Event] = []
+    time_zone = "+03:00"
     logger.debug(f"Getting list of subjects for {group}...")
     for lesson in group_lessons:
         list_of_lessons.append(
             create_google_calendar_event(
                 summary=lesson.name,
-                start_time=f"{lesson.start_ts}",
-                end_time=f"{lesson.end_ts}",
+                start_time=f"{lesson.start_ts.date()}T{lesson.start_ts.time().hour}:{lesson.start_ts.time().minute}:00{time_zone}",
+                end_time=f"{lesson.end_ts.date()}T{lesson.end_ts.time().hour}:{lesson.end_ts.time().minute}:00{time_zone}",
                 location=lesson.room.name,
                 description=f"{lesson.lecturer.first_name} {lesson.lecturer.middle_name} {lesson.lecturer.last_name}",
             )
         )
+        if lesson.start_ts.date() == datetime.date.today() + datetime.timedelta(14):
+            break
     return list_of_lessons

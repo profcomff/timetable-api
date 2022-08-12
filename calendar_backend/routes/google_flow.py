@@ -55,7 +55,7 @@ def get_user_flow(state: str):
 
 
 @google_flow_router.get("/credentials")
-def get_credentials(
+async def get_credentials(
     request: Request,
     background_tasks: BackgroundTasks,
     code: str,
