@@ -177,12 +177,12 @@ async def http_get_lecturer_lessons_in_daterange(
 
 @getters_router.post("/group/lessons/by-daterange")
 async def http_get_room_lessons_in_daterange(
-    group_pydantic: Room, date_start: datetime.date, date_end: datetime.date
+    group_pydantic: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     try:
-        group = await utils.get_room_by_name(group_pydantic.name, session=db.session)
+        group = await utils.get_group_by_name(group_pydantic.number, session=db.session)
         return [
-            Lesson.from_orm(row) for row in await utils.get_ggroup_lessons_in_daterange(group, date_start, date_end)
+            Lesson.from_orm(row) for row in await utils.get_group_lessons_in_daterange(group, date_start, date_end)
         ]
     except exceptions.NoAudienceFoundError as e:
         logger.info(f"Failed to get lessons for {group_pydantic}, error {e} occurred")
