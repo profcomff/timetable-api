@@ -139,8 +139,11 @@ async def http_get_lecturer_lessons(lecturer_pydantic: Lecturer) -> list[Lesson]
         logger.info(f"Failed to get lessons of {lecturer_pydantic}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
+
 @getters_router.post("/room/lessons/by-daterange")
-async def http_get_room_lessons_in_daterange(room_pydantic: Room, date_start: datetime.date, date_end: datetime.date) -> list[Lesson]:
+async def http_get_room_lessons_in_daterange(
+    room_pydantic: Room, date_start: datetime.date, date_end: datetime.date
+) -> list[Lesson]:
     try:
         room = await utils.get_room_by_name(room_pydantic.name, session=db.session)
         return [Lesson.from_orm(row) for row in await utils.get_room_lessons_in_daterange(room, date_start, date_end)]
@@ -151,11 +154,19 @@ async def http_get_room_lessons_in_daterange(room_pydantic: Room, date_start: da
         logger.info(f"Failed to get lessons for {room_pydantic}, error {e} occurred")
         raise HTTPException(status_code=500, detail=e)
 
+
 @getters_router.post("/lecturer/lessons/by-daterange")
-async def http_get_lecturer_lessons_in_daterange(lecturer_pydantic: Lecturer, date_start: datetime.date, date_end: datetime.date) -> list[Lesson]:
+async def http_get_lecturer_lessons_in_daterange(
+    lecturer_pydantic: Lecturer, date_start: datetime.date, date_end: datetime.date
+) -> list[Lesson]:
     try:
-        lecturer = await utils.get_lecturer_by_name(lecturer_pydantic.first_name, lecturer_pydantic.middle_name, lecturer_pydantic.last_name, session=db.session)
-        return [Lesson.from_orm(row) for row in await utils.get_lecturer_lessons_in_daterange(lecturer, date_start, date_end)]
+        lecturer = await utils.get_lecturer_by_name(
+            lecturer_pydantic.first_name, lecturer_pydantic.middle_name, lecturer_pydantic.last_name, session=db.session
+        )
+        return [
+            Lesson.from_orm(row)
+            for row in await utils.get_lecturer_lessons_in_daterange(lecturer, date_start, date_end)
+        ]
     except exceptions.NoAudienceFoundError as e:
         logger.info(f"Failed to get lessons for {lecturer_pydantic}, error {e} occurred")
         raise HTTPException(status_code=404, detail="No room found")
@@ -165,10 +176,14 @@ async def http_get_lecturer_lessons_in_daterange(lecturer_pydantic: Lecturer, da
 
 
 @getters_router.post("/group/lessons/by-daterange")
-async def http_get_room_lessons_in_daterange(group_pydantic: Room, date_start: datetime.date, date_end: datetime.date) -> list[Lesson]:
+async def http_get_room_lessons_in_daterange(
+    group_pydantic: Room, date_start: datetime.date, date_end: datetime.date
+) -> list[Lesson]:
     try:
         group = await utils.get_room_by_name(group_pydantic.name, session=db.session)
-        return [Lesson.from_orm(row) for row in await utils.get_ggroup_lessons_in_daterange(group, date_start, date_end)]
+        return [
+            Lesson.from_orm(row) for row in await utils.get_ggroup_lessons_in_daterange(group, date_start, date_end)
+        ]
     except exceptions.NoAudienceFoundError as e:
         logger.info(f"Failed to get lessons for {group_pydantic}, error {e} occurred")
         raise HTTPException(status_code=404, detail="No room found")
