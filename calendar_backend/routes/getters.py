@@ -140,7 +140,7 @@ async def http_get_lecturer_lessons(lecturer_pydantic: Lecturer) -> list[Lesson]
         raise HTTPException(status_code=500, detail=e)
 
 
-@getters_router.post("/room/lessons/by-daterange")
+@getters_router.post("/room/lessons/by-daterange", response_model=list[Lesson])
 async def http_get_room_lessons_in_daterange(
     room_pydantic: Room, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
@@ -155,7 +155,7 @@ async def http_get_room_lessons_in_daterange(
         raise HTTPException(status_code=500, detail=e)
 
 
-@getters_router.post("/lecturer/lessons/by-daterange")
+@getters_router.post("/lecturer/lessons/by-daterange", response_model=list[Lesson])
 async def http_get_lecturer_lessons_in_daterange(
     lecturer_pydantic: Lecturer, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
@@ -175,7 +175,7 @@ async def http_get_lecturer_lessons_in_daterange(
         raise HTTPException(status_code=500, detail=e)
 
 
-@getters_router.post("/group/lessons/by-daterange")
+@getters_router.post("/group/lessons/by-daterange", response_model=list[Lesson])
 async def http_get_group_lessons_in_daterange(
     group_pydantic: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:

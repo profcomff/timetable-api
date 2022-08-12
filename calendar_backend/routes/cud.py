@@ -14,6 +14,12 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
+@cud_router.post("/settings/group/")
+async def read_groups() -> None:
+    await utils.create_group_list(settings, db.session)
+    return None
+
+
 @cud_router.post("/create/room/", response_model=Room)
 async def http_create_room(room_pydantic: Room) -> Room:
     logger.debug(f"Creating {room_pydantic}")

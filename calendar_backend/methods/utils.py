@@ -1,15 +1,12 @@
 import datetime
-from typing import overload
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions
 from calendar_backend.models import Group, Lesson, Lecturer, Room
-
-
-# Future
 # TODO: Tests
+from calendar_backend.settings import Settings
 
 
 async def get_group_by_name(group_num: str, session: Session) -> Group:
@@ -230,3 +227,7 @@ async def get_lecturer_lessons_in_daterange(
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             lessons_list.append(lesson)
     return lessons_list
+
+
+async def create_group_list(settings: Settings, session: Session) -> None:
+    settings.GROUPS = session.query(Group).filter().all()
