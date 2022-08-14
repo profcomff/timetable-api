@@ -35,7 +35,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    settings = Settings()
-    with open("groups.json", "r") as gf:
-        settings.GROUPS = json.load(gf)
-    return settings
+    return Settings()

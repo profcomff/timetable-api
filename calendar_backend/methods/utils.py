@@ -230,4 +230,7 @@ async def get_lecturer_lessons_in_daterange(
 
 
 async def create_group_list(settings: Settings, session: Session) -> None:
-    settings.GROUPS = session.query(Group).filter().all()
+    groups: list[Group] = session.query(Group).filter().all()
+    settings.GROUPS = [f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in groups]
+    return None
+
