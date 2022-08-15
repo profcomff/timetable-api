@@ -17,6 +17,7 @@ from ..google_engine import get_calendar_service_from_token
 from fastapi.templating import Jinja2Templates
 import os
 import logging
+from calendar_backend.methods import utils
 
 
 gcal = APIRouter(tags=["Google calendar"])
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 @lru_cache(2)
-def get_flow(state=""):
+async def get_flow(state=""):
     logger.debug(f"Getting flow with state '{state}'")
     return Flow.from_client_secrets_file(
         client_secrets_file="client_secret.json",
@@ -39,6 +40,7 @@ def get_flow(state=""):
 
 @gcal.get("/")
 async def home(request: Request):
+    await utils.create_group_list(settings, db.session)
     return templates.TemplateResponse(
         "index.html",
         {
