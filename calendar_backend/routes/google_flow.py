@@ -13,6 +13,7 @@ from fastapi_sqlalchemy.exceptions import (
 )
 from ..models import Credentials
 from .. import get_settings
+from ..routes.cud import read_groups
 from ..google_engine import get_calendar_service_from_token
 from fastapi.templating import Jinja2Templates
 import os
@@ -38,7 +39,8 @@ def get_flow(state=""):
 
 
 @google_flow_router.get("/")
-def home(request: Request):
+async def home(request: Request):
+    await read_groups()
     return templates.TemplateResponse(
         "index.html",
         {
