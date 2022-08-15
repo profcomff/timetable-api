@@ -13,14 +13,13 @@ from fastapi_sqlalchemy.exceptions import (
 )
 from ..models import Credentials
 from .. import get_settings
-from ..routes.cud import read_groups
 from ..google_engine import get_calendar_service_from_token
 from fastapi.templating import Jinja2Templates
 import os
 import logging
 
 
-google_flow_router = APIRouter(tags=["Auth"])
+gcal = APIRouter(tags=["Google calendar"])
 settings = get_settings()
 templates = Jinja2Templates(directory="calendar_backend/templates")
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
@@ -38,9 +37,8 @@ def get_flow(state=""):
     )
 
 
-@google_flow_router.get("/")
+@gcal.get("/")
 async def home(request: Request):
-    await read_groups()
     return templates.TemplateResponse(
         "index.html",
         {
@@ -50,13 +48,13 @@ async def home(request: Request):
     )
 
 
-@google_flow_router.get("/flow")
+@gcal.get("/flow")
 def get_user_flow(state: str):
     user_flow = get_flow(state)
     return RedirectResponse(user_flow.authorization_url()[0])
 
 
-@google_flow_router.get("/credentials")
+@gcal.get("/credentials")
 async def get_credentials(
     request: Request,
     background_tasks: BackgroundTasks,

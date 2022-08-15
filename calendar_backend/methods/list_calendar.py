@@ -15,15 +15,14 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-async def get_user_calendar(group_number: str, session: Session) -> Calendar:
+async def get_user_calendar(group_num: str, session: Session, start_date: date_, end_date: date_) -> Calendar:
     """
     Returns event iCalendar object
     """
-    logger.debug(f"Getting user calendar (iCal) for group {group_number}")
-    group = await utils.get_group_by_name(group_num=group_number, session=session)
+    logger.debug(f"Getting user calendar (iCal) for group {group_num}")
+    group = await utils.get_list_groups(session, group_num)
     user_calendar = Calendar()
-    startday = date_(date_.today().year, date_.today().month, date_.today().day)
-    timetable = await utils.get_lessons_by_group_from_date(group, startday)
+    timetable = await utils.get_group_lessons_in_daterange(group, start_date, end_date)
     for lesson in timetable:
         teacher = (
             f"{lesson.lecturer.first_name} {lesson.lecturer.middle_name} {lesson.lecturer.last_name}"

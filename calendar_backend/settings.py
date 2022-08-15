@@ -1,4 +1,3 @@
-import json
 from functools import lru_cache
 
 from pydantic import (
@@ -34,4 +33,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    return settings

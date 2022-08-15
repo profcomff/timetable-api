@@ -5,37 +5,73 @@ from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions
 from calendar_backend.models import Group, Lesson, Lecturer, Room
+
 # TODO: Tests
 from calendar_backend.settings import Settings
 
 
-async def get_group_by_name(group_num: str, session: Session) -> Group:
-    result = session.query(Group).filter(Group.number == group_num).one_or_none()
+async def get_group_by_id(group_id: int, session: Session) -> Group:
+    result = session.query(Group).filter(Group.id == group_id).one_or_none()
     if not result:
-        raise exceptions.NoGroupFoundError(group=group_num)
+        raise exceptions.NoGroupFoundError(group=group_id)
     return result
 
 
-async def get_room_by_name(room_name: str, session: Session) -> Room:
-    result = session.query(Room).filter(Room.name == room_name).one_or_none()
+async def get_room_by_id(room_id: int, session: Session) -> Room:
+    result = session.query(Room).filter(Room.id == room_id).one_or_none()
     if not result:
-        raise exceptions.NoAudienceFoundError(audience=room_name)
+        raise exceptions.NoAudienceFoundError(audience=room_id)
     return result
 
 
-async def get_lecturer_by_name(first_name: str, middle_name: str, last_name: str, session: Session) -> Lecturer:
-    result = (
+async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
+    result = session.query(Lecturer).filter(Lecturer.id == lecturer_id).one_or_none()
+    if not result:
+        raise exceptions.NoTeacherFoundError(teacher=lecturer_id)
+    return result
+
+
+async def get_list_groups(session: Session, filter_group_number: str | None = None) -> Group | list[Group]:
+    return (
+        session.query(Group).filter(Group.number == filter_group_number).one_or_none()
+        if filter_group_number
+        else session.query(Group).all()
+    )
+
+
+async def get_list_rooms(session: Session, filter_room_number: str | None = None) -> list[Room] | Room:
+    return (
+        session.query(Room).filter(Room.name == filter_room_number).one_or_none()
+        if filter_room_number
+        else session.query(Room).all()
+    )
+
+
+async def get_list_lecturers(
+    session: Session,
+    filter_first_name: str | None,
+    filter_middle_name: str | None,
+    filter_last_name: str,
+) -> list[Lecturer]:
+    return (
         session.query(Lecturer)
         .filter(
             and_(
-                Lecturer.first_name == first_name, Lecturer.middle_name == middle_name, Lecturer.last_name == last_name
+                Lecturer.first_name == filter_first_name,
+                Lecturer.middle_name == filter_middle_name,
+                Lecturer.last_name == filter_last_name,
             )
         )
-        .one_or_none()
+        .all()
+        if filter
+        else session.query(Lecturer).all()
     )
-    if not result:
-        raise exceptions.NoTeacherFoundError(teacher=f"{first_name} {middle_name} {last_name}")
-    return result
+
+
+async def get_list_lessons(session: Session, filter_name: str | None = None) -> list[Lesson] | Lesson:
+    return (
+        session.query(Lesson).filter(Lesson.name == filter_name).all() if filter_name else session.query(Lesson).all()
+    )
 
 
 async def get_lessons_by_group(group: Group) -> list[Lesson]:
@@ -59,8 +95,18 @@ async def get_lessons_by_room(room: Room) -> list[Lesson]:
     return room.lessons
 
 
-async def update_room(room: Room, session: Session, new_name: str | None = None) -> Room:
+async def get_lesson_by_id(id: int, session: Session) -> Lesson:
+    result = session.query(Lesson).filter(Lesson.id == id).one_or_none()
+    if not result:
+        raise exceptions.EventNotFound(id)
+    return result
+
+
+async def update_room(
+    room: Room, session: Session, new_name: str | None = None, new_direction: str | None = None
+) -> Room:
     room.name = new_name or room.name
+    room.direction = new_direction or room.direction
     session.flush()
     return room
 
@@ -92,16 +138,16 @@ async def update_lesson(
     lesson: Lesson,
     session: Session,
     new_name: str | None = None,
-    new_room: Room | None = None,
-    new_group: Group | None = None,
-    new_lecturer: Lecturer | None = None,
+    new_room_id: int | None = None,
+    new_group_id: int | None = None,
+    new_lecturer_id: int | None = None,
     new_start_ts: datetime.datetime | None = None,
     new_end_ts: datetime.datetime | None = None,
 ) -> Lesson:
     lesson.name = new_name or lesson.name
-    lesson.group = new_group or lesson.group
-    lesson.room_id = new_room.id or lesson.room_id
-    lesson.lecturer_id = new_lecturer.id or lesson.lecturer_id
+    lesson.group = new_group_id or lesson.group
+    lesson.room_id = new_room_id or lesson.room_id
+    lesson.lecturer_id = new_lecturer_id or lesson.lecturer_id
     lesson.start_ts = new_start_ts or lesson.start_ts
     lesson.end_ts = new_end_ts or lesson.end_ts
     session.flush()
@@ -154,16 +200,16 @@ async def create_lecturer(first_name: str, middle_name: str, last_name: str, ses
 
 
 async def create_lesson(
-    room: Room,
-    lecturer: Lecturer,
-    group: Group,
+    room_id: int,
+    lecturer_id: int,
+    group_id: int,
     name: str,
     start_ts: datetime.datetime,
     end_ts: datetime.datetime,
     session: Session,
 ) -> Lesson:
     lesson = Lesson(
-        name=name, room_id=room.id, lecturer_id=lecturer.id, group_id=group.id, start_ts=start_ts, end_ts=end_ts
+        name=name, room_id=room_id, lecturer_id=lecturer_id, group_id=group_id, start_ts=start_ts, end_ts=end_ts
     )
     session.add(lesson)
     session.flush()
@@ -233,4 +279,3 @@ async def create_group_list(settings: Settings, session: Session) -> None:
     groups: list[Group] = session.query(Group).filter().all()
     settings.GROUPS = [f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in groups]
     return None
-

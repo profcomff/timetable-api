@@ -39,3 +39,9 @@ class TeacherTimetableNotFound(TimetableNotFound):
     def __init__(self, teacher: str):
         message = f"Timetable for teacher {teacher} not found"
         super().__init__(message)
+
+
+class EventNotFound(NotFound):
+    def __init__(self, id: int):
+        message = f"Event {id} not found"
+        super().__init__(message)
