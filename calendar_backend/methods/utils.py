@@ -164,21 +164,24 @@ async def update_lesson(
 
 
 async def delete_room(room: Room, session: Session) -> None:
-    session.delete(room.lessons)
+    for row in room.lessons:
+        session.delete(row)
     session.delete(room)
     session.flush()
     return None
 
 
 async def delete_group(group: Group, session: Session) -> None:
-    session.delete(group.lessons)
+    for row in group.lessons:
+        session.delete(row)
     session.delete(group)
     session.flush()
     return None
 
 
 async def delete_lecturer(lecturer: Lecturer, session: Session) -> None:
-    session.delete(lecturer.lessons)
+    for row in lecturer.lessons:
+        session.delete(row)
     session.delete(lecturer)
     session.flush()
     return None
