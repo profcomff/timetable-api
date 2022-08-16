@@ -1,9 +1,8 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
-from calendar_backend import exceptions
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
 from calendar_backend.routes.models import Group
