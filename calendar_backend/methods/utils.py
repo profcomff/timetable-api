@@ -38,7 +38,7 @@ async def get_list_groups(session: Session, filter_group_number: str | None = No
         else session.query(Group).all()
     )
     if not result:
-        raise exceptions.NoGroupFoundError(filter_group_number)
+        raise exceptions.GroupsNotFound()
 
 
 async def get_list_rooms(session: Session, filter_room_number: str | None = None) -> list[Room] | Room:
@@ -46,7 +46,7 @@ async def get_list_rooms(session: Session, filter_room_number: str | None = None
               if filter_room_number
               else session.query(Room).all())
     if not result:
-        raise exceptions.NoAudienceFoundError(filter_room_number)
+        raise exceptions.RoomsNotFound()
     return result
 
 
@@ -70,7 +70,7 @@ async def get_list_lecturers(
         else session.query(Lecturer).all()
     )
     if not result:
-        raise exceptions.NoTeacherFoundError(f"{filter_first_name} {filter_middle_name} {filter_last_name}")
+        raise exceptions.LecturersNotFound()
     return result
 
 
@@ -79,7 +79,7 @@ async def get_list_lessons(session: Session, filter_name: str | None = None) -> 
         session.query(Lesson).filter(Lesson.name == filter_name).all() if filter_name else session.query(Lesson).all()
     )
     if not result:
-        raise exceptions.EventNotFound
+        raise exceptions.LessonsNotFound()
 
 
 
@@ -223,6 +223,12 @@ async def create_lesson(
         end_ts: datetime.datetime,
         session: Session,
 ) -> Lesson:
+    if not session.query(Group).filter(Group.id == group_id).one_or_none():
+        raise exceptions.NoGroupFoundError(group_id)
+    if not session.query(Room).filter(Room.id == room_id).one_or_none():
+        raise exceptions.NoAudienceFoundError(room_id)
+    if not session.query(Lecturer).filter(Lecturer.id == lecturer_id).one_or_none():
+        raise exceptions.NoTeacherFoundError(lecturer_id)
     lesson = Lesson(
         name=name, room_id=room_id, lecturer_id=lecturer_id, group_id=group_id, start_ts=start_ts, end_ts=end_ts
     )
