@@ -80,6 +80,7 @@ async def get_list_lessons(session: Session, filter_name: str | None = None) -> 
     )
     if not result:
         raise exceptions.LessonsNotFound()
+    return result
 
 
 
