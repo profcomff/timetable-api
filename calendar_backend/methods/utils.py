@@ -39,6 +39,7 @@ async def get_list_groups(session: Session, filter_group_number: str | None = No
     )
     if not result:
         raise exceptions.GroupsNotFound()
+    return result
 
 
 async def get_list_rooms(session: Session, filter_room_number: str | None = None) -> list[Room] | Room:
@@ -52,23 +53,14 @@ async def get_list_rooms(session: Session, filter_room_number: str | None = None
 
 async def get_list_lecturers(
         session: Session,
-        filter_first_name: str | None,
-        filter_middle_name: str | None,
-        filter_last_name: str,
+        filter_first_name: str | None = None,
+        filter_middle_name: str | None = None,
+        filter_last_name: str | None = None,
 ) -> list[Lecturer]:
-    result = (
-        session.query(Lecturer)
-            .filter(
-            and_(
-                Lecturer.first_name == filter_first_name,
-                Lecturer.middle_name == filter_middle_name,
-                Lecturer.last_name == filter_last_name,
-            )
-        )
-            .all()
-        if filter
-        else session.query(Lecturer).all()
-    )
+    if filter_last_name and filter_middle_name and filter_last_name:
+        result = session.query(Lecturer).filter(Lecturer.first_name == filter_first_name, Lecturer.middle_name == filter_middle_name, Lecturer.last_name == filter_last_name).all()
+    else:
+        result = session.query(Lecturer).all()
     if not result:
         raise exceptions.LecturersNotFound()
     return result

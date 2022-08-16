@@ -21,7 +21,7 @@ async def http_get_lecturer_by_id(id: int) -> Lecturer:
 
 @lecturer_router.get("/", response_model=list[Lecturer])
 async def http_get_lecturers(
-    filter_first_name: str | None, filter_middle_name: str | None, filter_last_name: str
+    filter_first_name: str | None = None, filter_middle_name: str | None = None, filter_last_name: str = None
 ) -> list[Lecturer]:
     logger.debug(f"Getting rooms list, filter: {filter_last_name}, {filter_middle_name}, {filter_last_name}")
     result = await utils.get_list_lecturers(

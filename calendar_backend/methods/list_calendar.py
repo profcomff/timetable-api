@@ -1,8 +1,11 @@
+import asyncio
 import logging
 import os
 import time
 from datetime import date as date_
 from datetime import datetime
+from fastapi import HTTPException
+from fastapi.responses import FileResponse
 
 import pytz
 from icalendar import Calendar, Event, vText
@@ -110,3 +113,26 @@ def check_file_for_creation_date(path_file: str) -> bool:
             return False
     else:
         return True
+
+
+async def create_ics(group_num: str, start: datetime.date, end: datetime.date):
+    if (
+            check_file_for_creation_date(f"{settings.ICS_PATH}/{group_num}")
+            is False
+    ):
+        logger.debug(f"Calendar for group '{group_num}' found in cache")
+        return FileResponse(f"{settings.ICS_PATH}/{group_num}")
+    else:
+        async with asyncio.Lock():
+            logger.debug("Getting user calendar...")
+            user_calendar = await get_user_calendar(
+                group_num, session=db.session, start_date=start, end_date=end
+            )
+            if not user_calendar:
+                logger.info(f"Failed to create .ics file for group {group_num} (500)")
+                raise HTTPException(status_code=500, detail="Failed to create .ics file")
+            logger.debug("Creating .ics file OK")
+            return FileResponse(
+                await create_user_calendar_file(user_calendar, group_num)
+            )
+        
