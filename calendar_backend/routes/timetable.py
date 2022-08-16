@@ -23,7 +23,7 @@ async def get_timetable(
     match format:
         case 'ics':
             logger.debug(f"Downloading .ics file for {group_num} calendar...")
-            return await list_calendar.create_ics(group_num, start, end)
+            return await list_calendar.create_ics(group_num, start, end, db.session)
         case 'json':
             logger.debug(f"Getting lessons for {group_num}")
             group = await utils.get_list_groups(db.session, filter_group_number=group_num)

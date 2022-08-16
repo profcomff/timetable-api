@@ -37,27 +37,11 @@ async def get_user_calendar(group_num: str, session: Session, start_date: date_,
         event.add("summary", f"{lesson.name}, {teacher}")
         event.add(
             "dtstart",
-            datetime(
-                lesson.start_ts.date().year,
-                lesson.start_ts.date().month,
-                lesson.start_ts.date().day,
-                lesson.start_ts.time().hour,
-                lesson.start_ts.time().minute,
-                0,
-                tzinfo=pytz.UTC,
-            ),
+            lesson.start_ts.replace(tzinfo=pytz.UTC),
         )
         event.add(
             "dtend",
-            datetime(
-                lesson.end_ts.date().year,
-                lesson.end_ts.date().month,
-                lesson.end_ts.date().day,
-                lesson.end_ts.time().hour,
-                lesson.end_ts.time().minute,
-                0,
-                tzinfo=pytz.UTC,
-            ),
+            lesson.end_ts.replace(tzinfo=pytz.UTC),
         )
         event["location"] = vText(place)
         user_calendar.add_component(event)
@@ -115,14 +99,14 @@ def check_file_for_creation_date(path_file: str) -> bool:
         return True
 
 
-async def create_ics(group_num: str, start: datetime.date, end: datetime.date):
+async def create_ics(group_num: str, start: datetime.date, end: datetime.date, session: Session):
     if check_file_for_creation_date(f"{settings.ICS_PATH}/{group_num}") is False:
         logger.debug(f"Calendar for group '{group_num}' found in cache")
         return FileResponse(f"{settings.ICS_PATH}/{group_num}")
     else:
         async with asyncio.Lock():
             logger.debug("Getting user calendar...")
-            user_calendar = await get_user_calendar(group_num, session=db.session, start_date=start, end_date=end)
+            user_calendar = await get_user_calendar(group_num, session=session, start_date=start, end_date=end)
             if not user_calendar:
                 logger.info(f"Failed to create .ics file for group {group_num} (500)")
                 raise HTTPException(status_code=500, detail="Failed to create .ics file")
