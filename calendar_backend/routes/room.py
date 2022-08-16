@@ -29,9 +29,11 @@ async def http_get_rooms(filter_room_number: str | None = None) -> list[Room]:
 
 
 @room_router.post("/", response_model=Room)
-async def http_create_room(room: Room) -> Room:
-    logger.debug(f"Creating room:{room}")
-    return Room.from_orm(await utils.create_room(room.name, room.direction, db.session))
+async def http_create_room(name: str, direction: str) -> Room:
+    logger.debug(f"Creating room:{name}, {direction}")
+    Room.name_validate(name)
+    Room.direction_validate(direction)
+    return Room.from_orm(await utils.create_room(name, direction, db.session))
 
 
 @room_router.post("/{id}", response_model=Room)

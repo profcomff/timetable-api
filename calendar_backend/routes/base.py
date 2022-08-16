@@ -10,6 +10,7 @@ from .room import room_router
 from .lecturer import lecturer_router
 from .event import event_router
 from .timetable import timetable_router
+from .group import group_router
 from .gcal import gcal
 from calendar_backend import exceptions
 from fastapi.responses import PlainTextResponse
@@ -101,3 +102,4 @@ app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(lecturer_router)
 app.include_router(timetable_router)
+app.include_router(group_router)

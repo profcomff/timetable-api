@@ -36,10 +36,10 @@ async def http_get_lecturers(
 
 
 @lecturer_router.post("/", response_model=Lecturer)
-async def http_create_lecturer(lecturer: Lecturer) -> Lecturer:
-    logger.debug(f"Creating lecturer:{lecturer}")
+async def http_create_lecturer(first_name: str, middle_name: str, last_name: str) -> Lecturer:
+    logger.debug(f"Creating lecturer:{first_name} {middle_name} {last_name}")
     return Lecturer.from_orm(
-        await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
+        await utils.create_lecturer(first_name, middle_name, last_name, db.session)
     )
 
 
