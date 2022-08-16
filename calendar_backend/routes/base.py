@@ -33,7 +33,9 @@ async def http_no_room_found_error_handler(request: starlette.requests.Request, 
 
 
 @app.exception_handler(exceptions.NoTeacherFoundError)
-async def http_no_lecturer_found_error_handler(request: starlette.requests.Request, exc: exceptions.NoTeacherFoundError):
+async def http_no_lecturer_found_error_handler(
+    request: starlette.requests.Request, exc: exceptions.NoTeacherFoundError
+):
     logger.info(f"No lecturer found error, request: {request.path_params}, error: {exc}")
     return PlainTextResponse("No lecturer found error", status_code=404)
 
@@ -78,10 +80,6 @@ async def http_value_error_handler(request: starlette.requests.Request, exc: Val
 async def http_critical_error_handler(request: starlette.requests.Request, exc: Exception):
     logger.critical(f"Critical error occurred:{exc}, request: {request.path_params}")
     return PlainTextResponse("Error", status_code=500)
-
-
-
-
 
 
 app.add_middleware(

@@ -23,23 +23,16 @@ async def http_get_lecturers(
     filter_first_name: str | None = None, filter_middle_name: str | None = None, filter_last_name: str = None
 ) -> list[Lecturer]:
     logger.debug(f"Getting rooms list, filter: {filter_last_name}, {filter_middle_name}, {filter_last_name}")
-    result = await utils.get_list_lecturers(
-            db.session, filter_first_name, filter_middle_name, filter_last_name
-        )
+    result = await utils.get_list_lecturers(db.session, filter_first_name, filter_middle_name, filter_last_name)
     if isinstance(result, list):
-        return [
-            Lecturer.from_orm(row)
-            for row in result
-        ]
+        return [Lecturer.from_orm(row) for row in result]
     return [Lecturer.from_orm(result)]
 
 
 @lecturer_router.post("/", response_model=Lecturer)
 async def http_create_lecturer(first_name: str, middle_name: str, last_name: str) -> Lecturer:
     logger.debug(f"Creating lecturer:{first_name} {middle_name} {last_name}")
-    return Lecturer.from_orm(
-        await utils.create_lecturer(first_name, middle_name, last_name, db.session)
-    )
+    return Lecturer.from_orm(await utils.create_lecturer(first_name, middle_name, last_name, db.session))
 
 
 @lecturer_router.patch("/{id}", response_model=Lecturer)

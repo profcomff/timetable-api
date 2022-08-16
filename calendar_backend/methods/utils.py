@@ -43,22 +43,32 @@ async def get_list_groups(session: Session, filter_group_number: str | None = No
 
 
 async def get_list_rooms(session: Session, filter_room_number: str | None = None) -> list[Room] | Room:
-    result = (session.query(Room).filter(Room.name == filter_room_number).one_or_none()
-              if filter_room_number
-              else session.query(Room).all())
+    result = (
+        session.query(Room).filter(Room.name == filter_room_number).one_or_none()
+        if filter_room_number
+        else session.query(Room).all()
+    )
     if not result:
         raise exceptions.RoomsNotFound()
     return result
 
 
 async def get_list_lecturers(
-        session: Session,
-        filter_first_name: str | None = None,
-        filter_middle_name: str | None = None,
-        filter_last_name: str | None = None,
+    session: Session,
+    filter_first_name: str | None = None,
+    filter_middle_name: str | None = None,
+    filter_last_name: str | None = None,
 ) -> list[Lecturer]:
     if filter_last_name and filter_middle_name and filter_last_name:
-        result = session.query(Lecturer).filter(Lecturer.first_name == filter_first_name, Lecturer.middle_name == filter_middle_name, Lecturer.last_name == filter_last_name).all()
+        result = (
+            session.query(Lecturer)
+            .filter(
+                Lecturer.first_name == filter_first_name,
+                Lecturer.middle_name == filter_middle_name,
+                Lecturer.last_name == filter_last_name,
+            )
+            .all()
+        )
     else:
         result = session.query(Lecturer).all()
     if not result:
@@ -73,7 +83,6 @@ async def get_list_lessons(session: Session, filter_name: str | None = None) -> 
     if not result:
         raise exceptions.LessonsNotFound()
     return result
-
 
 
 async def get_lessons_by_group(group: Group) -> list[Lesson]:
@@ -105,7 +114,7 @@ async def get_lesson_by_id(id: int, session: Session) -> Lesson:
 
 
 async def update_room(
-        room: Room, session: Session, new_name: str | None = None, new_direction: str | None = None
+    room: Room, session: Session, new_name: str | None = None, new_direction: str | None = None
 ) -> Room:
     room.name = new_name or room.name
     room.direction = new_direction or room.direction
@@ -114,7 +123,7 @@ async def update_room(
 
 
 async def update_group(
-        group: Group, session: Session, new_number: str | None = None, new_name: str | None = None
+    group: Group, session: Session, new_number: str | None = None, new_name: str | None = None
 ) -> Group:
     group.number = new_number or group.number
     group.name = new_name or group.name
@@ -123,11 +132,11 @@ async def update_group(
 
 
 async def update_lecturer(
-        lecturer: Lecturer,
-        session: Session,
-        new_first_name: str | None = None,
-        new_middle_name: str | None = None,
-        new_last_name: str | None = None,
+    lecturer: Lecturer,
+    session: Session,
+    new_first_name: str | None = None,
+    new_middle_name: str | None = None,
+    new_last_name: str | None = None,
 ) -> Lecturer:
     lecturer.first_name = new_first_name or lecturer.first_name
     lecturer.middle_name = new_middle_name or lecturer.middle_name
@@ -137,14 +146,14 @@ async def update_lecturer(
 
 
 async def update_lesson(
-        lesson: Lesson,
-        session: Session,
-        new_name: str | None = None,
-        new_room_id: int | None = None,
-        new_group_id: int | None = None,
-        new_lecturer_id: int | None = None,
-        new_start_ts: datetime.datetime | None = None,
-        new_end_ts: datetime.datetime | None = None,
+    lesson: Lesson,
+    session: Session,
+    new_name: str | None = None,
+    new_room_id: int | None = None,
+    new_group_id: int | None = None,
+    new_lecturer_id: int | None = None,
+    new_start_ts: datetime.datetime | None = None,
+    new_end_ts: datetime.datetime | None = None,
 ) -> Lesson:
     lesson.name = new_name or lesson.name
     lesson.group = new_group_id or lesson.group
@@ -208,13 +217,13 @@ async def create_lecturer(first_name: str, middle_name: str, last_name: str, ses
 
 
 async def create_lesson(
-        room_id: int,
-        lecturer_id: int,
-        group_id: int,
-        name: str,
-        start_ts: datetime.datetime,
-        end_ts: datetime.datetime,
-        session: Session,
+    room_id: int,
+    lecturer_id: int,
+    group_id: int,
+    name: str,
+    start_ts: datetime.datetime,
+    end_ts: datetime.datetime,
+    session: Session,
 ) -> Lesson:
     if not session.query(Group).filter(Group.id == group_id).one_or_none():
         raise exceptions.NoGroupFoundError(group_id)
@@ -231,7 +240,7 @@ async def create_lesson(
 
 
 async def get_group_lessons_in_daterange(
-        group: Group, date_start: datetime.date, date_end: datetime.date
+    group: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     lessons_list = []
     lessons = group.lessons
@@ -251,7 +260,7 @@ async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, d
 
 
 async def get_lecturer_lessons_in_daterange(
-        lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
+    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     lessons_list = []
     lessons = lecturer.lessons
