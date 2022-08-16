@@ -115,9 +115,4 @@ async def get_credentials(
     except MissingSessionError:
         logger.critical("Missing db session")
 
-    return templates.TemplateResponse(
-        "calendar_created.html",
-        {
-            "request": request,
-        },
-    )
+    return RedirectResponse(settings.REDIRECT_URL)
