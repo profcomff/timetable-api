@@ -34,7 +34,7 @@ async def http_create_room(number: str, name: str) -> Group:
     return Group.from_orm(await utils.create_group(number, name, db.session))
 
 
-@group_router.post("/{id}", response_model=Group)
+@group_router.patch("/{id}", response_model=Group)
 async def http_patch_group(id: int, new_number: str | None = None, new_name: str | None = None) -> Group:
     logger.debug(f"Pathcing group id:{id}")
     group = await utils.get_group_by_id(id, db.session)

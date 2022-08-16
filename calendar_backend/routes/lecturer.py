@@ -42,7 +42,7 @@ async def http_create_lecturer(first_name: str, middle_name: str, last_name: str
     )
 
 
-@lecturer_router.post("/{id}", response_model=Lecturer)
+@lecturer_router.patch("/{id}", response_model=Lecturer)
 async def http_patch_lecturer(
     id: int, new_first_name: str | None = None, new_middle_name: str | None = None, new_last_name: str | None = None
 ) -> Lecturer:

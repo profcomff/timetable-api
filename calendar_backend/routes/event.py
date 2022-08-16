@@ -41,7 +41,7 @@ async def http_create_event(
     )
 
 
-@event_router.post("/{id}", response_model=Lesson)
+@event_router.patch("/{id}", response_model=Lesson)
 async def http_patch_event(
     id: int,
     new_name: str | None = None,

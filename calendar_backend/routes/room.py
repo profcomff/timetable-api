@@ -35,7 +35,7 @@ async def http_create_room(name: str, direction: str) -> Room:
     return Room.from_orm(await utils.create_room(name, direction, db.session))
 
 
-@room_router.post("/{id}", response_model=Room)
+@room_router.patch("/{id}", response_model=Room)
 async def http_patch_room(id: int, new_name: str | None = None, new_direction: str | None = None) -> Room:
     logger.debug(f"Pathcing room id:{id}")
     room = await utils.get_room_by_id(id, db.session)
