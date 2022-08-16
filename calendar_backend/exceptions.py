@@ -45,3 +45,27 @@ class EventNotFound(NotFound):
     def __init__(self, id: int):
         message = f"Event {id} not found"
         super().__init__(message)
+
+
+class GroupsNotFound(NotFound):
+    def __init__(self):
+        message = f"Groups list not found"
+        super().__init__(message)
+
+
+class RoomsNotFound(NotFound):
+    def __init__(self):
+        message = f"Rooms list not found"
+        super().__init__(message)
+
+
+class LecturersNotFound(NotFound):
+    def __init__(self):
+        message = f"Lecturers list not found"
+        super().__init__(message)
+
+
+class LessonsNotFound(NotFound):
+    def __init__(self):
+        message = f"Lessons list not found"
+        super().__init__(message)

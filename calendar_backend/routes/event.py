@@ -17,24 +17,16 @@ logger = logging.getLogger(__name__)
 @event_router.get("/{id}", response_model=Lesson)
 async def http_get_event_by_id(id: int) -> Lesson:
     logger.debug(f"Getting event id:{id}")
-    try:
-        return Lesson.from_orm(await utils.get_lesson_by_id(id, db.session))
-    except exceptions.EventNotFound as e:
-        logger.info(f"Failed to get event id:{id}, error {e} occurred")
-        raise HTTPException(status_code=404, detail="Not found")
-    except ValueError as e:
-        logger.info(f"Failed to parse event id:{id}, error {e} occurred")
-        raise HTTPException(status_code=500, detail="Failed")
+    return Lesson.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
 @event_router.get("/", response_model=list[Lesson])
 async def http_get_events(filter_name: str | None = None) -> list[Lesson]:
     logger.debug(f"Getting events, filter:{filter_name}")
-    try:
-        return [Lesson.from_orm(row) for row in await utils.get_list_lessons(db.session, filter_name)]
-    except ValueError as e:
-        logger.info(f"Failed to parse events list, error {e} occurred")
-        raise HTTPException(status_code=500, detail="Failed")
+    result = await utils.get_list_lessons(db.session, filter_name)
+    if isinstance(result, list):
+        return [Lesson.from_orm(row) for row in result]
+    return [Lesson.from_orm(result)]
 
 
 @event_router.post("/", response_model=Lesson)
@@ -44,13 +36,9 @@ async def http_create_event(
     logger.debug(
         f"Creating lesson name:{name}, room_id:{room_id}, lecturer_id:{lecturer_id}, group_id:{group_id}, start_ts:{start_ts}, end_ts: {end_ts}"
     )
-    try:
-        return Lesson.from_orm(
-            await utils.create_lesson(room_id, lecturer_id, group_id, name, start_ts, end_ts, db.session)
-        )
-    except ValueError as e:
-        logger.info(f"Failed to parse events list, error {e} occurred")
-        raise HTTPException(status_code=500, detail="Failed")
+    return Lesson.from_orm(
+        await utils.create_lesson(room_id, lecturer_id, group_id, name, start_ts, end_ts, db.session)
+    )
 
 
 @event_router.post("/{id}", response_model=Lesson)
@@ -64,27 +52,16 @@ async def http_patch_event(
     new_end_ts: datetime.datetime | None = None,
 ) -> Lesson:
     logger.debug(f"Patcing event id:{id}")
-    try:
-        lesson = await utils.get_lesson_by_id(id, db.session)
-        return Lesson.from_orm(
-            await utils.update_lesson(
-                lesson, db.session, new_name, new_room_id, new_group_id, new_lecturer_id, new_start_ts, new_end_ts
-            )
+    lesson = await utils.get_lesson_by_id(id, db.session)
+    return Lesson.from_orm(
+        await utils.update_lesson(
+            lesson, db.session, new_name, new_room_id, new_group_id, new_lecturer_id, new_start_ts, new_end_ts
         )
-    except exceptions.EventNotFound as e:
-        logger.info(f"Failed to get event id:{id}, error {e} occurred")
-        raise HTTPException(status_code=404, detail="Not found")
-    except ValueError as e:
-        logger.info(f"Failed to parse event id:{id}, error {e} occurred")
-        raise HTTPException(status_code=500, detail="Failed")
+    )
 
 
 @event_router.delete("/{id}", response_model=None)
 async def http_delete_event(id: int) -> None:
     logger.debug(f"Deleting event id:{id}")
-    try:
-        lesson = await utils.get_lesson_by_id(id, db.session)
-        return await utils.delete_lesson(lesson, db.session)
-    except exceptions.EventNotFound as e:
-        logger.info(f"Failed to get event id:{id}, error {e} occurred")
-        raise HTTPException(status_code=404, detail="Not found")
+    lesson = await utils.get_lesson_by_id(id, db.session)
+    return await utils.delete_lesson(lesson, db.session)

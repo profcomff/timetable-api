@@ -11,6 +11,7 @@ class Base(BaseModel):
 
 
 class Room(Base):
+    id: int
     name: str
     direction: str
 
@@ -39,6 +40,7 @@ class Room(Base):
 
 
 class Group(Base):
+    id: int
     name: str | None
     number: str
 
@@ -56,6 +58,7 @@ class Group(Base):
 
 
 class Lecturer(Base):
+    id: int
     first_name: str
     middle_name: str
     last_name: str
@@ -65,6 +68,7 @@ class Lecturer(Base):
 
 
 class Lesson(Base):
+    id: int
     name: str
     room: Room
     group: Group

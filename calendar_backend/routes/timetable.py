@@ -32,14 +32,10 @@ async def get_timetable(
             return FileResponse(f"{settings.ICS_PATH}/{group_num}")
         else:
             async with asyncio.Lock():
-                try:
-                    logger.debug("Getting user calendar...")
-                    user_calendar = await calendar_backend.methods.list_calendar.get_user_calendar(
-                        group_num, session=db.session, start_date=start, end_date=end
-                    )
-                except exceptions.NoGroupFoundError:
-                    logger.info(f"Group {group_num} not found")
-                    raise HTTPException(status_code=404, detail="Timetable not found")
+                logger.debug("Getting user calendar...")
+                user_calendar = await calendar_backend.methods.list_calendar.get_user_calendar(
+                    group_num, session=db.session, start_date=start, end_date=end
+                )
                 if not user_calendar:
                     logger.info(f"Failed to create .ics file for group {group_num} (500)")
                     raise HTTPException(status_code=500, detail="Failed to create .ics file")
@@ -49,12 +45,5 @@ async def get_timetable(
                 )
     if not format:
         logger.debug(f"Getting lessons for {group_num}")
-        try:
-            group = await utils.get_list_groups(db.session, filter_group_number=group_num)
-            return [Lesson.from_orm(row) for row in await utils.get_lessons_by_group(group=group)]
-        except exceptions.NoGroupFoundError as e:
-            logger.info(f"Failed to get lessons for {group_num}, error {e} occurred")
-            raise HTTPException(status_code=404, detail="No group found")
-        except ValueError as e:
-            logger.info(f"Failed to get lessons for {group_num}, error {e} occurred")
-            raise HTTPException(status_code=500, detail=e)
+        group = await utils.get_list_groups(db.session, filter_group_number=group_num)
+        return [Lesson.from_orm(row) for row in await utils.get_lessons_by_group(group=group)]
