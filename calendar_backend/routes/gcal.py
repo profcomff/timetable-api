@@ -40,12 +40,12 @@ async def get_flow(state=""):
 
 @gcal.get("/")
 async def home(request: Request):
-    await utils.create_group_list(settings, db.session)
+    groups = await utils.create_group_list(db.session)
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
-            "groups": settings.GROUPS,
+            "groups": groups
         },
     )
 
@@ -64,6 +64,7 @@ async def get_credentials(
     scope: str,
     state: str,
 ):
+    groups = await utils.create_group_list(db.session)
     scope = scope.split(unquote("%20"))
     group = state
     flow = get_flow()
@@ -78,7 +79,7 @@ async def get_credentials(
         # build service to get an email address
         service = build("oauth2", "v2", credentials=creds)
         email = service.userinfo().get().execute()["email"]
-        if group not in settings.GROUPS:
+        if group not in groups:
             logger.info(f"No group found 404 for user {email}")
             raise HTTPException(404, "No group found")
     except UnknownApiNameOrVersion as e:
