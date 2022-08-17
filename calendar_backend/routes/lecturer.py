@@ -1,11 +1,11 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Lecturer
+from calendar_backend.routes.models import Lecturer, LecturerPostPatch
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -30,19 +30,21 @@ async def http_get_lecturers(
 
 
 @lecturer_router.post("/", response_model=Lecturer)
-async def http_create_lecturer(first_name: str, middle_name: str, last_name: str) -> Lecturer:
-    logger.debug(f"Creating lecturer:{first_name} {middle_name} {last_name}")
-    return Lecturer.from_orm(await utils.create_lecturer(first_name, middle_name, last_name, db.session))
+async def http_create_lecturer(lecturer: LecturerPostPatch) -> Lecturer:
+    logger.debug(f"Creating lecturer:{lecturer}")
+    if not lecturer.first_name or not lecturer.middle_name or not lecturer.last_name:
+        raise HTTPException(status_code=400, detail="All fields must be not None")
+    return Lecturer.from_orm(await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session))
 
 
 @lecturer_router.patch("/{id}", response_model=Lecturer)
 async def http_patch_lecturer(
-    id: int, new_first_name: str | None = None, new_middle_name: str | None = None, new_last_name: str | None = None
+    id: int, lecturer_pydantic: Lecturer
 ) -> Lecturer:
     logger.debug(f"Patching lecturer id:{id}")
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return Lecturer.from_orm(
-        await utils.update_lecturer(lecturer, db.session, new_first_name, new_middle_name, new_last_name)
+        await utils.update_lecturer(lecturer, db.session, lecturer_pydantic.first_name, lecturer_pydantic.middle_name, lecturer_pydantic.last_name)
     )
 
 

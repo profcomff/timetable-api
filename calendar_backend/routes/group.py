@@ -1,11 +1,11 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Group
+from calendar_backend.routes.models import Group, GroupPostPatch
 
 group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
 settings = get_settings()
@@ -28,17 +28,18 @@ async def http_get_groups(filter_group_number: str | None = None) -> list[Group]
 
 
 @group_router.post("/", response_model=Group)
-async def http_create_room(number: str, name: str) -> Group:
-    logger.debug(f"Creating group:{number}, {name})")
-    Group.number_validate(number)
-    return Group.from_orm(await utils.create_group(number, name, db.session))
+async def http_create_group(group: GroupPostPatch) -> Group:
+    logger.debug(f"Creating group:{group})")
+    if not group.number:
+        raise HTTPException(status_code=400, detail="'Number' field must be not None")
+    return Group.from_orm(await utils.create_group(group.number, group.name, db.session))
 
 
 @group_router.patch("/{id}", response_model=Group)
-async def http_patch_group(id: int, new_number: str | None = None, new_name: str | None = None) -> Group:
+async def http_patch_group(id: int, group_pydantic: GroupPostPatch) -> Group:
     logger.debug(f"Pathcing group id:{id}")
     group = await utils.get_group_by_id(id, db.session)
-    return Group.from_orm(await utils.update_group(group, db.session, new_number, new_name))
+    return Group.from_orm(await utils.update_group(group, db.session, group_pydantic.number, group_pydantic.name))
 
 
 @group_router.delete("/{id}", response_model=None)

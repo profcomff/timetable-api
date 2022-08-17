@@ -1,11 +1,11 @@
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Room
+from calendar_backend.routes.models import Room, RoomPostPatch
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
@@ -28,18 +28,18 @@ async def http_get_rooms(filter_room_number: str | None = None) -> list[Room]:
 
 
 @room_router.post("/", response_model=Room)
-async def http_create_room(name: str, direction: str) -> Room:
-    logger.debug(f"Creating room:{name}, {direction}")
-    Room.name_validate(name)
-    Room.direction_validate(direction)
-    return Room.from_orm(await utils.create_room(name, direction, db.session))
+async def http_create_room(room: RoomPostPatch) -> Room:
+    logger.debug(f"Creating room:{room.name}, {room.direction}")
+    if not room.name:
+        raise HTTPException(status_code=400, detail="'Name' fields must be not None")
+    return Room.from_orm(await utils.create_room(room.name, room.direction, db.session))
 
 
 @room_router.patch("/{id}", response_model=Room)
-async def http_patch_room(id: int, new_name: str | None = None, new_direction: str | None = None) -> Room:
+async def http_patch_room(id: int, room_pydantic: RoomPostPatch) -> Room:
     logger.debug(f"Pathcing room id:{id}")
     room = await utils.get_room_by_id(id, db.session)
-    return Room.from_orm(await utils.update_room(room, db.session, new_name, new_direction))
+    return Room.from_orm(await utils.update_room(room, db.session, room_pydantic.name, room_pydantic.direction))
 
 
 @room_router.delete("/{id}", response_model=None)
