@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 @lru_cache(2)
-async def get_flow(state=""):
+def get_flow(state=""):
     logger.debug(f"Getting flow with state '{state}'")
     return Flow.from_client_secrets_file(
         client_secrets_file="client_secret.json",
@@ -48,7 +48,7 @@ async def home(request: Request):
 
 
 @gcal.get("/flow")
-def get_user_flow(state: str):
+async def get_user_flow(state: str):
     user_flow = get_flow(state)
     return RedirectResponse(user_flow.authorization_url()[0])
 
