@@ -43,10 +43,7 @@ async def home(request: Request):
     groups = await utils.create_group_list(db.session)
     return templates.TemplateResponse(
         "index.html",
-        {
-            "request": request,
-            "groups": groups
-        },
+        {"request": request, "groups": groups},
     )
 
 
