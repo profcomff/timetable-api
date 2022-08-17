@@ -45,6 +45,11 @@ jobs:
     name: Deploy Testing
     needs: build-and-push-image
     runs-on: [self-hosted, Linux]
+    environment:
+      name: Testing
+      url: https://timetable.api.test.profcomff.com/
+    env:
+      CONTAITER_NAME: com_profcomff_api_timetable_test
     permissions:
       packages: read
 
@@ -52,6 +57,20 @@ jobs:
       - name: Run docker container
         run: |
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-          docker stop -t 10 com_profcomff_api_timetable_test & echo "Stopped"
-          docker rm com_profcomff_api_timetable_test & echo "Removed"
-          docker run --detach --restart on-failure:3 --name com_profcomff_api_timetable_test --network=web ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
+
+          docker run \
+            --rm \
+            --network=web \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --name ${{ env.CONTAITER_NAME }}_migration \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main \
+            alembic upgrade head
+
+          docker run \
+            --detach \
+            --restart on-failure:3 \
+            --network=web \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --name ${{ env.CONTAITER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
