@@ -30,8 +30,8 @@ logger = logging.getLogger(__name__)
 @lru_cache(2)
 def get_flow(state=""):
     logger.debug(f"Getting flow with state '{state}'")
-    return Flow.from_client_secrets_file(
-        client_secrets_file="client_secret.json",
+    return Flow.from_client_config(
+        settings.CLIENT_SECRET,
         scopes=settings.SCOPES,
         state=state,
         redirect_uri=f"{settings.REDIRECT_URL}/credentials",
