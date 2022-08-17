@@ -160,4 +160,3 @@ class LessonPostPatch(Base):
             f" room={self.room_id}, group={self.group_id},"
             f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})"
         )
-

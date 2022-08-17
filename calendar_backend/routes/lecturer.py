@@ -34,17 +34,23 @@ async def http_create_lecturer(lecturer: LecturerPostPatch) -> Lecturer:
     logger.debug(f"Creating lecturer:{lecturer}")
     if not lecturer.first_name or not lecturer.middle_name or not lecturer.last_name:
         raise HTTPException(status_code=400, detail="All fields must be not None")
-    return Lecturer.from_orm(await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session))
+    return Lecturer.from_orm(
+        await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
+    )
 
 
 @lecturer_router.patch("/{id}", response_model=Lecturer)
-async def http_patch_lecturer(
-    id: int, lecturer_pydantic: Lecturer
-) -> Lecturer:
+async def http_patch_lecturer(id: int, lecturer_pydantic: Lecturer) -> Lecturer:
     logger.debug(f"Patching lecturer id:{id}")
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return Lecturer.from_orm(
-        await utils.update_lecturer(lecturer, db.session, lecturer_pydantic.first_name, lecturer_pydantic.middle_name, lecturer_pydantic.last_name)
+        await utils.update_lecturer(
+            lecturer,
+            db.session,
+            lecturer_pydantic.first_name,
+            lecturer_pydantic.middle_name,
+            lecturer_pydantic.last_name,
+        )
     )
 
 
