@@ -3,7 +3,7 @@ import datetime
 from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions
-from calendar_backend.models import Group, Lesson, Lecturer, Room
+from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
 
 
 # TODO: Tests
@@ -194,8 +194,8 @@ async def delete_lesson(lesson: Lesson, session: Session) -> None:
     return None
 
 
-async def create_room(name: str, direrction: str | None, session: Session) -> Room:
-    room = Room(name=name, direction=direrction)
+async def create_room(name: str, direction: Direction | None, session: Session) -> Room:
+    room = Room(name=name, direction=direction)
     session.add(room)
     session.flush()
     return room
