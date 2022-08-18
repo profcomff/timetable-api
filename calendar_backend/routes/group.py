@@ -5,7 +5,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Group, GroupPostPatch
+from calendar_backend.routes.models import Group, GroupPatch, GroupPost
 
 group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
 settings = get_settings()
@@ -28,15 +28,13 @@ async def http_get_groups(filter_group_number: str | None = None) -> list[Group]
 
 
 @group_router.post("/", response_model=Group)
-async def http_create_group(group: GroupPostPatch) -> Group:
+async def http_create_group(group: GroupPost) -> Group:
     logger.debug(f"Creating group:{group})")
-    if not group.number:
-        raise HTTPException(status_code=400, detail="'Number' field must be not None")
     return Group.from_orm(await utils.create_group(group.number, group.name, db.session))
 
 
 @group_router.patch("/{id}", response_model=Group)
-async def http_patch_group(id: int, group_pydantic: GroupPostPatch) -> Group:
+async def http_patch_group(id: int, group_pydantic: GroupPatch) -> Group:
     logger.debug(f"Pathcing group id:{id}")
     group = await utils.get_group_by_id(id, db.session)
     return Group.from_orm(await utils.update_group(group, db.session, group_pydantic.number, group_pydantic.name))

@@ -1,6 +1,7 @@
 import logging
 import uvicorn
 
+
 from calendar_backend.routes import app
 
 logging.basicConfig(

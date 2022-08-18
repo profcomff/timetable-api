@@ -149,16 +149,16 @@ async def update_lesson(
     lesson: Lesson,
     session: Session,
     new_name: str | None = None,
-    new_room_id: int | None = None,
+    new_room_id: list[int] | None = None,
     new_group_id: int | None = None,
-    new_lecturer_id: int | None = None,
+    new_lecturer_id: list[int] | None = None,
     new_start_ts: datetime.datetime | None = None,
     new_end_ts: datetime.datetime | None = None,
 ) -> Lesson:
     lesson.name = new_name or lesson.name
-    lesson.group = new_group_id or lesson.group
-    lesson.room_id = new_room_id or lesson.room_id
-    lesson.lecturer_id = new_lecturer_id or lesson.lecturer_id
+    lesson.group_id = new_group_id or lesson.group
+    lesson.room = [session.query(Room).get(id) for id in new_room_id] if new_room_id is not None else lesson.room_id
+    lesson.lecturer = [session.query(Lecturer).get(id) for id in new_lecturer_id] if new_lecturer_id is not None else lesson.lecturer
     lesson.start_ts = new_start_ts or lesson.start_ts
     lesson.end_ts = new_end_ts or lesson.end_ts
     session.flush()
@@ -195,7 +195,7 @@ async def delete_lesson(lesson: Lesson, session: Session) -> None:
     return None
 
 
-async def create_room(name: str, direrction: str, session: Session) -> Room:
+async def create_room(name: str, direrction: str | None, session: Session) -> Room:
     room = Room(name=name, direction=direrction)
     session.add(room)
     session.flush()
@@ -217,8 +217,8 @@ async def create_lecturer(first_name: str, middle_name: str, last_name: str, ses
 
 
 async def create_lesson(
-    room_id: int,
-    lecturer_id: int,
+    room_id: list[int],
+    lecturer_id: list[int],
     group_id: int,
     name: str,
     start_ts: datetime.datetime,
@@ -231,8 +231,10 @@ async def create_lesson(
         raise exceptions.NoAudienceFoundError(room_id)
     if not session.query(Lecturer).filter(Lecturer.id == lecturer_id).one_or_none():
         raise exceptions.NoTeacherFoundError(lecturer_id)
+    room = await get_room_by_id(room_id, session)
+    lecturer = await get_lecturer_by_id(lecturer_id, session)
     lesson = Lesson(
-        name=name, room_id=room_id, lecturer_id=lecturer_id, group_id=group_id, start_ts=start_ts, end_ts=end_ts
+        name=name, room=[room], lecturer=[lecturer], group_id=group_id, start_ts=start_ts, end_ts=end_ts
     )
     session.add(lesson)
     session.flush()

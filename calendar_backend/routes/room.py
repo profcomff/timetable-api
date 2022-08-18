@@ -5,7 +5,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Room, RoomPostPatch
+from calendar_backend.routes.models import Room, RoomPatch, RoomPost
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
@@ -28,15 +28,13 @@ async def http_get_rooms(filter_room_number: str | None = None) -> list[Room]:
 
 
 @room_router.post("/", response_model=Room)
-async def http_create_room(room: RoomPostPatch) -> Room:
+async def http_create_room(room: RoomPost) -> Room:
     logger.debug(f"Creating room:{room.name}, {room.direction}")
-    if not room.name:
-        raise HTTPException(status_code=400, detail="'Name' fields must be not None")
     return Room.from_orm(await utils.create_room(room.name, room.direction, db.session))
 
 
 @room_router.patch("/{id}", response_model=Room)
-async def http_patch_room(id: int, room_pydantic: RoomPostPatch) -> Room:
+async def http_patch_room(id: int, room_pydantic: RoomPatch) -> Room:
     logger.debug(f"Pathcing room id:{id}")
     room = await utils.get_room_by_id(id, db.session)
     return Room.from_orm(await utils.update_room(room, db.session, room_pydantic.name, room_pydantic.direction))

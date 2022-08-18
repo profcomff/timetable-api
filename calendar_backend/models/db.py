@@ -28,16 +28,10 @@ class Direction(str, enum.Enum):
     SOUTH: str = "South"
 
 
-class LectureRooms(str, enum.Enum):
-    NPA: str = "СФА"
-    CPA: str = "ЦФА"
-    SPA: str = "ЮФА"
-
-
 class Room(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    direction = sqlalchemy.Column(sqlalchemy.Enum("North", "South", name="Directions"), nullable=True)
+    direction = sqlalchemy.Column(sqlalchemy.Enum(Direction), nullable=True)
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", back_populates="room", secondary="lessons_rooms", order_by="(Lesson.start_ts)"
     )
@@ -78,13 +72,13 @@ class Lesson(Base):
     start_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     end_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
 
-    room: Room = sqlalchemy.orm.relationship(
+    room: list[Room] = sqlalchemy.orm.relationship(
         "Room", back_populates="lessons", secondary="lessons_rooms"
     )
     group: Group = sqlalchemy.orm.relationship(
         "Group", foreign_keys="Lesson.group_id", back_populates="lessons"
     )
-    lecturer: Lecturer = sqlalchemy.orm.relationship(
+    lecturer: list[Lecturer] = sqlalchemy.orm.relationship(
         "Lecturer", back_populates="lessons", secondary="lessons_lecturers"
     )
 

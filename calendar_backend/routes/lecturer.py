@@ -5,7 +5,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Lecturer, LecturerPostPatch
+from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -30,10 +30,8 @@ async def http_get_lecturers(
 
 
 @lecturer_router.post("/", response_model=Lecturer)
-async def http_create_lecturer(lecturer: LecturerPostPatch) -> Lecturer:
+async def http_create_lecturer(lecturer: LecturerPost) -> Lecturer:
     logger.debug(f"Creating lecturer:{lecturer}")
-    if not lecturer.first_name or not lecturer.middle_name or not lecturer.last_name:
-        raise HTTPException(status_code=400, detail="All fields must be not None")
     return Lecturer.from_orm(
         await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
     )

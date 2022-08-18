@@ -1,4 +1,4 @@
-from .db import Credentials, Group, Lecturer, Lesson, Room, Direction, LectureRooms
+from .db import Credentials, Group, Lecturer, Lesson, Room, Direction
 
 __all__ = [
     "Credentials",
@@ -7,5 +7,4 @@ __all__ = [
     "Lesson",
     "Room",
     "Direction",
-    "LectureRooms",
 ]
