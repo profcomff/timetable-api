@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -18,13 +18,17 @@ async def http_get_room_by_id(id: int) -> Room:
     return Room.from_orm(await utils.get_room_by_id(id, db.session))
 
 
-@room_router.get("/", response_model=list[Room])
-async def http_get_rooms(filter_room_number: str | None = None) -> list[Room]:
+@room_router.get("/", response_model=dict[str, list[Room]])
+async def http_get_rooms(filter_room_number: str | None = None) -> dict[str, list[Room]]:
     logger.debug(f"Getting rooms list, filter:{filter_room_number}")
     result = await utils.get_list_rooms(db.session, filter_room_number)
     if isinstance(result, list):
-        return [Room.from_orm(row) for row in result]
-    return [Room.from_orm(result)]
+        return {
+            "items": [Room.from_orm(row) for row in result]
+        }
+    return {
+        "items": [Room.from_orm(result)]
+    }
 
 
 @room_router.post("/", response_model=Room)
@@ -35,7 +39,7 @@ async def http_create_room(room: RoomPost) -> Room:
 
 @room_router.patch("/{id}", response_model=Room)
 async def http_patch_room(id: int, room_pydantic: RoomPatch) -> Room:
-    logger.debug(f"Pathcing room id:{id}")
+    logger.debug(f"Patching room id:{id}")
     room = await utils.get_room_by_id(id, db.session)
     return Room.from_orm(await utils.update_room(room, db.session, room_pydantic.name, room_pydantic.direction))
 

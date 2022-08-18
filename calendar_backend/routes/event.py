@@ -1,10 +1,8 @@
-import datetime
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
-from calendar_backend import exceptions
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
 from calendar_backend.routes.models import Lesson, LessonPatch, LessonPost
@@ -20,13 +18,17 @@ async def http_get_event_by_id(id: int) -> Lesson:
     return Lesson.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
-@event_router.get("/", response_model=list[Lesson])
-async def http_get_events(filter_name: str | None = None) -> list[Lesson]:
+@event_router.get("/", response_model=dict[str, list[Lesson]])
+async def http_get_events(filter_name: str | None = None) -> dict[str, list[Lesson]]:
     logger.debug(f"Getting events, filter:{filter_name}")
     result = await utils.get_list_lessons(db.session, filter_name)
     if isinstance(result, list):
-        return [Lesson.from_orm(row) for row in result]
-    return [Lesson.from_orm(result)]
+        return {
+            "items": [Lesson.from_orm(row) for row in result]
+        }
+    return {
+        "items": [Lesson.from_orm(result)]
+    }
 
 
 @event_router.post("/", response_model=Lesson)

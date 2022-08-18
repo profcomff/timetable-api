@@ -118,7 +118,7 @@ class LessonPatch(Base):
 
 class RoomPost(Base):
     name: str
-    direction: Direction | None
+    direction: None | Direction
 
 
 class LecturerPost(Base):
