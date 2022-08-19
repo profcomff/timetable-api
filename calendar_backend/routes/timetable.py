@@ -37,7 +37,7 @@ async def get_timetable_by_room(room_num: str, start: datetime.date, end: dateti
     return [Lesson.from_orm(row) for row in await utils.get_room_lessons_in_daterange(room, start, end)]
 
 
-@timetable_router.get("/by_lecturer/{first_name}_{middle_name}_{last_name}", response_model=list[list[Lesson]])
+@timetable_router.get("/by_lecturer", response_model=list[list[Lesson]])
 async def get_timetable_by_lecturer(first_name: str, middle_name: str, last_name: str, start: datetime.date, end: datetime.date) -> list[list[Lesson]]:
     logger.debug(f"Getting lessons for lecturer {first_name} {middle_name} {last_name}")
     lecturer = await utils.get_list_lecturers(db.session, first_name, middle_name, last_name)
