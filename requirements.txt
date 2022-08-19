@@ -1,4 +1,4 @@
-fastapi
+fastapi~=0.75.2
 fastapi-sqlalchemy
 psycopg2-binary
 pydantic[dotenv]
@@ -13,3 +13,6 @@ pytz
 icalendar
 SQLAlchemy
 gunicorn
+
+starlette
+asyncio

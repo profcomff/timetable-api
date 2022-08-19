@@ -1,5 +1,5 @@
 from functools import lru_cache
-from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from pydantic.types import Json
 from urllib.parse import unquote
@@ -14,6 +14,7 @@ from fastapi_sqlalchemy.exceptions import (
 from ..models import Credentials
 from .. import get_settings
 from ..google_engine import get_calendar_service_from_token
+from starlette.concurrency import run_in_threadpool
 from fastapi.templating import Jinja2Templates
 import os
 import logging
@@ -81,7 +82,7 @@ async def get_credentials(
             raise HTTPException(404, "No group found")
     except UnknownApiNameOrVersion as e:
         logger.info(f"Invalid Google service: {e}")
-    background_tasks.add_task(
+    await run_in_threadpool(
         create_calendar_with_timetable,
         get_calendar_service_from_token(token),
         group,
