@@ -163,3 +163,31 @@ class LessonPost(Base):
             f" room={self.room_id}, group={self.group_id},"
             f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})"
         )
+
+
+class RootGetListRoom(Base):
+    items: list[Room]
+    # limit: int
+    # offset: int
+    # total: int
+
+
+class RootGetListLecturer(Base):
+    items: list[Lecturer]
+    # limit: int
+    # offset: int
+    # total: int
+
+
+class RootGetListGroup(Base):
+    items: list[Group]
+    # limit: int
+    # offset: int
+    # total: int
+
+
+class RootGetListEvent(Base):
+    items: list[Lesson]
+    # limit: int
+    # offset: int
+    # total: int

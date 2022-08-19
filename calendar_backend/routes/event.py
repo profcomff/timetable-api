@@ -1,11 +1,12 @@
 import logging
+from typing import Any
 
 from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Lesson, LessonPatch, LessonPost
+from calendar_backend.routes.models import Lesson, LessonPatch, LessonPost, RootGetListEvent
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
@@ -18,8 +19,8 @@ async def http_get_event_by_id(id: int) -> Lesson:
     return Lesson.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
-@event_router.get("/", response_model=dict[str, list[Lesson]])
-async def http_get_events(filter_name: str | None = None) -> dict[str, list[Lesson]]:
+@event_router.get("/", response_model=RootGetListEvent)
+async def http_get_events(filter_name: str | None = None) -> dict[str, Any]:
     logger.debug(f"Getting events, filter:{filter_name}")
     result = await utils.get_list_lessons(db.session, filter_name)
     if isinstance(result, list):
