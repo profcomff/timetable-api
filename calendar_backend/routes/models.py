@@ -165,28 +165,28 @@ class LessonPost(Base):
         )
 
 
-class RootGetListRoom(Base):
+class GetListRoom(Base):
     items: list[Room]
     # limit: int
     # offset: int
     # total: int
 
 
-class RootGetListLecturer(Base):
+class GetListLecturer(Base):
     items: list[Lecturer]
     # limit: int
     # offset: int
     # total: int
 
 
-class RootGetListGroup(Base):
+class GetListGroup(Base):
     items: list[Group]
     # limit: int
     # offset: int
     # total: int
 
 
-class RootGetListEvent(Base):
+class GetListEvent(Base):
     items: list[Lesson]
     # limit: int
     # offset: int

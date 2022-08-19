@@ -6,7 +6,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Room, RoomPatch, RoomPost, RootGetListRoom
+from calendar_backend.routes.models import Room, RoomPatch, RoomPost, GetListRoom
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
@@ -19,7 +19,7 @@ async def http_get_room_by_id(id: int) -> Room:
     return Room.from_orm(await utils.get_room_by_id(id, db.session))
 
 
-@room_router.get("/", response_model=RootGetListRoom)
+@room_router.get("/", response_model=GetListRoom)
 async def http_get_rooms(filter_room_number: str | None = None) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter:{filter_room_number}")
     result = await utils.get_list_rooms(db.session, filter_room_number)

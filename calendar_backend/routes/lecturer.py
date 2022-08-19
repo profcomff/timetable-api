@@ -6,7 +6,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, RootGetListLecturer
+from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -19,7 +19,7 @@ async def http_get_lecturer_by_id(id: int) -> Lecturer:
     return Lecturer.from_orm(await utils.get_lecturer_by_id(id, db.session))
 
 
-@lecturer_router.get("/", response_model=RootGetListLecturer)
+@lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
     filter_first_name: str | None = None, filter_middle_name: str | None = None, filter_last_name: str = None
 ) -> dict[str, Any]:

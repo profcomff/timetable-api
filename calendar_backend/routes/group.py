@@ -5,7 +5,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Group, GroupPatch, GroupPost, RootGetListGroup
+from calendar_backend.routes.models import Group, GroupPatch, GroupPost, GetListGroup
 
 group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
 settings = get_settings()
@@ -18,7 +18,7 @@ async def http_get_group_by_id(id: int) -> Group:
     return Group.from_orm(await utils.get_group_by_id(id, db.session))
 
 
-@group_router.get("/", response_model=RootGetListGroup)
+@group_router.get("/", response_model=GetListGroup)
 async def http_get_groups(filter_group_number: str | None = None) -> dict:
     logger.debug(f"Getting groups list, filter:{filter_group_number}")
     result = await utils.get_list_groups(db.session, filter_group_number)
