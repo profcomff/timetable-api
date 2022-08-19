@@ -2,11 +2,11 @@
 """
 from __future__ import annotations
 
-import enum
+from enum import Enum
 from datetime import datetime
 
 import sqlalchemy.orm
-from sqlalchemy import Column
+from sqlalchemy import Column, Enum as DbEnum
 
 from .base import Base
 
@@ -23,7 +23,7 @@ class Credentials(Base):
     update_ts = Column(sqlalchemy.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
-class Direction(str, enum.Enum):
+class Direction(str, Enum):
     NORTH: str = "North"
     SOUTH: str = "South"
 
@@ -31,7 +31,7 @@ class Direction(str, enum.Enum):
 class Room(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    direction = sqlalchemy.Column(sqlalchemy.Enum(Direction), nullable=True)
+    direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", back_populates="room", secondary="lessons_rooms", order_by="(Lesson.start_ts)"
     )
