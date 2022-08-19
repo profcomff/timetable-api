@@ -1,13 +1,12 @@
-import datetime
 import logging
+from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
-from calendar_backend import exceptions
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Lesson, LessonPostPatch
+from calendar_backend.routes.models import Lesson, LessonPatch, LessonPost, GetListEvent
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
@@ -20,17 +19,21 @@ async def http_get_event_by_id(id: int) -> Lesson:
     return Lesson.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
-@event_router.get("/", response_model=list[Lesson])
-async def http_get_events(filter_name: str | None = None) -> list[Lesson]:
+@event_router.get("/", response_model=GetListEvent)
+async def http_get_events(filter_name: str | None = None) -> dict[str, Any]:
     logger.debug(f"Getting events, filter:{filter_name}")
     result = await utils.get_list_lessons(db.session, filter_name)
     if isinstance(result, list):
-        return [Lesson.from_orm(row) for row in result]
-    return [Lesson.from_orm(result)]
+        return {
+            "items": [Lesson.from_orm(row) for row in result]
+        }
+    return {
+        "items": [Lesson.from_orm(result)]
+    }
 
 
 @event_router.post("/", response_model=Lesson)
-async def http_create_event(lesson: LessonPostPatch) -> Lesson:
+async def http_create_event(lesson: LessonPost) -> Lesson:
     logger.debug(f"Creating lesson name:{lesson}")
     return Lesson.from_orm(
         await utils.create_lesson(
@@ -40,7 +43,7 @@ async def http_create_event(lesson: LessonPostPatch) -> Lesson:
 
 
 @event_router.patch("/{id}", response_model=Lesson)
-async def http_patch_event(id: int, lesson_pydantic: LessonPostPatch) -> Lesson:
+async def http_patch_event(id: int, lesson_pydantic: LessonPatch) -> Lesson:
     logger.debug(f"Patcing event id:{id}")
     lesson = await utils.get_lesson_by_id(id, db.session)
     return Lesson.from_orm(
@@ -50,7 +53,7 @@ async def http_patch_event(id: int, lesson_pydantic: LessonPostPatch) -> Lesson:
             lesson_pydantic.name,
             lesson_pydantic.room_id,
             lesson.group_id,
-            lesson.lecturer_id,
+            [row.id for row in lesson.lecturer],
             lesson.start_ts,
             lesson_pydantic.end_ts,
         )

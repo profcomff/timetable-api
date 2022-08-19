@@ -1,11 +1,12 @@
 import logging
+from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Lecturer, LecturerPostPatch
+from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -18,29 +19,31 @@ async def http_get_lecturer_by_id(id: int) -> Lecturer:
     return Lecturer.from_orm(await utils.get_lecturer_by_id(id, db.session))
 
 
-@lecturer_router.get("/", response_model=list[Lecturer])
+@lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
     filter_first_name: str | None = None, filter_middle_name: str | None = None, filter_last_name: str = None
-) -> list[Lecturer]:
+) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {filter_last_name}, {filter_middle_name}, {filter_last_name}")
     result = await utils.get_list_lecturers(db.session, filter_first_name, filter_middle_name, filter_last_name)
     if isinstance(result, list):
-        return [Lecturer.from_orm(row) for row in result]
-    return [Lecturer.from_orm(result)]
+        return {
+            "items": [Lecturer.from_orm(row) for row in result]
+        }
+    return {
+        "items": [Lecturer.from_orm(result)]
+    }
 
 
 @lecturer_router.post("/", response_model=Lecturer)
-async def http_create_lecturer(lecturer: LecturerPostPatch) -> Lecturer:
+async def http_create_lecturer(lecturer: LecturerPost) -> Lecturer:
     logger.debug(f"Creating lecturer:{lecturer}")
-    if not lecturer.first_name or not lecturer.middle_name or not lecturer.last_name:
-        raise HTTPException(status_code=400, detail="All fields must be not None")
     return Lecturer.from_orm(
         await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
     )
 
 
 @lecturer_router.patch("/{id}", response_model=Lecturer)
-async def http_patch_lecturer(id: int, lecturer_pydantic: Lecturer) -> Lecturer:
+async def http_patch_lecturer(id: int, lecturer_pydantic: LecturerPatch) -> Lecturer:
     logger.debug(f"Patching lecturer id:{id}")
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return Lecturer.from_orm(
