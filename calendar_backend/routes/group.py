@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
@@ -25,7 +26,7 @@ async def http_get_group_by_id(
 
 
 @group_router.get("/", response_model=GetListGroup)
-async def http_get_groups(filter_group_number: str | None = None) -> dict:
+async def http_get_groups(filter_group_number: str | None = None) -> dict[str, Any]:
     logger.debug(f"Getting groups list, filter:{filter_group_number}")
     result = await utils.get_list_groups(db.session, filter_group_number)
     if not result:
