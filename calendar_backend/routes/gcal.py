@@ -1,5 +1,8 @@
+import asyncio
 from functools import lru_cache
-from fastapi import APIRouter, HTTPException, Request
+
+import anyio.to_thread
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from pydantic.types import Json
 from urllib.parse import unquote
@@ -20,7 +23,6 @@ import os
 import logging
 from calendar_backend.methods import utils
 
-
 gcal = APIRouter(tags=["Google calendar"])
 settings = get_settings()
 templates = Jinja2Templates(directory="calendar_backend/templates")
@@ -32,7 +34,7 @@ logger = logging.getLogger(__name__)
 def get_flow(state=""):
     logger.debug(f"Getting flow with state '{state}'")
     return Flow.from_client_config(
-        settings.CLIENT_SECRET,
+        settings.GOOGLE_CLIENT_SECRET,
         scopes=settings.SCOPES,
         state=state,
         redirect_uri=f"{settings.REDIRECT_URL}/credentials",
@@ -50,17 +52,21 @@ async def home(request: Request):
 
 @gcal.get("/flow")
 async def get_user_flow(state: str):
-    user_flow = get_flow(state)
-    return RedirectResponse(user_flow.authorization_url()[0])
+    if settings.GOOGLE_CLIENT_SECRET:
+        user_flow = get_flow(state)
+        return RedirectResponse(user_flow.authorization_url()[0])
+    else:
+        logger.info(f"Missing google service credentials")
+        return HTTPException(401, "Missing google service credentials")
 
 
 @gcal.get("/credentials")
 async def get_credentials(
-    request: Request,
-    background_tasks: BackgroundTasks,
-    code: str,
-    scope: str,
-    state: str,
+        request: Request,
+        background_tasks: BackgroundTasks,
+        code: str,
+        scope: str,
+        state: str,
 ):
     groups = await utils.create_group_list(db.session)
     scope = scope.split(unquote("%20"))
@@ -75,22 +81,22 @@ async def get_credentials(
         raise HTTPException(400, "Bad request")
     try:
         # build service to get an email address
-        service = build("oauth2", "v2", credentials=creds)
+        service = build("oauth2", "v2", credentials=creds, cache_discovery=False)
         email = service.userinfo().get().execute()["email"]
         if group not in groups:
             logger.info(f"No group found 404 for user {email}")
             raise HTTPException(404, "No group found")
     except UnknownApiNameOrVersion as e:
         logger.info(f"Invalid Google service: {e}")
-    await run_in_threadpool(
+    background_tasks.add_task(
         create_calendar_with_timetable,
         get_calendar_service_from_token(token),
         group,
         db.session,
     )
     try:
-        db_records = db.session.query(Credentials).filter(Credentials.email == email).all()
-        if len(db_records) == 0:
+        db_records = db.session.query(Credentials).filter(Credentials.email == email)
+        if len(db_records.all()) == 0:
             logger.debug(f"User {email} not found in db. Adding...")
             db.session.add(
                 Credentials(
@@ -113,5 +119,4 @@ async def get_credentials(
         logger.critical("DB session not initialized")
     except MissingSessionError:
         logger.critical("Missing db session")
-
     return RedirectResponse(settings.REDIRECT_URL)

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 async def create_google_events_from_db(group_name: str, session: Session) -> list[Event]:
     """
-    Creates a timetable for certain group from db timetable.
+    Creates a timetable for certain group from db.
     Returns list[Event] of events/subjects
     """
     group: Group = await get_list_groups(session, group_name)
