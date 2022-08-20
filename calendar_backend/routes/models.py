@@ -191,3 +191,13 @@ class GetListEvent(Base):
     # limit: int
     # offset: int
     # total: int
+
+# Создаю ПОСЛЕ Lesson
+class RoomEvents(Room):
+    events: list[Event] = []
+
+class GroupEvents(Group):
+    events: list[Event] = []
+
+class LecturerEvents(Lecturer):
+    events: list[Event] = []

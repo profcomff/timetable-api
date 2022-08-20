@@ -6,17 +6,17 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
-from calendar_backend.routes.models import Room, RoomPatch, RoomPost, GetListRoom
+from calendar_backend.routes.models import Room, RoomPatch, RoomPost, GetListRoom, RoomEvents
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@room_router.get("/{id}", response_model=Room)
+@room_router.get("/{id}", response_model=RoomEvents)
 async def http_get_room_by_id(id: int) -> Room:
     logger.debug(f"Getting room id:{id}")
-    return Room.from_orm(await utils.get_room_by_id(id, db.session))
+    return RoomEvents.from_orm(await utils.get_room_by_id(id, db.session))
 
 
 @room_router.get("/", response_model=GetListRoom)
