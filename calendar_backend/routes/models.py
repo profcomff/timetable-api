@@ -47,7 +47,7 @@ class Lecturer(Base):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
 
-class Lesson(Base):
+class Event(Base):
     id: int
     name: str
     room: list[Room]
@@ -100,7 +100,7 @@ class LecturerPatch(Base):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
 
-class LessonPatch(Base):
+class EventPatch(Base):
     name: str | None
     room_id: list[int] | None
     group_id: int | None
@@ -118,7 +118,7 @@ class LessonPatch(Base):
 
 class RoomPost(Base):
     name: str
-    direction: None | Direction
+    direction: Direction | None
 
 
 class LecturerPost(Base):
@@ -149,7 +149,7 @@ class GroupPost(Base):
         return f"Group(name={self.name}, number={self.number})"
 
 
-class LessonPost(Base):
+class EventPost(Base):
     name: str
     room_id: list[int]
     group_id: int
@@ -187,7 +187,7 @@ class GetListGroup(Base):
 
 
 class GetListEvent(Base):
-    items: list[Lesson]
+    items: list[Event]
     # limit: int
     # offset: int
     # total: int
