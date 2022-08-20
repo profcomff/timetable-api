@@ -28,6 +28,8 @@ async def http_get_events(
     lecturer_id: int | None = None,
     room_id: int | None = None,
 ) -> GetListEvent:
+    if not group_id and not lecturer_id and not room_id:
+        raise HTTPException(status_code=400, detail=f"One argument reqiured, but no one received")
     if group_id:
         logger.debug(f"Getting events for group_id:{group_id}")
         if lecturer_id or room_id:
