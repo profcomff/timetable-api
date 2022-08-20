@@ -157,7 +157,9 @@ async def update_lesson(
     lesson.name = new_name or lesson.name
     lesson.group_id = new_group_id or lesson.group
     lesson.room = [session.query(Room).get(id) for id in new_room_id] if new_room_id is not None else lesson.room
-    lesson.lecturer = [session.query(Lecturer).get(id) for id in new_lecturer_id] if new_lecturer_id is not None else lesson.lecturer
+    lesson.lecturer = (
+        [session.query(Lecturer).get(id) for id in new_lecturer_id] if new_lecturer_id is not None else lesson.lecturer
+    )
     lesson.start_ts = new_start_ts or lesson.start_ts
     lesson.end_ts = new_end_ts or lesson.end_ts
     session.flush()
@@ -234,9 +236,7 @@ async def create_lesson(
             raise exceptions.NoTeacherFoundError(row)
     room = [await get_room_by_id(row, session) for row in room_id]
     lecturer = [await get_lecturer_by_id(row, session) for row in lecturer_id]
-    lesson = Lesson(
-        name=name, room=room, lecturer=lecturer, group_id=group_id, start_ts=start_ts, end_ts=end_ts
-    )
+    lesson = Lesson(name=name, room=room, lecturer=lecturer, group_id=group_id, start_ts=start_ts, end_ts=end_ts)
     session.add(lesson)
     session.flush()
     return lesson

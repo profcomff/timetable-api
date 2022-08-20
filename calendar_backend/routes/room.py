@@ -1,3 +1,4 @@
+import datetime
 import logging
 from typing import Any
 
@@ -14,9 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 @room_router.get("/{id}", response_model=RoomEvents)
-async def http_get_room_by_id(id: int) -> Room:
+async def http_get_room_by_id(
+    id: int, start: datetime.date | None = None, end: datetime.date | None = None
+) -> RoomEvents:
     logger.debug(f"Getting room id:{id}")
-    return RoomEvents.from_orm(await utils.get_room_by_id(id, db.session))
+    room = await utils.get_room_by_id(id)
+    if start and end:
+        return RoomEvents(**room.__dict__, events=await utils.get_room_lessons_in_daterange(room, start, end))
+    return RoomEvents.from_orm(**room.__dict__)
 
 
 @room_router.get("/", response_model=GetListRoom)
@@ -24,12 +30,8 @@ async def http_get_rooms(filter_room_number: str | None = None) -> dict[str, Any
     logger.debug(f"Getting rooms list, filter:{filter_room_number}")
     result = await utils.get_list_rooms(db.session, filter_room_number)
     if isinstance(result, list):
-        return {
-            "items": [Room.from_orm(row) for row in result]
-        }
-    return {
-        "items": [Room.from_orm(result)]
-    }
+        return {"items": [Room.from_orm(row) for row in result]}
+    return {"items": [Room.from_orm(result)]}
 
 
 @room_router.post("/", response_model=Room)

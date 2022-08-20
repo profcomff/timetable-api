@@ -24,12 +24,8 @@ async def http_get_events(filter_name: str | None = None) -> dict[str, Any]:
     logger.debug(f"Getting events, filter:{filter_name}")
     result = await utils.get_list_lessons(db.session, filter_name)
     if isinstance(result, list):
-        return {
-            "items": [Event.from_orm(row) for row in result]
-        }
-    return {
-        "items": [Event.from_orm(result)]
-    }
+        return {"items": [Event.from_orm(row) for row in result]}
+    return {"items": [Event.from_orm(result)]}
 
 
 @event_router.post("/", response_model=Event)

@@ -72,12 +72,8 @@ class Lesson(Base):
     start_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     end_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
 
-    room: list[Room] = sqlalchemy.orm.relationship(
-        "Room", back_populates="lessons", secondary="lessons_rooms"
-    )
-    group: Group = sqlalchemy.orm.relationship(
-        "Group", foreign_keys="Lesson.group_id", back_populates="lessons"
-    )
+    room: list[Room] = sqlalchemy.orm.relationship("Room", back_populates="lessons", secondary="lessons_rooms")
+    group: Group = sqlalchemy.orm.relationship("Group", foreign_keys="Lesson.group_id", back_populates="lessons")
     lecturer: list[Lecturer] = sqlalchemy.orm.relationship(
         "Lecturer", back_populates="lessons", secondary="lessons_lecturers"
     )
