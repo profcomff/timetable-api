@@ -1,7 +1,8 @@
+import datetime
 import logging
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -20,12 +21,31 @@ async def http_get_event_by_id(id: int) -> Event:
 
 
 @event_router.get("/", response_model=GetListEvent)
-async def http_get_events(filter_name: str | None = None) -> dict[str, Any]:
-    logger.debug(f"Getting events, filter:{filter_name}")
-    result = await utils.get_list_lessons(db.session, filter_name)
-    if isinstance(result, list):
-        return {"items": [Event.from_orm(row) for row in result]}
-    return {"items": [Event.from_orm(result)]}
+async def http_get_events(start: datetime.date, end: datetime.date, group_id: int | None = None, lecturer_id: int | None = None, room_id: int | None = None) -> GetListEvent:
+    if group_id:
+        logger.debug(f"Getting events for group_id:{group_id}")
+        if lecturer_id or room_id:
+            raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
+        return GetListEvent(**{
+            "items": await utils.get_group_lessons_in_daterange(await utils.get_group_by_id(group_id, db.session), start, end)
+        })
+    if lecturer_id:
+        logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
+        if group_id or room_id:
+            raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
+        return GetListEvent(**{
+            "items": await utils.get_lecturer_lessons_in_daterange(await utils.get_lecturer_by_id(lecturer_id, db.session),
+                                                                start, end)
+        })
+    if room_id:
+        logger.debug(f"Getting events for room_id:{room_id}")
+        if lecturer_id or group_id:
+            raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
+        return GetListEvent(**{
+            "items": await utils.get_room_lessons_in_daterange(await utils.get_room_by_id(room_id, db.session),
+                                                                start, end)
+        })
+
 
 
 @event_router.post("/", response_model=Event)

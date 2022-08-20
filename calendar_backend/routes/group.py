@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
