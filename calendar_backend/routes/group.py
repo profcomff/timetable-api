@@ -1,10 +1,10 @@
 import datetime
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
-from calendar_backend import get_settings
+from calendar_backend import get_settings, exceptions
 from calendar_backend.methods import utils
 from calendar_backend.routes.models import Group, GroupPatch, GroupPost, GetListGroup, GroupEvents
 
@@ -36,6 +36,8 @@ async def http_get_groups(filter_group_number: str | None = None) -> dict:
 @group_router.post("/", response_model=Group)
 async def http_create_group(group: GroupPost) -> Group:
     logger.debug(f"Creating group:{group})")
+    if await utils.check_group_existing(db.session, group.number):
+        raise HTTPException(status_code=423, detail="Already exists")
     return Group.from_orm(await utils.create_group(group.number, group.name, db.session))
 
 

@@ -36,8 +36,6 @@ async def get_list_groups(session: Session, filter_group_number: str | None = No
         if filter_group_number
         else session.query(Group).all()
     )
-    if not result:
-        raise exceptions.GroupsNotFound()
     return result
 
 
@@ -47,8 +45,6 @@ async def get_list_rooms(session: Session, filter_room_number: str | None = None
         if filter_room_number
         else session.query(Room).all()
     )
-    if not result:
-        raise exceptions.RoomsNotFound()
     return result
 
 
@@ -70,8 +66,6 @@ async def get_list_lecturers(
         )
     else:
         result = session.query(Lecturer).all()
-    if not result:
-        raise exceptions.LecturersNotFound()
     return result
 
 
@@ -276,3 +270,25 @@ async def get_lecturer_lessons_in_daterange(
 async def create_group_list(session: Session) -> list:
     groups: list[Group] = session.query(Group).filter().all()
     return [f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in groups]
+
+
+async def check_group_existing(session: Session, group_num: str) -> bool:
+    if session.query(Group).filter(Group.number == group_num).one_or_none():
+        return True
+    return False
+
+
+async def check_room_existing(session: Session, room_name: str) -> bool:
+    if session.query(Room).filter(Room.name == room_name).one_or_none():
+        return True
+    return False
+
+
+async def check_lecturer_existing(session: Session, first_name: str, middle_name: str, last_name: str) -> bool:
+    if (
+        session.query(Lecturer)
+        .filter(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name, Lecturer.last_name == last_name)
+        .one_or_none()
+    ):
+        return True
+    return False

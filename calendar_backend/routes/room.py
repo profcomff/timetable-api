@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -37,6 +37,8 @@ async def http_get_rooms(filter_room_number: str | None = None) -> dict[str, Any
 @room_router.post("/", response_model=Room)
 async def http_create_room(room: RoomPost) -> Room:
     logger.debug(f"Creating room:{room.name}, {room.direction}")
+    if await utils.check_room_existing(db.session, room.name):
+        raise HTTPException(status_code=423, detail="Already exists")
     return Room.from_orm(await utils.create_room(room.name, room.direction, db.session))
 
 
