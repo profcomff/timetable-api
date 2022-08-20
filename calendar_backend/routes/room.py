@@ -29,6 +29,8 @@ async def http_get_room_by_id(
 async def http_get_rooms(filter_room_number: str | None = None) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter:{filter_room_number}")
     result = await utils.get_list_rooms(db.session, filter_room_number)
+    if not result:
+        return {"items": []}
     if isinstance(result, list):
         return {"items": [Room.from_orm(row) for row in result]}
     return {"items": [Room.from_orm(result)]}

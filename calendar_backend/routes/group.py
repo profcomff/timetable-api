@@ -28,6 +28,8 @@ async def http_get_group_by_id(
 async def http_get_groups(filter_group_number: str | None = None) -> dict:
     logger.debug(f"Getting groups list, filter:{filter_group_number}")
     result = await utils.get_list_groups(db.session, filter_group_number)
+    if not result:
+        return {"items": []}
     if isinstance(result, list):
         return {"items": [Group.from_orm(row) for row in result]}
     return {"items": [Group.from_orm(result)]}

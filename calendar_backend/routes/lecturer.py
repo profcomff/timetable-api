@@ -33,6 +33,8 @@ async def http_get_lecturers(
 ) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {filter_last_name}, {filter_middle_name}, {filter_last_name}")
     result = await utils.get_list_lecturers(db.session, filter_first_name, filter_middle_name, filter_last_name)
+    if not result:
+        return {"items": []}
     if isinstance(result, list):
         return {"items": [Lecturer.from_orm(row) for row in result]}
     return {"items": [Lecturer.from_orm(result)]}
