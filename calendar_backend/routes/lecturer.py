@@ -43,8 +43,6 @@ async def http_get_lecturers(
 @lecturer_router.post("/", response_model=Lecturer)
 async def http_create_lecturer(lecturer: LecturerPost) -> Lecturer:
     logger.debug(f"Creating lecturer:{lecturer}")
-    if await utils.check_lecturer_existing(db.session, lecturer.first_name, lecturer.middle_name, lecturer.last_name):
-        raise HTTPException(status_code=423, detail="Already exists")
     return Lecturer.from_orm(
         await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
     )
