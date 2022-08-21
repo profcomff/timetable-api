@@ -26,5 +26,5 @@ async def get_timetable_by_group(
             return await list_calendar.create_ics(group_num, start, end, db.session)
         case 'json':
             logger.debug(f"Getting lessons for group {group_num}")
-            group = (await utils.get_list_groups(db.session, filter_group_number=group_num))[0]
+            group, _ = await utils.get_list_groups(db.session, group_num)
             return [Event.from_orm(row) for row in await utils.get_group_lessons_in_daterange(group=group, date_start=start, date_end=end)]
