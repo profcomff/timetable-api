@@ -21,12 +21,14 @@ async def http_get_event_by_id(id: int) -> Event:
 
 @event_router.get("/", response_model=GetListEvent)
 async def http_get_events(
-    start: datetime.date | None = Query(default=datetime.datetime.today().date()),
-    end: datetime.date | None = Query(default=datetime.datetime.today().date() + datetime.timedelta(days=1)),
+    start: datetime.date | None = Query(default=None, description="Default: Today"),
+    end: datetime.date | None = Query(default=None, description="Default: Tomorrow"),
     group_id: int | None = None,
     lecturer_id: int | None = None,
     room_id: int | None = None,
 ) -> GetListEvent:
+    start = start or datetime.date.today()
+    end = end or datetime.date.today() + datetime.timedelta(days=1)
     if not group_id and not lecturer_id and not room_id:
         raise HTTPException(status_code=400, detail=f"One argument reqiured, but no one received")
     if group_id:
