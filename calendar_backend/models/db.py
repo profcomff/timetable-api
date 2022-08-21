@@ -2,11 +2,12 @@
 """
 from __future__ import annotations
 
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 
 import sqlalchemy.orm
-from sqlalchemy import Column, Enum as DbEnum
+from sqlalchemy import Column, Enum as DbEnum, and_, or_
+from sqlalchemy.ext.hybrid import hybrid_method
 
 from .base import Base
 
@@ -48,6 +49,15 @@ class Lecturer(Base):
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", secondary="lessons_lecturers", order_by="(Lesson.start_ts)", back_populates="lecturer"
     )
+
+    @hybrid_method
+    def search(self, query: str) -> bool:
+        response = sqlalchemy.true
+        query = query.split(' ')
+        for q in query:
+            response = and_(response,
+                            or_(self.first_name.contains(q), self.middle_name.contains(q), self.last_name.contains(q)))
+        return response
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"

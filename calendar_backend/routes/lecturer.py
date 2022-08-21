@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -29,15 +29,16 @@ async def http_get_lecturer_by_id(
 
 @lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
-    filter_first_name: str | None = None, filter_middle_name: str | None = None, filter_last_name: str = None
+    query: str = "",
+    limit: int = 10,
+    offset: int = 0
 ) -> dict[str, Any]:
-    logger.debug(f"Getting rooms list, filter: {filter_last_name}, {filter_middle_name}, {filter_last_name}")
-    result = await utils.get_list_lecturers(db.session, filter_first_name, filter_middle_name, filter_last_name)
-    if not result:
-        return {"items": []}
-    if isinstance(result, list):
-        return {"items": [Lecturer.from_orm(row) for row in result]}
-    return {"items": [Lecturer.from_orm(result)]}
+    logger.debug(f"Getting rooms list, filter: {query}")
+    result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
+    return {"items": [Lecturer.from_orm(row) for row in result],
+            "limit": limit,
+            "offset": offset,
+            "total": total}
 
 
 @lecturer_router.post("/", response_model=Lecturer)

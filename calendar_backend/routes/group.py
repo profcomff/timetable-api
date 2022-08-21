@@ -26,14 +26,13 @@ async def http_get_group_by_id(
 
 
 @group_router.get("/", response_model=GetListGroup)
-async def http_get_groups(filter_group_number: str | None = None) -> dict[str, Any]:
-    logger.debug(f"Getting groups list, filter:{filter_group_number}")
-    result = await utils.get_list_groups(db.session, filter_group_number)
-    if not result:
-        return {"items": []}
-    if isinstance(result, list):
-        return {"items": [Group.from_orm(row) for row in result]}
-    return {"items": [Group.from_orm(result)]}
+async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
+    logger.debug(f"Getting groups list, filter:{query}")
+    result, total = await utils.get_list_groups(db.session, query, limit, offset)
+    return {"items": [Group.from_orm(row) for row in result],
+            "limit": limit,
+            "offset": offset,
+            "total": total}
 
 
 @group_router.post("/", response_model=Group)

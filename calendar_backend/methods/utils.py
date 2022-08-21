@@ -30,43 +30,30 @@ async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
     return result
 
 
-async def get_list_groups(session: Session, filter_group_number: str | None = None) -> Group | list[Group]:
-    result = (
-        session.query(Group).filter(Group.number == filter_group_number).one_or_none()
-        if filter_group_number
-        else session.query(Group).all()
-    )
-    return result
+async def get_list_groups(session: Session, query: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Group], int]:
+    result = session.query(Group).filter(Group.number.contains(query)).offset(offset)
+    if limit > 0:
+        result = result.limit(limit)
+    return result.all(), result.count()
 
 
-async def get_list_rooms(session: Session, filter_room_number: str | None = None) -> list[Room] | Room:
-    result = (
-        session.query(Room).filter(Room.name == filter_room_number).one_or_none()
-        if filter_room_number
-        else session.query(Room).all()
-    )
-    return result
+async def get_list_rooms(session: Session, query: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Room], int]:
+    result = session.query(Room).filter(Room.name.contains(query)).offset(offset)
+    if limit > 0:
+        result = result.limit(limit)
+    return result.all(), result.count()
 
 
 async def get_list_lecturers(
     session: Session,
-    filter_first_name: str | None = None,
-    filter_middle_name: str | None = None,
-    filter_last_name: str | None = None,
-) -> list[Lecturer]:
-    if filter_last_name and filter_middle_name and filter_last_name:
-        result = (
-            session.query(Lecturer)
-            .filter(
-                Lecturer.first_name == filter_first_name,
-                Lecturer.middle_name == filter_middle_name,
-                Lecturer.last_name == filter_last_name,
-            )
-            .all()
-        )
-    else:
-        result = session.query(Lecturer).all()
-    return result
+    query: str = "",
+    limit: int = 10,
+    offset: int = 0
+) -> tuple[list[Lecturer], int]:
+    result = session.query(Lecturer).filter(Lecturer.search(query)).offset(offset)
+    if limit > 0:
+        result = result.limit(limit)
+    return result.all(), result.count()
 
 
 async def get_list_lessons(session: Session, filter_name: str | None = None) -> list[Lesson] | Lesson:
