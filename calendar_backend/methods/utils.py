@@ -30,7 +30,7 @@ async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
     return result
 
 
-async def get_list_groups(session: Session, filter_group_number: str = "", limit: int = 10, offset: int = 0) -> tuple[Group | list[Group], int]:
+async def get_list_groups(session: Session, filter_group_number: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Group], int]:
     result = Group()
     total = session.query(Group).filter(Group.number.contains(filter_group_number)).count()
     if limit == 0:
@@ -44,7 +44,7 @@ async def get_list_groups(session: Session, filter_group_number: str = "", limit
     return result, total
 
 
-async def get_list_rooms(session: Session, filter_room_number: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Room] | Room, int]:
+async def get_list_rooms(session: Session, filter_room_number: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Room], int]:
     result = Room()
     total = session.query(Room).filter(Room.name.contains(filter_room_number)).count()
     if limit == 0:

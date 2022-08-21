@@ -36,12 +36,7 @@ async def http_get_rooms(filter_room_number: str = "", limit: int = 10, offset: 
                 "limit": limit,
                 "offset": offset,
                 "total": total}
-    if isinstance(result, list):
-        return {"items": [Room.from_orm(row) for row in result],
-                "limit": limit,
-                "offset": offset,
-                "total": total}
-    return {"items": [Room.from_orm(result)],
+    return {"items": [Room.from_orm(row) for row in result],
             "limit": limit,
             "offset": offset,
             "total": total}

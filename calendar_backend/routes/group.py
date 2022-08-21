@@ -36,12 +36,7 @@ async def http_get_groups(filter_group_number: str = "", limit: int = 10, offset
                 "limit": limit,
                 "offset": offset,
                 "total": total}
-    if isinstance(result, list):
-        return {"items": [Group.from_orm(row) for row in result],
-                "limit": limit,
-                "offset": offset,
-                "total": total}
-    return {"items": [Group.from_orm(result)],
+    return {"items": [Group.from_orm(row) for row in result],
             "limit": limit,
             "offset": offset,
             "total": total}

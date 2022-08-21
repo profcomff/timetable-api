@@ -42,12 +42,7 @@ async def http_get_lecturers(
                 "limit": limit,
                 "offset": offset,
                 "total": total}
-    if isinstance(result, list):
-        return {"items": [Lecturer.from_orm(row) for row in result],
-                "limit": limit,
-                "offset": offset,
-                "total": total}
-    return {"items": [Lecturer.from_orm(result)],
+    return {"items": [Lecturer.from_orm(row) for row in result],
             "limit": limit,
             "offset": offset,
             "total": total}
