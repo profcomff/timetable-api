@@ -19,12 +19,12 @@ async def http_get_lecturer_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> LecturerEvents:
     logger.debug(f"Getting lecturer id:{id}")
-    leccturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer = await utils.get_lecturer_by_id(id, db.session)
     if start and end:
         return LecturerEvents(
-            **leccturer.dict(), events=await utils.get_lecturer_lessons_in_daterange(leccturer, start, end)
+            **lecturer.dict(), events=await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
         )
-    return LecturerEvents(**leccturer.dict())
+    return LecturerEvents(**lecturer.dict())
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
