@@ -193,7 +193,6 @@ class GetListEvent(Base):
     # total: int
 
 
-# Создаю ПОСЛЕ Lesson
 class RoomEvents(Room):
     events: list[Event] = []
 
