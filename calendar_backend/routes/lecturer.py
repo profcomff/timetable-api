@@ -29,15 +29,26 @@ async def http_get_lecturer_by_id(
 
 @lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
-    filter_name: str = ""
+    filter_name: str = "",
+    limit: int = 10,
+    offset: int = 0
 ) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {filter_name}")
-    result = await utils.get_list_lecturers(db.session, filter_name)
+    result, total = await utils.get_list_lecturers(db.session, filter_name, limit, offset)
     if not result:
-        return {"items": []}
+        return {"items": [],
+                "limit": limit,
+                "offset": offset,
+                "total": total}
     if isinstance(result, list):
-        return {"items": [Lecturer.from_orm(row) for row in result]}
-    return {"items": [Lecturer.from_orm(result)]}
+        return {"items": [Lecturer.from_orm(row) for row in result],
+                "limit": limit,
+                "offset": offset,
+                "total": total}
+    return {"items": [Lecturer.from_orm(result)],
+            "limit": limit,
+            "offset": offset,
+            "total": total}
 
 
 @lecturer_router.post("/", response_model=Lecturer)

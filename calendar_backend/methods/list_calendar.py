@@ -23,7 +23,7 @@ async def get_user_calendar(group_num: str, session: Session, start_date: date_,
     Returns event iCalendar object
     """
     logger.debug(f"Getting user calendar (iCal) for group {group_num}")
-    group = await utils.get_list_groups(session, group_num)
+    group = (await utils.get_list_groups(session, group_num))[0]
     user_calendar = Calendar()
     timetable = await utils.get_group_lessons_in_daterange(group, start_date, end_date)
     for lesson in timetable:

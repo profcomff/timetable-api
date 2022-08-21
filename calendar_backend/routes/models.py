@@ -167,30 +167,27 @@ class EventPost(Base):
 
 class GetListRoom(Base):
     items: list[Room]
-    # limit: int
-    # offset: int
-    # total: int
+    limit: int
+    offset: int
+    total: int
 
 
 class GetListLecturer(Base):
     items: list[Lecturer]
-    # limit: int
-    # offset: int
-    # total: int
+    limit: int
+    offset: int
+    total: int
 
 
 class GetListGroup(Base):
     items: list[Group]
-    # limit: int
-    # offset: int
-    # total: int
+    limit: int
+    offset: int
+    total: int
 
 
 class GetListEvent(Base):
     items: list[Event]
-    # limit: int
-    # offset: int
-    # total: int
 
 
 class RoomEvents(Room):

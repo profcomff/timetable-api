@@ -28,12 +28,21 @@ async def http_get_room_by_id(
 @room_router.get("/", response_model=GetListRoom)
 async def http_get_rooms(filter_room_number: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter:{filter_room_number}")
-    result = await utils.get_list_rooms(db.session, filter_room_number, limit, offset)
+    result, total = await utils.get_list_rooms(db.session, filter_room_number, limit, offset)
     if not result:
-        return {"items": []}
+        return {"items": [],
+                "limit": limit,
+                "offset": offset,
+                "total": total}
     if isinstance(result, list):
-        return {"items": [Room.from_orm(row) for row in result]}
-    return {"items": [Room.from_orm(result)]}
+        return {"items": [Room.from_orm(row) for row in result],
+                "limit": limit,
+                "offset": offset,
+                "total": total}
+    return {"items": [Room.from_orm(result)],
+            "limit": limit,
+            "offset": offset,
+            "total": total}
 
 
 @room_router.post("/", response_model=Room)

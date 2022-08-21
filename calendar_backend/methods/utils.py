@@ -1,5 +1,7 @@
 import datetime
 
+import sqlalchemy
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions
@@ -30,8 +32,9 @@ async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
     return result
 
 
-async def get_list_groups(session: Session, filter_group_number: str = "", limit: int = 10, offset: int = 0) -> Group | list[Group]:
+async def get_list_groups(session: Session, filter_group_number: str = "", limit: int = 10, offset: int = 0) -> tuple[Group | list[Group], int]:
     result = Group()
+    total = session.query(Group).filter(Group.number.contains(filter_group_number)).count()
     if limit == 0:
         result = (
             session.query(Group).filter(Group.number.contains(filter_group_number)).offset(offset).all()
@@ -40,11 +43,12 @@ async def get_list_groups(session: Session, filter_group_number: str = "", limit
         result = (
             session.query(Group).filter(Group.number.contains(filter_group_number)).limit(limit).offset(offset).all()
         )
-    return result
+    return result, total
 
 
-async def get_list_rooms(session: Session, filter_room_number: str = "", limit: int = 10, offset: int = 0) -> list[Room] | Room:
+async def get_list_rooms(session: Session, filter_room_number: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Room] | Room, int]:
     result = Room()
+    total = session.query(Room).filter(Room.name.contains(filter_room_number)).count()
     if limit == 0:
         result = (
             session.query(Room).filter(Room.name.contains(filter_room_number)).offset(offset).all()
@@ -53,7 +57,7 @@ async def get_list_rooms(session: Session, filter_room_number: str = "", limit: 
         result = (
             session.query(Room).filter(Room.name.contains(filter_room_number)).limit(limit).offset(offset).all()
         )
-    return result
+    return result, total
 
 
 async def get_list_lecturers(
@@ -61,13 +65,14 @@ async def get_list_lecturers(
     filter_name: str = "",
     limit: int = 10,
     offset: int = 0
-) -> list[Lecturer]:
+) -> tuple[list[Lecturer], int]:
     result = Lecturer()
+    total = session.query(Lecturer).filter(Lecturer.search(filter_name)).count()
     if limit == 0:
-        result = session.query(Lecturer).filter(Lecturer.__ts_vector__.match(filter_name)).offset(offset).all()
+        result = session.query(Lecturer).filter(Lecturer.search(filter_name)).offset(offset).all()
     if limit:
-        result = session.query(Lecturer).filter(Lecturer.__ts_vector__.match(filter_name)).limit(limit).offset(offset).all()
-    return result
+        result = session.query(Lecturer).filter(Lecturer.search(filter_name)).limit(limit).offset(offset).all()
+    return result, total
 
 
 async def get_list_lessons(session: Session, filter_name: str | None = None) -> list[Lesson] | Lesson:

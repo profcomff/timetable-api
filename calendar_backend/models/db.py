@@ -6,8 +6,9 @@ from enum import Enum
 from datetime import datetime
 
 import sqlalchemy.orm
-from sqlalchemy import Column, Enum as DbEnum
+from sqlalchemy import Column, Enum as DbEnum, and_, or_
 from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.ext.hybrid import hybrid_method
 
 from .base import Base
 
@@ -46,7 +47,7 @@ class Room(Base):
 
 
 class Lecturer(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -54,12 +55,14 @@ class Lecturer(Base):
         "Lesson", secondary="lessons_lecturers", order_by="(Lesson.start_ts)", back_populates="lecturer"
     )
 
-    __ts_vector__ = sqlalchemy.Column(TSVector(), sqlalchemy.Computed(
-        "to_tsvector('russian', first_name || ' ' || middle_name || ' ' || last_name)",
-        persisted=True))
-
-    __table_args__ = (sqlalchemy.Index('ix_lecturer___ts_vector__',
-                            __ts_vector__, postgresql_using='gin'),)
+    @hybrid_method
+    def search(self, query: str) -> bool:
+        response = sqlalchemy.true
+        query = query.split(' ')
+        for q in query:
+            response = and_(response,
+                            or_(self.first_name.contains(q), self.middle_name.contains(q), self.last_name.contains(q)))
+        return response
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
