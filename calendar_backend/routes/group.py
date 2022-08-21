@@ -20,9 +20,10 @@ async def http_get_group_by_id(
 ) -> GroupEvents:
     logger.debug(f"Getting group id:{id}")
     group = await utils.get_group_by_id(id, db.session)
+    result = GroupEvents.from_orm(group)
     if start and end:
-        return GroupEvents(**group.dict(), events=await utils.get_group_lessons_in_daterange(group, start, end))
-    return GroupEvents(**group.dict())
+        result.events = await utils.get_group_lessons_in_daterange(group, start, end)
+    return result
 
 
 @group_router.get("/", response_model=GetListGroup)
