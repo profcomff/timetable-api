@@ -30,42 +30,48 @@ async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
     return result
 
 
-async def get_list_groups(session: Session, filter_group_number: str | None = None) -> Group | list[Group]:
-    result = (
-        session.query(Group).filter(Group.number == filter_group_number).one_or_none()
-        if filter_group_number
-        else session.query(Group).all()
-    )
+async def get_list_groups(session: Session, filter_group_number: str = "", limit: int = 10, offset: int = 0) -> Group | list[Group]:
+    result = Group()
+    if limit == 0:
+        result = (
+            session.query(Group).filter(Group.number.contains(filter_group_number)).offset(offset).all()
+        )
+    if limit:
+        result = (
+            session.query(Group).filter(Group.number.contains(filter_group_number)).limit(limit).offset(offset).all()
+        )
     return result
 
 
-async def get_list_rooms(session: Session, filter_room_number: str | None = None) -> list[Room] | Room:
-    result = (
-        session.query(Room).filter(Room.name == filter_room_number).one_or_none()
-        if filter_room_number
-        else session.query(Room).all()
-    )
+async def get_list_rooms(session: Session, filter_room_number: str = "", limit: int = 10, offset: int = 0) -> list[Room] | Room:
+    result = Room()
+    if limit == 0:
+        result = (
+            session.query(Room).filter(Room.name.contains(filter_room_number)).offset(offset).all()
+        )
+    if limit:
+        result = (
+            session.query(Room).filter(Room.name.contains(filter_room_number)).limit(limit).offset(offset).all()
+        )
     return result
 
 
 async def get_list_lecturers(
     session: Session,
-    filter_first_name: str | None = None,
-    filter_middle_name: str | None = None,
-    filter_last_name: str | None = None,
+    filter_first_name: str | None = "",
+    filter_middle_name: str | None = "",
+    filter_last_name: str | None = "",
+    limit: int = 10,
+    offset: int = 0
 ) -> list[Lecturer]:
-    if filter_last_name and filter_middle_name and filter_last_name:
-        result = (
-            session.query(Lecturer)
-            .filter(
-                Lecturer.first_name == filter_first_name,
-                Lecturer.middle_name == filter_middle_name,
-                Lecturer.last_name == filter_last_name,
-            )
-            .all()
-        )
-    else:
-        result = session.query(Lecturer).all()
+    result = Lecturer()
+    if limit == 0:
+        result = session.query(Lecturer).\
+            filter(filter_first_name in Lecturer.first_name, filter_middle_name in Lecturer.middle_name,
+                  filter_last_name in Lecturer.last_name).offset(offset).all()
+    if limit:
+        result = session.query(Lecturer).filter(filter_first_name in Lecturer.first_name, filter_middle_name in Lecturer.middle_name,
+                  filter_last_name in Lecturer.last_name).limit(limit).offset(offset).all()
     return result
 
 

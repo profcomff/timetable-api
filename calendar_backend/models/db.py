@@ -7,8 +7,13 @@ from datetime import datetime
 
 import sqlalchemy.orm
 from sqlalchemy import Column, Enum as DbEnum
+from sqlalchemy.dialects.postgresql import TSVECTOR
 
 from .base import Base
+
+
+class TSVector(sqlalchemy.types.TypeDecorator):
+    impl = TSVECTOR
 
 
 class Credentials(Base):
