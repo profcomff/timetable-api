@@ -42,7 +42,7 @@ class Room(Base):
 
 
 class Lecturer(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
