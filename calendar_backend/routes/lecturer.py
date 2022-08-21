@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -34,6 +34,8 @@ async def http_get_lecturers(
     offset: int = 0
 ) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {filter_name}")
+    if limit < 0:
+        raise HTTPException(status_code=400, detail="Limit must be non-negative")
     result, total = await utils.get_list_lecturers(db.session, filter_name, limit, offset)
     if not result:
         return {"items": [],
