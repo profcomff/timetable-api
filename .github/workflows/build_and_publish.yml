@@ -72,5 +72,6 @@ jobs:
             --restart on-failure:3 \
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
+            --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
             --name ${{ env.CONTAITER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main

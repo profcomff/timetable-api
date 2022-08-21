@@ -5,6 +5,7 @@ from pydantic import (
     PostgresDsn,
     AnyHttpUrl,
     DirectoryPath,
+    Json
 )
 
 
@@ -18,6 +19,7 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
+    GOOGLE_CLIENT_SECRET: Json | None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: list[str] = ['*']
