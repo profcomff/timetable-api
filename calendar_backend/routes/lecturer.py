@@ -29,14 +29,14 @@ async def http_get_lecturer_by_id(
 
 @lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
-    filter_name: str = "",
+    query: str = "",
     limit: int = 10,
     offset: int = 0
 ) -> dict[str, Any]:
-    logger.debug(f"Getting rooms list, filter: {filter_name}")
+    logger.debug(f"Getting rooms list, filter: {query}")
     if limit < 0:
         raise HTTPException(status_code=400, detail="Limit must be non-negative")
-    result, total = await utils.get_list_lecturers(db.session, filter_name, limit, offset)
+    result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
     if not result:
         return {"items": [],
                 "limit": limit,
