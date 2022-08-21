@@ -1,7 +1,5 @@
 import datetime
 
-import sqlalchemy
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions
