@@ -58,20 +58,15 @@ async def get_list_rooms(session: Session, filter_room_number: str = "", limit: 
 
 async def get_list_lecturers(
     session: Session,
-    filter_first_name: str | None = "",
-    filter_middle_name: str | None = "",
-    filter_last_name: str | None = "",
+    filter_name: str = "",
     limit: int = 10,
     offset: int = 0
 ) -> list[Lecturer]:
     result = Lecturer()
     if limit == 0:
-        result = session.query(Lecturer).\
-            filter(filter_first_name in Lecturer.first_name, filter_middle_name in Lecturer.middle_name,
-                  filter_last_name in Lecturer.last_name).offset(offset).all()
+        result = session.query(Lecturer).filter(Lecturer.__ts_vector__.match(filter_name)).offset(offset).all()
     if limit:
-        result = session.query(Lecturer).filter(filter_first_name in Lecturer.first_name, filter_middle_name in Lecturer.middle_name,
-                  filter_last_name in Lecturer.last_name).limit(limit).offset(offset).all()
+        result = session.query(Lecturer).filter(Lecturer.__ts_vector__.match(filter_name)).limit(limit).offset(offset).all()
     return result
 
 
