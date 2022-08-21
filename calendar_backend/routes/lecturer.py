@@ -34,8 +34,6 @@ async def http_get_lecturers(
     offset: int = 0
 ) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
-    if limit < 0:
-        raise HTTPException(status_code=400, detail="Limit must be non-negative")
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
     return {"items": [Lecturer.from_orm(row) for row in result],
             "limit": limit,

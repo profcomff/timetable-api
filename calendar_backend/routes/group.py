@@ -28,8 +28,6 @@ async def http_get_group_by_id(
 @group_router.get("/", response_model=GetListGroup)
 async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
     logger.debug(f"Getting groups list, filter:{query}")
-    if limit < 0:
-        raise HTTPException(status_code=400, detail="Limit must be non-negative")
     result, total = await utils.get_list_groups(db.session, query, limit, offset)
     return {"items": [Group.from_orm(row) for row in result],
             "limit": limit,
