@@ -57,16 +57,15 @@ async def get_user_flow(state: str):
         return RedirectResponse(user_flow.authorization_url()[0])
     else:
         logger.info(f"Missing google service credentials")
-        return HTTPException(401, "Missing google service credentials")
+        return HTTPException(502, "Connection to google failed")
 
 
 @gcal.get("/credentials")
 async def get_credentials(
-        request: Request,
-        background_tasks: BackgroundTasks,
-        code: str,
-        scope: str,
-        state: str,
+    background_tasks: BackgroundTasks,
+    code: str,
+    scope: str,
+    state: str,
 ):
     groups = await utils.create_group_list(db.session)
     scope = scope.split(unquote("%20"))
