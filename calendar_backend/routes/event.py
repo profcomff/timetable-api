@@ -1,10 +1,8 @@
 import datetime
 import logging
-from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi_sqlalchemy import db
-from pydantic import Field
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils
@@ -23,8 +21,8 @@ async def http_get_event_by_id(id: int) -> Event:
 
 @event_router.get("/", response_model=GetListEvent)
 async def http_get_events(
-    start: datetime.date = Field(default_factory=datetime.datetime.today()),
-    end: datetime.date = Field(default_factory=datetime.datetime.today() + datetime.timedelta(days=1)),
+    start: datetime.date | None = Query(default=datetime.datetime.today().date()),
+    end: datetime.date | None = Query(default=datetime.datetime.today().date() + datetime.timedelta(days=1)),
     group_id: int | None = None,
     lecturer_id: int | None = None,
     room_id: int | None = None,
