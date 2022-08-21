@@ -1,0 +1,26 @@
+version: "3.6"
+
+services:
+  postgres:
+    image: postgres:13
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      backend:
+
+
+networks:
+  web:
+    name: web
+    external: true
+  backend:
+
+volumes:
+  postgres:
+    name: redirect-data

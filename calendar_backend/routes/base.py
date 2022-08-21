@@ -1,19 +1,19 @@
 import logging
 
 import starlette.requests
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
 
-from calendar_backend import get_settings
-from .room import room_router
-from .lecturer import lecturer_router
-from .event import event_router
-from .timetable import timetable_router
-from .group import group_router
-from .gcal import gcal
 from calendar_backend import exceptions
-from fastapi.responses import PlainTextResponse
+from calendar_backend import get_settings
+from .event import event_router
+from .gcal import gcal
+from .group import group_router
+from .lecturer import lecturer_router
+from .room import room_router
+from .timetable import timetable_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

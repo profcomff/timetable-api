@@ -36,8 +36,6 @@ async def get_list_groups(session: Session, filter_group_number: str | None = No
         if filter_group_number
         else session.query(Group).all()
     )
-    if not result:
-        raise exceptions.GroupsNotFound()
     return result
 
 
@@ -47,8 +45,6 @@ async def get_list_rooms(session: Session, filter_room_number: str | None = None
         if filter_room_number
         else session.query(Room).all()
     )
-    if not result:
-        raise exceptions.RoomsNotFound()
     return result
 
 
@@ -70,8 +66,6 @@ async def get_list_lecturers(
         )
     else:
         result = session.query(Lecturer).all()
-    if not result:
-        raise exceptions.LecturersNotFound()
     return result
 
 
@@ -157,7 +151,9 @@ async def update_lesson(
     lesson.name = new_name or lesson.name
     lesson.group_id = new_group_id or lesson.group
     lesson.room = [session.query(Room).get(id) for id in new_room_id] if new_room_id is not None else lesson.room
-    lesson.lecturer = [session.query(Lecturer).get(id) for id in new_lecturer_id] if new_lecturer_id is not None else lesson.lecturer
+    lesson.lecturer = (
+        [session.query(Lecturer).get(id) for id in new_lecturer_id] if new_lecturer_id is not None else lesson.lecturer
+    )
     lesson.start_ts = new_start_ts or lesson.start_ts
     lesson.end_ts = new_end_ts or lesson.end_ts
     session.flush()
@@ -234,9 +230,7 @@ async def create_lesson(
             raise exceptions.NoTeacherFoundError(row)
     room = [await get_room_by_id(row, session) for row in room_id]
     lecturer = [await get_lecturer_by_id(row, session) for row in lecturer_id]
-    lesson = Lesson(
-        name=name, room=room, lecturer=lecturer, group_id=group_id, start_ts=start_ts, end_ts=end_ts
-    )
+    lesson = Lesson(name=name, room=room, lecturer=lecturer, group_id=group_id, start_ts=start_ts, end_ts=end_ts)
     session.add(lesson)
     session.flush()
     return lesson
@@ -276,3 +270,25 @@ async def get_lecturer_lessons_in_daterange(
 async def create_group_list(session: Session) -> list:
     groups: list[Group] = session.query(Group).filter().all()
     return [f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in groups]
+
+
+async def check_group_existing(session: Session, group_num: str) -> bool:
+    if session.query(Group).filter(Group.number == group_num).one_or_none():
+        return True
+    return False
+
+
+async def check_room_existing(session: Session, room_name: str) -> bool:
+    if session.query(Room).filter(Room.name == room_name).one_or_none():
+        return True
+    return False
+
+
+async def check_lecturer_existing(session: Session, first_name: str, middle_name: str, last_name: str) -> bool:
+    if (
+        session.query(Lecturer)
+        .filter(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name, Lecturer.last_name == last_name)
+        .one_or_none()
+    ):
+        return True
+    return False
