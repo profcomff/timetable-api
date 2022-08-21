@@ -22,9 +22,9 @@ async def http_get_lecturer_by_id(
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     if start and end:
         return LecturerEvents(
-            **lecturer.dict(), events=await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
+            **Lecturer.from_orm(lecturer).dict(), events=await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
         )
-    return LecturerEvents(**lecturer.dict())
+    return LecturerEvents(**Lecturer.from_orm(lecturer).dict())
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)

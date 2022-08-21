@@ -65,10 +65,6 @@ async def get_list_lessons(session: Session, filter_name: str | None = None) -> 
     return result
 
 
-async def get_lessons_by_group(group: Group) -> list[Lesson]:
-    return group.lessons
-
-
 async def get_lessons_by_group_from_date(group: Group, date: datetime.date) -> list[Lesson]:
     lessons = group.lessons
     lessons_from_date: list[Lesson] = []
@@ -76,14 +72,6 @@ async def get_lessons_by_group_from_date(group: Group, date: datetime.date) -> l
         if lesson.start_ts.date() >= date:
             lessons_from_date.append(lesson)
     return lessons_from_date
-
-
-async def get_lessons_by_lecturer(lecturer: Lecturer) -> list[Lesson]:
-    return lecturer.lessons
-
-
-async def get_lessons_by_room(room: Room) -> list[Lesson]:
-    return room.lessons
 
 
 async def get_lesson_by_id(id: int, session: Session) -> Lesson:

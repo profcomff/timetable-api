@@ -21,8 +21,8 @@ async def http_get_room_by_id(
     logger.debug(f"Getting room id:{id}")
     room = await utils.get_room_by_id(id, db.session)
     if start and end:
-        return RoomEvents(**room.dict(), events=await utils.get_room_lessons_in_daterange(room, start, end))
-    return RoomEvents(**room.dict())
+        return RoomEvents(**Room.from_orm(room).dict(), events = await utils.get_room_lessons_in_daterange(room, start, end))
+    return RoomEvents(**Room.from_orm(room).dict())
 
 
 @room_router.get("/", response_model=GetListRoom)
