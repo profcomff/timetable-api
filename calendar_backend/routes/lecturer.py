@@ -37,11 +37,6 @@ async def http_get_lecturers(
     if limit < 0:
         raise HTTPException(status_code=400, detail="Limit must be non-negative")
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
-    if not result:
-        return {"items": [],
-                "limit": limit,
-                "offset": offset,
-                "total": total}
     return {"items": [Lecturer.from_orm(row) for row in result],
             "limit": limit,
             "offset": offset,

@@ -31,11 +31,6 @@ async def http_get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> d
     if limit < 0:
         raise HTTPException(status_code=400, detail="Limit must be non-negative")
     result, total = await utils.get_list_rooms(db.session, query, limit, offset)
-    if not result:
-        return {"items": [],
-                "limit": limit,
-                "offset": offset,
-                "total": total}
     return {"items": [Room.from_orm(row) for row in result],
             "limit": limit,
             "offset": offset,
