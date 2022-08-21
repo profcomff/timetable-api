@@ -54,6 +54,13 @@ class Lecturer(Base):
         "Lesson", secondary="lessons_lecturers", order_by="(Lesson.start_ts)", back_populates="lecturer"
     )
 
+    __ts_vector__ = sqlalchemy.Column(TSVector(), sqlalchemy.Computed(
+        "to_tsvector('russian', first_name || ' ' || middle_name || ' ' || last_name)",
+        persisted=True))
+
+    __table_args__ = (sqlalchemy.Index('ix_lecturer___ts_vector__',
+                            __ts_vector__, postgresql_using='gin'),)
+
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
