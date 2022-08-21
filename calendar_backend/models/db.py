@@ -2,19 +2,14 @@
 """
 from __future__ import annotations
 
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 
 import sqlalchemy.orm
 from sqlalchemy import Column, Enum as DbEnum, and_, or_
-from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.ext.hybrid import hybrid_method
 
 from .base import Base
-
-
-class TSVector(sqlalchemy.types.TypeDecorator):
-    impl = TSVECTOR
 
 
 class Credentials(Base):
