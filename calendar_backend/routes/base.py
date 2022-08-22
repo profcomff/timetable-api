@@ -14,6 +14,7 @@ from .group import group_router
 from .lecturer import lecturer_router
 from .room import room_router
 from .timetable import timetable_router
+from .auth import auth_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -101,3 +102,4 @@ app.include_router(event_router)
 app.include_router(lecturer_router)
 app.include_router(timetable_router)
 app.include_router(group_router)
+app.include_router(auth_router)

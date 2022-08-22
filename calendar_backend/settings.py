@@ -1,12 +1,6 @@
 from functools import lru_cache
 
-from pydantic import (
-    BaseSettings,
-    PostgresDsn,
-    AnyHttpUrl,
-    DirectoryPath,
-    Json
-)
+from pydantic import BaseSettings, PostgresDsn, AnyHttpUrl, DirectoryPath, Json
 
 
 class Settings(BaseSettings):
@@ -19,6 +13,7 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
+    ADMIN_SECRET: dict[str, dict[str, str]]
     GOOGLE_CLIENT_SECRET: Json | None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
     CORS_ALLOW_CREDENTIALS: bool = True
