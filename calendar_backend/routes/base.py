@@ -18,7 +18,27 @@ from .auth import auth_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
-app = FastAPI()
+app = FastAPI(description="""API для работы с календарем физфака.
+Пример работы на питоне(Создание Room):
+```python
+import reqests, json
+url=f"https://timetable.api.test.profcomff.com"
+
+# Авторизация
+beaver = requests.post(f"{url}/token", {"username": "...", "password": "..."})
+
+# Парсинг ответа
+auth_data=json.loads(beaver.content)
+
+# Создание
+create_room = requests.post(
+    f"{url}/timetable/room",
+    json={"name": "test", "direction": "South"}, 
+    headers={"Authorization": f"Bearer {auth_data.get('access_token')}"}
+)
+
+```
+""")
 
 
 @app.exception_handler(exceptions.NoGroupFoundError)

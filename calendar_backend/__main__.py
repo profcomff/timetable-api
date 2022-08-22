@@ -1,6 +1,6 @@
 import logging
 import uvicorn
-
+import requests
 
 from calendar_backend.routes import app
 
