@@ -2,11 +2,11 @@ import datetime
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings, exceptions
-from calendar_backend.methods import utils
+from calendar_backend.methods import utils, auth
 from calendar_backend.routes.models import Group, GroupPatch, GroupPost, GetListGroup, GroupEvents
 
 group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
@@ -30,29 +30,28 @@ async def http_get_group_by_id(
 async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
     logger.debug(f"Getting groups list, filter:{query}")
     result, total = await utils.get_list_groups(db.session, query, limit, offset)
-    return {"items": [Group.from_orm(row) for row in result],
-            "limit": limit,
-            "offset": offset,
-            "total": total}
+    return {"items": [Group.from_orm(row) for row in result], "limit": limit, "offset": offset, "total": total}
 
 
 @group_router.post("/", response_model=Group)
-async def http_create_group(group: GroupPost) -> Group:
-    logger.debug(f"Creating group:{group})")
+async def http_create_group(group: GroupPost, current_user: auth.User = Depends(auth.get_current_user)) -> Group:
+    logger.debug(f"Creating group: {group}", extra={"user": current_user})
     if await utils.check_group_existing(db.session, group.number):
         raise HTTPException(status_code=423, detail="Already exists")
     return Group.from_orm(await utils.create_group(group.number, group.name, db.session))
 
 
 @group_router.patch("/{id}", response_model=Group)
-async def http_patch_group(id: int, group_pydantic: GroupPatch) -> Group:
-    logger.debug(f"Pathcing group id:{id}")
+async def http_patch_group(
+    id: int, group_pydantic: GroupPatch, current_user: auth.User = Depends(auth.get_current_user)
+) -> Group:
+    logger.debug(f"Pathcing group id:{id}", extra={"user": current_user})
     group = await utils.get_group_by_id(id, db.session)
     return Group.from_orm(await utils.update_group(group, db.session, group_pydantic.number, group_pydantic.name))
 
 
 @group_router.delete("/{id}", response_model=None)
-async def http_delete_group(id: int) -> None:
-    logger.debug(f"Deleting group id:{id}")
+async def http_delete_group(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
+    logger.debug(f"Deleting group id:{id}", extra={"user": current_user})
     group = await utils.get_group_by_id(id, db.session)
     return await utils.delete_group(group, db.session)

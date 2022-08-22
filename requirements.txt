@@ -13,3 +13,4 @@ pytz
 icalendar
 SQLAlchemy
 gunicorn
+python-multipart

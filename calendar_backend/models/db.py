@@ -55,8 +55,9 @@ class Lecturer(Base):
         response = sqlalchemy.true
         query = query.split(' ')
         for q in query:
-            response = and_(response,
-                            or_(self.first_name.contains(q), self.middle_name.contains(q), self.last_name.contains(q)))
+            response = and_(
+                response, or_(self.first_name.contains(q), self.middle_name.contains(q), self.last_name.contains(q))
+            )
         return response
 
     def __repr__(self):
