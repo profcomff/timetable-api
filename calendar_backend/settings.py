@@ -13,7 +13,7 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
-    ADMIN_SECRET: dict[str, dict[str, str]]
+    ADMIN_SECRET: dict[str, str]
     GOOGLE_CLIENT_SECRET: Json | None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
     CORS_ALLOW_CREDENTIALS: bool = True

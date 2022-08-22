@@ -35,7 +35,7 @@ async def http_get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> d
 
 @room_router.post("/", response_model=Room)
 async def http_create_room(room: RoomPost, current_user: auth.User = Depends(auth.get_current_user)) -> Room:
-    logger.debug(f"Creating room:{room.name}, {room.direction}")
+    logger.debug(f"Creating room: {room}", extra={"user": current_user})
     if await utils.check_room_existing(db.session, room.name):
         raise HTTPException(status_code=423, detail="Already exists")
     return Room.from_orm(await utils.create_room(room.name, room.direction, db.session))
@@ -45,13 +45,13 @@ async def http_create_room(room: RoomPost, current_user: auth.User = Depends(aut
 async def http_patch_room(
     id: int, room_pydantic: RoomPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Room:
-    logger.debug(f"Patching room id:{id}")
+    logger.debug(f"Patching room id:{id}", extra={"user": current_user})
     room = await utils.get_room_by_id(id, db.session)
     return Room.from_orm(await utils.update_room(room, db.session, room_pydantic.name, room_pydantic.direction))
 
 
 @room_router.delete("/{id}", response_model=None)
 async def http_delete_room(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    logger.debug(f"Deleting room id:{id}")
+    logger.debug(f"Deleting room id:{id}", extra={"user": current_user})
     room = await utils.get_room_by_id(id, db.session)
     return await utils.delete_room(room, db.session)

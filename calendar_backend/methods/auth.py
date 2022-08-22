@@ -17,8 +17,8 @@ class UserInDB(User):
 
 def get_user(db, username: str):
     if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+        password = db[username]
+        return UserInDB(username=username, password=password)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -29,4 +29,4 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return user
+    return user.username

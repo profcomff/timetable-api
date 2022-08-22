@@ -35,7 +35,7 @@ async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> 
 
 @group_router.post("/", response_model=Group)
 async def http_create_group(group: GroupPost, current_user: auth.User = Depends(auth.get_current_user)) -> Group:
-    logger.debug(f"Creating group:{group})")
+    logger.debug(f"Creating group: {group}", extra={"user": current_user})
     if await utils.check_group_existing(db.session, group.number):
         raise HTTPException(status_code=423, detail="Already exists")
     return Group.from_orm(await utils.create_group(group.number, group.name, db.session))
@@ -45,13 +45,13 @@ async def http_create_group(group: GroupPost, current_user: auth.User = Depends(
 async def http_patch_group(
     id: int, group_pydantic: GroupPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Group:
-    logger.debug(f"Pathcing group id:{id}")
+    logger.debug(f"Pathcing group id:{id}", extra={"user": current_user})
     group = await utils.get_group_by_id(id, db.session)
     return Group.from_orm(await utils.update_group(group, db.session, group_pydantic.number, group_pydantic.name))
 
 
 @group_router.delete("/{id}", response_model=None)
 async def http_delete_group(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    logger.debug(f"Deleting group id:{id}")
+    logger.debug(f"Deleting group id:{id}", extra={"user": current_user})
     group = await utils.get_group_by_id(id, db.session)
     return await utils.delete_group(group, db.session)

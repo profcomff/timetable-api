@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 @auth_router.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user_dict = settings.ADMIN_SECRET.get(form_data.username)
-    if not user_dict:
+    password = settings.ADMIN_SECRET.get(form_data.username)
+    if not password:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
-    user = auth.UserInDB(**user_dict)
+    user = auth.UserInDB(username=form_data.username, password=password)
     hashed_password = form_data.password
     if not hashed_password == user.password:
         raise HTTPException(status_code=400, detail="Incorrect username or password")

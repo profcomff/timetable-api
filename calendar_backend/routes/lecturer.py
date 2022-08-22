@@ -37,7 +37,7 @@ async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0) 
 async def http_create_lecturer(
     lecturer: LecturerPost, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Lecturer:
-    logger.debug(f"Creating lecturer:{lecturer}")
+    logger.debug(f"Creating lecturer: {lecturer}", extra={"user": current_user})
     return Lecturer.from_orm(
         await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
     )
@@ -47,7 +47,7 @@ async def http_create_lecturer(
 async def http_patch_lecturer(
     id: int, lecturer_pydantic: LecturerPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Lecturer:
-    logger.debug(f"Patching lecturer id:{id}")
+    logger.debug(f"Patching lecturer id:{id}", extra={"user": current_user})
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return Lecturer.from_orm(
         await utils.update_lecturer(
@@ -62,6 +62,6 @@ async def http_patch_lecturer(
 
 @lecturer_router.delete("/{id}", response_model=None)
 async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    logger.debug(f"Deleting lectuer id:{id}")
+    logger.debug(f"Deleting lectuer id:{id}", extra={"user": current_user})
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return await utils.delete_lecturer(lecturer, db.session)
