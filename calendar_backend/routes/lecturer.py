@@ -87,5 +87,5 @@ async def http_get_lecturer_photos(id: int):
 
 
 @lecturer_router.post("/{id}/comment")
-async def http_comment_lecturer(id: int, comment: str):
+async def http_comment_lecturer(id: int, comment_text: str, author_name: str):
     pass

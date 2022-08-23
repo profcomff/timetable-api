@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions, get_settings
 from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
-from calendar_backend.models.db import Photo
+from calendar_backend.models.db import Photo, CommentsLecturer, CommentsLesson
 
 settings = get_settings()
 
@@ -286,3 +286,21 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         session.add(photo)
         session.flush()
     return random_string
+
+async def create_comment_event(event_id: int, session: Session, text: str, author_name: str):
+    comment = CommentsLesson(text=text, author_name=author_name, lesson_id=event_id)
+    session.add(comment)
+    session.flush()
+
+
+async def create_comment_lecturer(lecturer_id: int, session: Session, text: str, author_name: str):
+    comment = CommentsLecturer(text=text, author_name=author_name, lecturer_id=lecturer_id)
+    session.add(comment)
+    session.flush()
+    
+    
+async def update_comment(comment_id: int, session: Session, new_text: str):
+    comment = session.query(CommentsLecturer).get(comment_id)
+    comment.text = new_text
+    session.flush()
+
