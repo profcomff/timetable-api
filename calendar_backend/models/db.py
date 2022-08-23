@@ -49,9 +49,9 @@ class Lecturer(Base):
     avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
     description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
 
-    avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys=[avatar_id])
+    avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys="Lecturer.avatar_id")
     photos: list[Photo] = sqlalchemy.orm.relationship(
-        "Photo", secondary="lecturer_photo", order_by="Photo.id", back_populates="lecturer"
+        "Photo", foreign_keys="Photo.lecturer_id", order_by="Photo.id", back_populates="lecturer"
     )
 
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
@@ -127,19 +127,14 @@ class LessonsRooms(Base):
 
 class Photo(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(
         sqlalchemy.String,
     )
 
     lecturer: Lecturer = sqlalchemy.orm.relationship(
-        "Lecturer", secondary="lecturer_photo", order_by="Lecturer.id", back_populates="photos"
+        "Lecturer", foreign_keys="Photo.lecturer_id", order_by="Lecturer.id", back_populates="photos"
     )
-
-
-class LecturerPhoto(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
-    photo_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
 
 
 class CommentsLecturer(Base):
