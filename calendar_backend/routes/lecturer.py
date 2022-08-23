@@ -28,7 +28,9 @@ async def http_get_lecturer_by_id(
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
-async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", ""]] = Query(...)) -> dict[str, Any]:
+async def http_get_lecturers(
+    query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", ""]] = Query(...)
+) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
     if "photo" in details:
@@ -46,7 +48,9 @@ async def http_create_lecturer(
 ) -> Lecturer:
     logger.debug(f"Creating lecturer: {lecturer}", extra={"user": current_user})
     return Lecturer.from_orm(
-        await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, lecturer.description, db.session)
+        await utils.create_lecturer(
+            lecturer.first_name, lecturer.middle_name, lecturer.last_name, lecturer.description, db.session
+        )
     )
 
 
@@ -63,7 +67,7 @@ async def http_patch_lecturer(
             lecturer_pydantic.first_name,
             lecturer_pydantic.middle_name,
             lecturer_pydantic.last_name,
-            lecturer_pydantic.description
+            lecturer_pydantic.description,
         )
     )
 
@@ -76,7 +80,9 @@ async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.g
 
 
 @lecturer_router.post("/{id}/photo")
-async def http_upload_photo(id: int, photo: UploadFile = File(...), current_user: auth.User = Depends(auth.get_current_user)):
+async def http_upload_photo(
+    id: int, photo: UploadFile = File(...), current_user: auth.User = Depends(auth.get_current_user)
+):
     return await utils.upload_lecturer_photo(id, db.session, file=photo)
 
 
@@ -94,4 +100,3 @@ async def http_comment_lecturer(id: int, comment_text: str, author_name: str):
 @lecturer_router.patch("/{id}/comment")
 async def http_update_comment_lecturer(comment_id: int, new_text: str):
     return await utils.update_comment_lecturer(comment_id, db.session, new_text)
-

@@ -111,7 +111,7 @@ async def update_lecturer(
     new_first_name: str | None = None,
     new_middle_name: str | None = None,
     new_last_name: str | None = None,
-    new_description: str | None = None
+    new_description: str | None = None,
 ) -> Lecturer:
     lecturer.first_name = new_first_name or lecturer.first_name
     lecturer.middle_name = new_middle_name or lecturer.middle_name
@@ -187,7 +187,9 @@ async def create_group(number: str, name: str, session: Session) -> Group:
     return group
 
 
-async def create_lecturer(first_name: str, middle_name: str, last_name: str, description: str, session: Session) -> Lecturer:
+async def create_lecturer(
+    first_name: str, middle_name: str, last_name: str, description: str, session: Session
+) -> Lecturer:
     lecturer = Lecturer(first_name=first_name, middle_name=middle_name, last_name=last_name, description=description)
     session.add(lecturer)
     session.flush()
@@ -301,7 +303,7 @@ async def create_comment_lecturer(lecturer_id: int, session: Session, text: str,
     session.flush()
     return comment
 
-    
+
 async def update_comment_lecturer(comment_id: int, session: Session, new_text: str) -> CommentsLecturer:
     comment = session.query(CommentsLecturer).get(comment_id)
     comment.text = new_text

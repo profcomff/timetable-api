@@ -158,4 +158,6 @@ class CommentsLesson(Base):
     create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
 
-    lesson: Lesson = sqlalchemy.orm.relationship("Lesson", foreign_keys="CommentsLesson.lesson_id", back_populates="comments")
+    lesson: Lesson = sqlalchemy.orm.relationship(
+        "Lesson", foreign_keys="CommentsLesson.lesson_id", back_populates="comments"
+    )
