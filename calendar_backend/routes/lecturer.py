@@ -1,9 +1,11 @@
 import datetime
 import logging
-from typing import Any, Literal
+from tempfile import NamedTemporaryFile
+from typing import Any, Literal, IO
 
-from fastapi import APIRouter, Depends, UploadFile, File, Query
+from fastapi import APIRouter, Depends, UploadFile, File, Query, Header, HTTPException
 from fastapi_sqlalchemy import db
+from starlette import status
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
@@ -13,6 +15,10 @@ from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
+
+
+async def valid_content_length(content_length: int = Header(..., lt=80_000)):
+    return content_length
 
 
 @lecturer_router.get("/{id}", response_model=LecturerEvents)
@@ -85,7 +91,14 @@ async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.g
 
 
 @lecturer_router.post("/{id}/photo", response_model=Photo)
-async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
+async def http_upload_photo(id: int, photo: UploadFile = File(...), file_size: int = Depends(valid_content_length)) -> Photo:
+    real_file_size = 0
+    temp: IO = NamedTemporaryFile(delete=False)
+    for chunk in photo.file:
+        real_file_size += len(chunk)
+        if real_file_size > file_size:
+            raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Too large")
+        temp.write(chunk)
     return Photo.from_orm(await utils.upload_lecturer_photo(id, db.session, file=photo))
 
 
