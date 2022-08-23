@@ -105,6 +105,7 @@ class LecturerPatch(Base):
     middle_name: str | None
     last_name: str | None
     description: str | None
+    comments: list[str] | None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -117,6 +118,7 @@ class EventPatch(Base):
     lecturer_id: list[int] | None
     start_ts: datetime.datetime | None
     end_ts: datetime.datetime | None
+    comments: list[str] | None
 
     def __repr__(self):
         return (
@@ -136,6 +138,7 @@ class LecturerPost(Base):
     middle_name: str
     last_name: str
     description: str | None
+    comments: list[str] | None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -167,6 +170,7 @@ class EventPost(Base):
     lecturer_id: list[int]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
+    comments: list[str] | None
 
     def __repr__(self):
         return (

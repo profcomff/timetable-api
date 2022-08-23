@@ -111,10 +111,12 @@ async def update_lecturer(
     new_first_name: str | None = None,
     new_middle_name: str | None = None,
     new_last_name: str | None = None,
+    new_description: str | None = None
 ) -> Lecturer:
     lecturer.first_name = new_first_name or lecturer.first_name
     lecturer.middle_name = new_middle_name or lecturer.middle_name
     lecturer.last_name = new_last_name or lecturer.last_name
+    lecturer.description = new_description or lecturer.description
     session.flush()
     return lecturer
 

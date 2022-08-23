@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, Query
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -28,7 +28,7 @@ async def http_get_lecturer_by_id(
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
-async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0, details: Literal["", "photo"] = "") -> dict[str, Any]:
+async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", ""]] = Query(...)) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
     if details:
@@ -60,6 +60,7 @@ async def http_patch_lecturer(
             lecturer_pydantic.first_name,
             lecturer_pydantic.middle_name,
             lecturer_pydantic.last_name,
+            lecturer_pydantic.description
         )
     )
 
