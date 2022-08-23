@@ -13,6 +13,9 @@ class Base(BaseModel):
 class Comment(Base):
     id: int
     text: str
+    author_name: str
+    create_ts: datetime.datetime
+    update_ts: datetime.datetime
 
 
 class Room(Base):
