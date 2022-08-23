@@ -93,3 +93,13 @@ async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_
     logger.debug(f"Deleting event id:{id}", extra={"user": current_user})
     lesson = await utils.get_lesson_by_id(id, db.session)
     return await utils.delete_lesson(lesson, db.session)
+
+
+@event_router.post("/{id}/comment")
+async def http_comment_event(id: int, author_name: str, text: str):
+    return await utils.create_comment_event(id, db.session, text, author_name)
+
+
+@event_router.patch("/{id}/comment")
+async def http_udpate_comment(comment_id: int, new_text: str):
+    return await utils.update_comment_event(comment_id, db.session, new_text)

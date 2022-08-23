@@ -93,4 +93,5 @@ async def http_comment_lecturer(id: int, comment_text: str, author_name: str):
 
 @lecturer_router.patch("/{id}/comment")
 async def http_update_comment_lecturer(comment_id: int, new_text: str):
-    return await utils.update_comment(comment_id, db.session, new_text)
+    return await utils.update_comment_lecturer(comment_id, db.session, new_text)
+
