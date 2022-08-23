@@ -235,3 +235,9 @@ class GroupEvents(Group):
 
 class LecturerEvents(Lecturer):
     events: list[Event] = []
+
+
+class Photo(Base):
+    id: int
+    lecturer_id: int
+    link: str

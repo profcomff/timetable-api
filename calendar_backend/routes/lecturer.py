@@ -7,7 +7,8 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents, CommentLecturer, LecturerPhotos
+from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents, \
+    CommentLecturer, LecturerPhotos, Photo
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -29,17 +30,21 @@ async def http_get_lecturer_by_id(
 
 @lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
-    query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", ""]] = Query(...)
+    query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", "comments", ""]] = Query(...)
 ) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
-    result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
-    if "photo" in details:
+    list_lecturer, total = await utils.get_list_lecturers(db.session, query, limit, offset)
+    result = [Lecturer.from_orm(row) for row in list_lecturer]
+    if "photo" not in details:
         for row in result:
-            row.photo_link = row.avatar.link if row.avatar else None
+            row.avatar_id = None
     if "description" not in details:
         for row in result:
             row.description = None
-    return {"items": [Lecturer.from_orm(row) for row in result], "limit": limit, "offset": offset, "total": total}
+    if "comments" not in details:
+        for row in result:
+            row.comments = None
+    return {"items": result, "limit": limit, "offset": offset, "total": total}
 
 
 @lecturer_router.post("/", response_model=Lecturer)
@@ -79,9 +84,9 @@ async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.g
     return await utils.delete_lecturer(lecturer, db.session)
 
 
-@lecturer_router.post("/{id}/photo", response_model=str)
-async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> str:
-    return await utils.upload_lecturer_photo(id, db.session, file=photo)
+@lecturer_router.post("/{id}/photo", response_model=Photo)
+async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
+    return Photo.from_orm(await utils.upload_lecturer_photo(id, db.session, file=photo))
 
 
 @lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)

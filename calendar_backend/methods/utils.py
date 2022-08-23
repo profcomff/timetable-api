@@ -279,7 +279,7 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
     return False
 
 
-async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)):
+async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
     async with aiofiles.open(f"{settings.PHOTO_LECTURER_PATH}/{random_string}", 'wb') as out_file:
         content = await file.read()
@@ -287,7 +287,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         photo = Photo(lecturer_id=lecturer_id, link=random_string)
         session.add(photo)
         session.flush()
-    return random_string
+    return photo
 
 
 async def create_comment_event(event_id: int, session: Session, text: str, author_name: str) -> CommentsLesson:
