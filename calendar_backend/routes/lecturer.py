@@ -88,4 +88,9 @@ async def http_get_lecturer_photos(id: int):
 
 @lecturer_router.post("/{id}/comment")
 async def http_comment_lecturer(id: int, comment_text: str, author_name: str):
-    pass
+    return await utils.create_comment_lecturer(id, db.session, comment_text, author_name)
+
+
+@lecturer_router.patch("/{id}/comment")
+async def http_update_comment_lecturer(comment_id: int, new_text: str):
+    return await utils.update_comment(comment_id, db.session, new_text)

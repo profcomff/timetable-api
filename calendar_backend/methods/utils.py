@@ -299,8 +299,13 @@ async def create_comment_lecturer(lecturer_id: int, session: Session, text: str,
     session.flush()
     
     
-async def update_comment(comment_id: int, session: Session, new_text: str):
+async def update_comment_lecturer(comment_id: int, session: Session, new_text: str):
     comment = session.query(CommentsLecturer).get(comment_id)
     comment.text = new_text
     session.flush()
 
+
+async def update_comment_event(comment_id: int, session: Session, new_text: str):
+    comment = session.query(CommentsLesson).get(comment_id)
+    comment.text = new_text
+    session.flush()
