@@ -1,10 +1,15 @@
 import datetime
+import random
+import string
 
-from fastapi import UploadFile
+import aiofiles
+from fastapi import UploadFile, File
 from sqlalchemy.orm import Session
 
-from calendar_backend import exceptions
+from calendar_backend import exceptions, get_settings
 from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
+
+settings = get_settings()
 
 
 # TODO: Tests
@@ -269,5 +274,10 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
     return False
 
 
-async def upload_lecturer_photo(file: UploadFile, lecturer_id: int):
-    pass
+async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)):
+    random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
+    lecturer = await get_lecturer_by_id(lecturer_id, session)
+    async with aiofiles.open(f"{settings.PHOTO_LECTURER_PATH}/{random_string}", 'wb') as out_file:
+        content = await file.read()
+        await out_file.write(content)
+        pass

@@ -2,11 +2,8 @@
 """
 from __future__ import annotations
 
-import random
-import string
 from datetime import datetime
 from enum import Enum
-
 
 import sqlalchemy.orm
 from sqlalchemy import Column, Enum as DbEnum, and_, or_
@@ -50,7 +47,7 @@ class Lecturer(Base):
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
-    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
 
     avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys=[avatar_id])
     photos: list[Photo] = sqlalchemy.orm.relationship(
@@ -131,7 +128,7 @@ class LessonsRooms(Base):
 class Photo(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     link = sqlalchemy.Column(
-        sqlalchemy.String, default=''.join(random.choice(string.ascii_uppercase) for i in range(32))
+        sqlalchemy.String,
     )
 
     lecturer: Lecturer = sqlalchemy.orm.relationship(
