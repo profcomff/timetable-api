@@ -43,7 +43,7 @@ async def http_create_lecturer(
 ) -> Lecturer:
     logger.debug(f"Creating lecturer: {lecturer}", extra={"user": current_user})
     return Lecturer.from_orm(
-        await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, db.session)
+        await utils.create_lecturer(lecturer.first_name, lecturer.middle_name, lecturer.last_name, lecturer.description, db.session)
     )
 
 

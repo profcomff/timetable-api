@@ -185,8 +185,8 @@ async def create_group(number: str, name: str, session: Session) -> Group:
     return group
 
 
-async def create_lecturer(first_name: str, middle_name: str, last_name: str, session: Session) -> Lecturer:
-    lecturer = Lecturer(first_name=first_name, middle_name=middle_name, last_name=last_name)
+async def create_lecturer(first_name: str, middle_name: str, last_name: str, description: str, session: Session) -> Lecturer:
+    lecturer = Lecturer(first_name=first_name, middle_name=middle_name, last_name=last_name, description=description)
     session.add(lecturer)
     session.flush()
     return lecturer

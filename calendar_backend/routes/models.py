@@ -43,6 +43,7 @@ class Lecturer(Base):
     middle_name: str
     last_name: str
     photo_link: str | None
+    description: str | None
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -96,6 +97,7 @@ class LecturerPatch(Base):
     first_name: str | None
     middle_name: str | None
     last_name: str | None
+    description: str | None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -126,6 +128,7 @@ class LecturerPost(Base):
     first_name: str
     middle_name: str
     last_name: str
+    description: str | None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
