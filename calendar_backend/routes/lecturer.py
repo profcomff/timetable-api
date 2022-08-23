@@ -74,3 +74,9 @@ async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.g
 @lecturer_router.post("/{id}/photo")
 async def http_upload_photo(id: int, photo: UploadFile = File(...), current_user: auth.User = Depends(auth.get_current_user)):
     return await utils.upload_lecturer_photo(id, db.session, file=photo)
+
+
+@lecturer_router.get("/{id}/photo")
+async def http_get_lecturer_photos(id: int):
+    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    return lecturer, [row.link for row in lecturer.photos]
