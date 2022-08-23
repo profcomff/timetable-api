@@ -7,7 +7,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents
+from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents, CommentLecturer
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -90,11 +90,11 @@ async def http_get_lecturer_photos(id: int):
     return lecturer, [row.link for row in lecturer.photos]
 
 
-@lecturer_router.post("/{id}/comment")
-async def http_comment_lecturer(id: int, comment_text: str, author_name: str):
-    return await utils.create_comment_lecturer(id, db.session, comment_text, author_name)
+@lecturer_router.post("/{id}/comment", response_model=CommentLecturer)
+async def http_comment_lecturer(id: int, comment_text: str, author_name: str) -> CommentLecturer:
+    return CommentLecturer.from_orm(await utils.create_comment_lecturer(id, db.session, comment_text, author_name))
 
 
-@lecturer_router.patch("/{id}/comment")
-async def http_update_comment_lecturer(comment_id: int, new_text: str):
-    return await utils.update_comment_lecturer(comment_id, db.session, new_text)
+@lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
+async def http_update_comment_lecturer(comment_id: int, new_text: str) -> CommentLecturer:
+    return CommentLecturer.from_orm(await utils.update_comment_lecturer(comment_id, db.session, new_text))

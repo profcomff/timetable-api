@@ -10,8 +10,18 @@ class Base(BaseModel):
         orm_mode = True
 
 
-class Comment(Base):
+class CommentEvent(Base):
     id: int
+    lesson_id: int
+    text: str
+    author_name: str
+    create_ts: datetime.datetime
+    update_ts: datetime.datetime
+
+
+class CommentLecturer(Base):
+    id: int
+    lecturer_id: int
     text: str
     author_name: str
     create_ts: datetime.datetime
