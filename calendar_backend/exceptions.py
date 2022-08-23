@@ -46,3 +46,15 @@ class LessonsNotFound(NotFound):
     def __init__(self):
         message = f"Lessons list not found"
         super().__init__(message)
+
+
+class PhotoNotFoundError(NotFound):
+    def __init__(self, id: int):
+        message = f"Photo {id} not found"
+        super().__init__(message)
+
+
+class LecturerPhotoNotFoundError(PhotoNotFoundError):
+    def __init__(self, id: int, lecturer_id: int):
+        message = f"Photo {id} of lecturer {lecturer_id} not found"
+        super(PhotoNotFoundError, self).__init__(message)

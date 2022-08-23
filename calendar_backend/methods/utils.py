@@ -316,3 +316,18 @@ async def update_comment_event(comment_id: int, session: Session, new_text: str)
     comment.text = new_text
     session.flush()
     return comment
+
+
+async def get_photo_by_id(photo_id: int, session: Session) -> Photo:
+    photo = session.query(Photo).get(photo_id)
+    if not photo:
+        raise exceptions.PhotoNotFoundError(photo_id)
+    return photo
+
+
+async def set_lecturer_avatar(lecturer_id: int, photo_id: int, session: Session) -> Lecturer:
+    lecturer = await get_lecturer_by_id(lecturer_id, session)
+    if photo_id in [row.id for row in lecturer.photos]:
+        lecturer.avatar = await get_photo_by_id(photo_id, session)
+    else:
+        raise exceptions.PhotoNotFoundError(photo_id)

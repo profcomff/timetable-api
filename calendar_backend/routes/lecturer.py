@@ -35,7 +35,7 @@ async def http_get_lecturers(
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
     if "photo" in details:
         for row in result:
-            row.photo_link = row.avatar.link
+            row.photo_link = row.avatar.link if row.avatar else None
     if "description" not in details:
         for row in result:
             row.description = None
@@ -99,3 +99,8 @@ async def http_comment_lecturer(id: int, comment_text: str, author_name: str) ->
 @lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
 async def http_update_comment_lecturer(comment_id: int, new_text: str) -> CommentLecturer:
     return CommentLecturer.from_orm(await utils.update_comment_lecturer(comment_id, db.session, new_text))
+
+
+@lecturer_router.post("/{id}/avatar", response_model=Lecturer)
+async def http_set_lecturer_avatar(id: int, photo_id: int):
+    pass
