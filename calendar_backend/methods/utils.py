@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions, get_settings
 from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
+from calendar_backend.models.db import Photo
 
 settings = get_settings()
 
@@ -276,8 +277,10 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)):
     random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
-    lecturer = await get_lecturer_by_id(lecturer_id, session)
     async with aiofiles.open(f"{settings.PHOTO_LECTURER_PATH}/{random_string}", 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
-        pass
+        photo = Photo(lecturer_id=lecturer_id, link=random_string)
+        session.add(photo)
+        session.flush()
+    return random_string
