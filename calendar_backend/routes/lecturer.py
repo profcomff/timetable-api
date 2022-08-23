@@ -31,9 +31,12 @@ async def http_get_lecturer_by_id(
 async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", ""]] = Query(...)) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
-    if details:
+    if "photo" in details:
         for row in result:
-            row.link = row.avatar.link
+            row.photo_link = row.avatar.link
+    if "description" not in details:
+        for row in result:
+            row.description = None
     return {"items": [Lecturer.from_orm(row) for row in result], "limit": limit, "offset": offset, "total": total}
 
 
@@ -81,3 +84,8 @@ async def http_upload_photo(id: int, photo: UploadFile = File(...), current_user
 async def http_get_lecturer_photos(id: int):
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return lecturer, [row.link for row in lecturer.photos]
+
+
+@lecturer_router.post("/{id}/comment")
+async def http_comment(id: int, comment: str):
+    pass

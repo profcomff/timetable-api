@@ -140,7 +140,10 @@ class Photo(Base):
 class CommentsLecturer(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
+    author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
+    update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
 
     lecturer: Lecturer = sqlalchemy.orm.relationship(
         "Lecturer", foreign_keys="CommentsLecturer.lecturer_id", back_populates="comments"
@@ -150,6 +153,9 @@ class CommentsLecturer(Base):
 class CommentsLesson(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
+    author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
+    update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
 
     lesson: Lesson = sqlalchemy.orm.relationship("Lesson", foreign_keys="CommentsLesson.lesson_id", back_populates="comments")
