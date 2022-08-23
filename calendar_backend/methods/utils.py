@@ -287,25 +287,30 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         session.flush()
     return random_string
 
-async def create_comment_event(event_id: int, session: Session, text: str, author_name: str):
+
+async def create_comment_event(event_id: int, session: Session, text: str, author_name: str) -> CommentsLesson:
     comment = CommentsLesson(text=text, author_name=author_name, lesson_id=event_id)
     session.add(comment)
     session.flush()
+    return comment
 
 
-async def create_comment_lecturer(lecturer_id: int, session: Session, text: str, author_name: str):
+async def create_comment_lecturer(lecturer_id: int, session: Session, text: str, author_name: str) -> CommentsLecturer:
     comment = CommentsLecturer(text=text, author_name=author_name, lecturer_id=lecturer_id)
     session.add(comment)
     session.flush()
+    return comment
+
     
-    
-async def update_comment_lecturer(comment_id: int, session: Session, new_text: str):
+async def update_comment_lecturer(comment_id: int, session: Session, new_text: str) -> CommentsLecturer:
     comment = session.query(CommentsLecturer).get(comment_id)
     comment.text = new_text
     session.flush()
+    return comment
 
 
-async def update_comment_event(comment_id: int, session: Session, new_text: str):
+async def update_comment_event(comment_id: int, session: Session, new_text: str) -> CommentsLesson:
     comment = session.query(CommentsLesson).get(comment_id)
     comment.text = new_text
     session.flush()
+    return comment
