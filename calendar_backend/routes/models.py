@@ -62,7 +62,7 @@ class Lecturer(Base):
     last_name: str
     photo_link: str | None
     description: str | None
-    comments: list[str] | None
+    comments: list[CommentLecturer] | None
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -85,7 +85,7 @@ class Event(Base):
     lecturer: list[Lecturer]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
-    comments: list[str] | None
+    comments: list[CommentEvent] | None
 
     def __repr__(self):
         return (
