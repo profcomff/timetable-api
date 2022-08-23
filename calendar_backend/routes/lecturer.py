@@ -7,7 +7,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents, CommentLecturer
+from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents, CommentLecturer, LecturerPhotos
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -84,10 +84,11 @@ async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> str:
     return await utils.upload_lecturer_photo(id, db.session, file=photo)
 
 
-@lecturer_router.get("/{id}/photo")
-async def http_get_lecturer_photos(id: int):
+@lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
+async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
     lecturer = await utils.get_lecturer_by_id(id, db.session)
-    return lecturer, [row.link for row in lecturer.photos]
+    lecturer.links = [row.link for row in lecturer.photos]
+    return LecturerPhotos.from_orm(lecturer)
 
 
 @lecturer_router.post("/{id}/comment", response_model=CommentLecturer)

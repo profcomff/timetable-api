@@ -68,6 +68,15 @@ class Lecturer(Base):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
 
+class Photos(Base):
+    id: int
+    link: str
+
+
+class LecturerPhotos(Lecturer):
+    links: list[str]
+
+
 class Event(Base):
     id: int
     name: str
