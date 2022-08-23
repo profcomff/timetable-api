@@ -102,5 +102,5 @@ async def http_update_comment_lecturer(comment_id: int, new_text: str) -> Commen
 
 
 @lecturer_router.post("/{id}/avatar", response_model=Lecturer)
-async def http_set_lecturer_avatar(id: int, photo_id: int):
-    pass
+async def http_set_lecturer_avatar(id: int, photo_id: int) -> Lecturer:
+    return Lecturer.from_orm(await utils.set_lecturer_avatar(id, photo_id, db.session))

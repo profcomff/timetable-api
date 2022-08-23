@@ -329,5 +329,6 @@ async def set_lecturer_avatar(lecturer_id: int, photo_id: int, session: Session)
     lecturer = await get_lecturer_by_id(lecturer_id, session)
     if photo_id in [row.id for row in lecturer.photos]:
         lecturer.avatar = await get_photo_by_id(photo_id, session)
+        return lecturer
     else:
-        raise exceptions.PhotoNotFoundError(photo_id)
+        raise exceptions.LecturerPhotoNotFoundError(id=photo_id, lecturer_id=lecturer_id)

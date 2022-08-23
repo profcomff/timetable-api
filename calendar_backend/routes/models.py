@@ -60,7 +60,7 @@ class Lecturer(Base):
     first_name: str
     middle_name: str
     last_name: str
-    photo_link: str | None
+    avatar_id: int | None
     description: str | None
     comments: list[CommentLecturer] | None
 
