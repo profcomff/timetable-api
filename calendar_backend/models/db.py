@@ -2,8 +2,11 @@
 """
 from __future__ import annotations
 
+import random
+import string
 from datetime import datetime
 from enum import Enum
+
 
 import sqlalchemy.orm
 from sqlalchemy import Column, Enum as DbEnum, and_, or_
@@ -46,8 +49,20 @@ class Lecturer(Base):
     first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
+    description = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+
+    avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys=[avatar_id])
+    photos: list[Photo] = sqlalchemy.orm.relationship(
+        "Photo", secondary="lecturer_photo", order_by="Photo.id", back_populates="lecturer"
+    )
+
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", secondary="lessons_lecturers", order_by="(Lesson.start_ts)", back_populates="lecturer"
+    )
+
+    comments: list[CommentsLecturer] = sqlalchemy.orm.relationship(
+        "CommentsLecturer", foreign_keys="CommentsLecturer.lecturer_id", back_populates="lecturer"
     )
 
     @hybrid_method
@@ -89,6 +104,10 @@ class Lesson(Base):
         "Lecturer", back_populates="lessons", secondary="lessons_lecturers"
     )
 
+    comments: list[CommentsLesson] = sqlalchemy.orm.relationship(
+        "CommentsLesson", foreign_keys="CommentsLesson.lesson_id", back_populates="lesson"
+    )
+
     def __repr__(self):
         return (
             f"Lesson(id={self.id}, name={self.name},"
@@ -107,3 +126,38 @@ class LessonsRooms(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
     room_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("room.id"))
+
+
+class Photo(Base):
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    link = sqlalchemy.Column(
+        sqlalchemy.String, default=''.join(random.choice(string.ascii_uppercase) for i in range(32))
+    )
+
+    lecturer: Lecturer = sqlalchemy.orm.relationship(
+        "Lecturer", secondary="lecturer_photo", order_by="Lecturer.id", back_populates="photos"
+    )
+
+
+class LecturerPhoto(Base):
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
+    photo_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
+
+
+class CommentsLecturer(Base):
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
+    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+    lecturer: Lecturer = sqlalchemy.orm.relationship(
+        "Lecturer", foreign_keys="CommentsLecturer.lecturer_id", back_populates="comments"
+    )
+
+
+class CommentsLesson(Base):
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
+    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+
+    lesson: Lesson = sqlalchemy.orm.relationship("Lesson", foreign_keys="CommentsLesson.lesson_id", back_populates="comments")

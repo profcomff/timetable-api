@@ -18,7 +18,8 @@ from .auth import auth_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
-app = FastAPI(description="""API для работы с календарем физфака.
+app = FastAPI(
+    description="""API для работы с календарем физфака.
 Пример работы на питоне(Создание Room):
 ```python
 import reqests, json
@@ -38,7 +39,8 @@ create_room = requests.post(
 )
 
 ```
-""")
+"""
+)
 
 
 @app.exception_handler(exceptions.NoGroupFoundError)

@@ -1,5 +1,6 @@
 import datetime
 
+from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions
@@ -266,3 +267,7 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
     ):
         return True
     return False
+
+
+async def upload_lecturer_photo(file: UploadFile, lecturer_id: int):
+    pass

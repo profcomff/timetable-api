@@ -13,6 +13,7 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
+    PHOTO_LECTURER_PATH: DirectoryPath = 'photo/lecturer'
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
     GOOGLE_CLIENT_SECRET: Json | None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
