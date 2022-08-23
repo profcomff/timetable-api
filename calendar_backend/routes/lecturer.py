@@ -20,7 +20,7 @@ async def http_get_lecturer_by_id(
 ) -> LecturerEvents:
     logger.debug(f"Getting lecturer id:{id}")
     lecturer = await utils.get_lecturer_by_id(id, db.session)
-    lecturer.photo_link = lecturer.avatar.link
+    lecturer.photo_link = lecturer.avatar.link if lecturer.avatar else None
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
         result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
