@@ -1,8 +1,8 @@
 import datetime
 import logging
-from typing import Any
+from typing import Any, Literal
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
@@ -20,6 +20,7 @@ async def http_get_lecturer_by_id(
 ) -> LecturerEvents:
     logger.debug(f"Getting lecturer id:{id}")
     lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer.photo_link = lecturer.avatar.link
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
         result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
@@ -27,9 +28,12 @@ async def http_get_lecturer_by_id(
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
-async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
+async def http_get_lecturers(query: str = "", limit: int = 10, offset: int = 0, details: Literal["", "photo"] = "") -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
     result, total = await utils.get_list_lecturers(db.session, query, limit, offset)
+    if details:
+        for row in result:
+            row.link = row.avatar.link
     return {"items": [Lecturer.from_orm(row) for row in result], "limit": limit, "offset": offset, "total": total}
 
 
@@ -65,3 +69,8 @@ async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.g
     logger.debug(f"Deleting lectuer id:{id}", extra={"user": current_user})
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     return await utils.delete_lecturer(lecturer, db.session)
+
+
+@lecturer_router.post("/{id}/photo")
+async def http_upload_photo(id: int, photo: UploadFile = File(...), current_user: auth.User = Depends(auth.get_current_user)):
+    return await utils.upload_lecturer_photo(id, db.session, file=photo)

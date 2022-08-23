@@ -42,6 +42,7 @@ class Lecturer(Base):
     first_name: str
     middle_name: str
     last_name: str
+    photo_link: str | None
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
