@@ -86,11 +86,13 @@ async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.g
 
 @lecturer_router.post("/{id}/photo", response_model=Photo)
 async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
+    logger.debug(f"Uploading photo for lecturer: {id}")
     return Photo.from_orm(await utils.upload_lecturer_photo(id, db.session, file=photo))
 
 
 @lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
 async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
+    logger.debug(f"Getting lecturer: {id} photos")
     lecturer = await utils.get_lecturer_by_id(id, db.session)
     lecturer.links = [row.link for row in lecturer.photos]
     return LecturerPhotos.from_orm(lecturer)
@@ -98,14 +100,17 @@ async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
 
 @lecturer_router.post("/{id}/comment", response_model=CommentLecturer)
 async def http_comment_lecturer(id: int, comment_text: str, author_name: str) -> CommentLecturer:
+    logger.debug(f"Creating comment to lecturer: {id}")
     return CommentLecturer.from_orm(await utils.create_comment_lecturer(id, db.session, comment_text, author_name))
 
 
 @lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
 async def http_update_comment_lecturer(comment_id: int, new_text: str) -> CommentLecturer:
+    logger.debug(f"Updating comment id:{id}")
     return CommentLecturer.from_orm(await utils.update_comment_lecturer(comment_id, db.session, new_text))
 
 
 @lecturer_router.post("/{id}/avatar", response_model=Lecturer)
 async def http_set_lecturer_avatar(id: int, photo_id: int) -> Lecturer:
+    logger.debug(f"Setting lecturer: {id} avatar(photo: {photo_id}")
     return Lecturer.from_orm(await utils.set_lecturer_avatar(id, photo_id, db.session))

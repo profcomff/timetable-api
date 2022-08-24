@@ -97,9 +97,11 @@ async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_
 
 @event_router.post("/{id}/comment")
 async def http_comment_event(id: int, author_name: str, text: str):
+    logger.debug(f"Creating comment to event: {id}")
     return await utils.create_comment_event(id, db.session, text, author_name)
 
 
 @event_router.patch("/{id}/comment")
 async def http_udpate_comment(comment_id: int, new_text: str):
+    logger.debug(f"Updating comment: {comment_id}")
     return await utils.update_comment_event(comment_id, db.session, new_text)
