@@ -5,6 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
+from starlette import status
+from starlette.requests import Request
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response
+from starlette.types import ASGIApp
 
 from calendar_backend import exceptions
 from calendar_backend import get_settings
@@ -57,7 +62,7 @@ async def http_no_room_found_error_handler(request: starlette.requests.Request, 
 
 @app.exception_handler(exceptions.NoTeacherFoundError)
 async def http_no_lecturer_found_error_handler(
-    request: starlette.requests.Request, exc: exceptions.NoTeacherFoundError
+        request: starlette.requests.Request, exc: exceptions.NoTeacherFoundError
 ):
     logger.info(f"No lecturer found error, request: {request.path_params}, error: {exc}")
     return PlainTextResponse("No lecturer found error", status_code=404)
@@ -105,6 +110,21 @@ async def http_critical_error_handler(request: starlette.requests.Request, exc: 
     return PlainTextResponse("Error", status_code=500)
 
 
+class LimitUploadSize(BaseHTTPMiddleware):
+    def __init__(self, app: ASGIApp, max_upload_size: int) -> None:
+        super().__init__(app)
+        self.max_upload_size = max_upload_size
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.method == 'POST':
+            if 'content-length' not in request.headers:
+                return Response(status_code=status.HTTP_411_LENGTH_REQUIRED)
+            content_length = int(request.headers['content-length'])
+            if content_length > self.max_upload_size:
+                return Response(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        return await call_next(request)
+
+
 app.add_middleware(
     DBSessionMiddleware,
     db_url=settings.DB_DSN,
@@ -117,6 +137,7 @@ app.add_middleware(
     allow_methods=settings.CORS_ALLOW_METHODS,
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
+app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
 
 app.include_router(gcal)
 app.include_router(room_router)
