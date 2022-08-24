@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions, get_settings
 from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
-from calendar_backend.models.db import Photo, CommentsLecturer, CommentsLesson
+from calendar_backend.models.db import Photo, CommentsLecturer, CommentsLesson, LessonsLecturers, LessonsRooms
 
 settings = get_settings()
 
@@ -144,6 +144,7 @@ async def update_lesson(
 
 
 async def delete_room(room: Room, session: Session) -> None:
+    session.query(LessonsRooms).filter(LessonsRooms.room_id == room.id).delete()
     for row in room.lessons:
         session.delete(row)
     session.delete(room)
@@ -160,6 +161,7 @@ async def delete_group(group: Group, session: Session) -> None:
 
 
 async def delete_lecturer(lecturer: Lecturer, session: Session) -> None:
+    session.query(LessonsLecturers).filter(LessonsLecturers.lecturer_id == lecturer.id).delete()
     for row in lecturer.lessons:
         session.delete(row)
     for row in lecturer.photos:
