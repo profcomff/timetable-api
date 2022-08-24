@@ -163,6 +163,7 @@ async def delete_group(group: Group, session: Session) -> None:
 async def delete_lecturer(lecturer: Lecturer, session: Session) -> None:
     session.query(LessonsLecturers).filter(LessonsLecturers.lecturer_id == lecturer.id).delete()
     for row in lecturer.lessons:
+        session.query(LessonsRooms).filter(LessonsRooms.lesson_id == row.id).delete()
         session.delete(row)
     for row in lecturer.photos:
         session.delete(row)
