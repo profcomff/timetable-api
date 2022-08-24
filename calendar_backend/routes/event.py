@@ -37,7 +37,7 @@ async def http_get_events(
         logger.debug(f"Getting events for group_id:{group_id}")
         if lecturer_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        result: GetListEvent = GetListEvent(
+        result = GetListEvent(
             items=await utils.get_group_lessons_in_daterange(
                 await utils.get_group_by_id(group_id, db.session), start, end
             )
@@ -52,7 +52,7 @@ async def http_get_events(
         logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
         if group_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        result: GetListEvent = GetListEvent(
+        result = GetListEvent(
             items=await utils.get_lecturer_lessons_in_daterange(
                 await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
             )
@@ -67,7 +67,7 @@ async def http_get_events(
         logger.debug(f"Getting events for room_id:{room_id}")
         if lecturer_id or group_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        result: GetListEvent = GetListEvent(
+        result = GetListEvent(
             items=await utils.get_room_lessons_in_daterange(await utils.get_room_by_id(room_id, db.session), start, end)
         )
         if not detail:
