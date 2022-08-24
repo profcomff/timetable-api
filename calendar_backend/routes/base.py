@@ -98,6 +98,18 @@ async def http_no_lessons_found_error_handler(request: starlette.requests.Reques
     return PlainTextResponse("No lessons found error", status_code=404)
 
 
+@app.exception_handler(exceptions.PhotoNotFoundError)
+async def http_no_photo_found_handler(request: starlette.requests.Request, exc: exceptions.PhotoNotFoundError):
+    logger.info(f"Photo not found, request: {request.path_params}, error: {exc}")
+    return PlainTextResponse("No photo found error", status_code=404)
+
+
+@app.exception_handler(exceptions.LecturerPhotoNotFoundError)
+async def http_no_photo_found_handler(request: starlette.requests.Request, exc: exceptions.LecturerPhotoNotFoundError):
+    logger.info(f"Lecturer photo not found, request: {request.path_params}, error: {exc}")
+    return PlainTextResponse("Lecturer photo not found error", status_code=404)
+
+
 @app.exception_handler(ValueError)
 async def http_value_error_handler(request: starlette.requests.Request, exc: ValueError):
     logger.info(f"Failed to parse data, request: {request.path_params}, exc: {exc}")
