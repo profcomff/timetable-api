@@ -281,7 +281,8 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
-    async with aiofiles.open(f"{settings.PHOTO_LECTURER_PATH}/{random_string}", 'wb') as out_file:
+    path = f"{settings.PHOTO_LECTURER_PATH}/{random_string}.{file.content_type.split('/')[1]}"
+    async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
         photo = Photo(lecturer_id=lecturer_id, link=random_string)
