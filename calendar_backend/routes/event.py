@@ -6,7 +6,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import Event, EventPatch, EventPost, GetListEvent
+from calendar_backend.routes.models import Event, EventPatch, EventPost, GetListEvent, CommentEvent
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
@@ -95,13 +95,13 @@ async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_
     return await utils.delete_lesson(lesson, db.session)
 
 
-@event_router.post("/{id}/comment")
-async def http_comment_event(id: int, author_name: str, text: str):
+@event_router.post("/{id}/comment", response_model=CommentEvent)
+async def http_comment_event(id: int, author_name: str, text: str) -> CommentEvent:
     logger.debug(f"Creating comment to event: {id}")
-    return await utils.create_comment_event(id, db.session, text, author_name)
+    return CommentEvent.from_orm(await utils.create_comment_event(id, db.session, text, author_name))
 
 
-@event_router.patch("/{id}/comment")
-async def http_udpate_comment(comment_id: int, new_text: str):
+@event_router.patch("/{id}/comment", response_model=CommentEvent)
+async def http_udpate_comment(comment_id: int, new_text: str)  -> CommentEvent:
     logger.debug(f"Updating comment: {comment_id}")
-    return await utils.update_comment_event(comment_id, db.session, new_text)
+    return CommentEvent.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))
