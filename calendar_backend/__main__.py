@@ -10,11 +10,13 @@ LOGGING_CONFIG = {
     'formatters': {
         'standard': {
             'format': '%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(user)s %(message)s',
-            'default': {'user': ''}
+            'defaults': {'user': ''},
+            "datefmt":"%d-%m-%Y %I:%M:%S"
         }
     },
     'handlers': {
         'defaultout': {
+            'level': 'DEBUG',
             'formatter': 'standard',
             'class': 'logging.StreamHandler',
             'stream': 'ext://sys.stdout',
@@ -42,13 +44,9 @@ LOGGING_CONFIG = {
     }
 }
 
-# logging.basicConfig(
-#     filename=f'logger_{__name__}.log',
-#     level=logging.DEBUG,
-#     format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(user)s %(message)s',
-#     datefmt='%Y-%m-%d %H:%M:%S',
-# )
 logging.config.dictConfig(LOGGING_CONFIG)
 
 if __name__ == "__main__":
+    log = logging.getLogger(__name__)
+    log.debug("hello")
     uvicorn.run(app)
