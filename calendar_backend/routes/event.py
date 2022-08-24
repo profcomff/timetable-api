@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi_sqlalchemy import db
@@ -26,6 +27,7 @@ async def http_get_events(
     group_id: int | None = None,
     lecturer_id: int | None = None,
     room_id: int | None = None,
+    detail: Literal["comment", ""] = ""
 ) -> GetListEvent:
     start = start or datetime.date.today()
     end = end or datetime.date.today() + datetime.timedelta(days=1)
@@ -35,27 +37,45 @@ async def http_get_events(
         logger.debug(f"Getting events for group_id:{group_id}")
         if lecturer_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        return GetListEvent(
+        result: GetListEvent = GetListEvent(
             items=await utils.get_group_lessons_in_daterange(
                 await utils.get_group_by_id(group_id, db.session), start, end
             )
         )
+        if not detail:
+            for row in result.items:
+                row.comments = None
+                for row2 in row.lecturer:
+                    row2.comments = None
+        return result
     if lecturer_id:
         logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
         if group_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        return GetListEvent(
+        result: GetListEvent = GetListEvent(
             items=await utils.get_lecturer_lessons_in_daterange(
                 await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
             )
         )
+        if not detail:
+            for row in result:
+                row.comments = None
+                for row2 in row.lecturer:
+                    row2.comments = None
+        return result
     if room_id:
         logger.debug(f"Getting events for room_id:{room_id}")
         if lecturer_id or group_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        return GetListEvent(
+        result: GetListEvent = GetListEvent(
             items=await utils.get_room_lessons_in_daterange(await utils.get_room_by_id(room_id, db.session), start, end)
         )
+        if not detail:
+            for row in result:
+                row.comments = None
+                for row2 in row.lecturer:
+                    row2.comments = None
+        return result
 
 
 @event_router.post("/", response_model=Event)
