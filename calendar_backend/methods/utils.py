@@ -162,12 +162,18 @@ async def delete_group(group: Group, session: Session) -> None:
 async def delete_lecturer(lecturer: Lecturer, session: Session) -> None:
     for row in lecturer.lessons:
         session.delete(row)
+    for row in lecturer.photos:
+        session.delete(row)
+    for row in lecturer.comments:
+        session.delete(row)
     session.delete(lecturer)
     session.flush()
     return None
 
 
 async def delete_lesson(lesson: Lesson, session: Session) -> None:
+    for row in lesson.comments:
+        session.delete(row)
     session.delete(lesson)
     session.flush()
     return None
