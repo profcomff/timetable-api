@@ -20,6 +20,7 @@ LOGGING_CONFIG = {
             'stream': 'ext://sys.stdout',
         },
         'defaulterr': {
+            'level': 'ERROR',
             'formatter': 'standard',
             'class': 'logging.StreamHandler',
             'stream': 'ext://sys.stderr',
