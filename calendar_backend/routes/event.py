@@ -1,13 +1,22 @@
 import datetime
 import logging
-from typing import Literal
+from typing import Literal, Union
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import Event, EventPatch, EventPost, GetListEvent, CommentEvent
+from calendar_backend.routes.models import (
+    Event,
+    EventPatch,
+    EventPost,
+    GetListEvent,
+    CommentEvent,
+    GetListEventWithoutLecturerDescription,
+    GetListEventWithoutLecturerDescriptionAndComments,
+    GetListEventWithoutLecturerComments,
+)
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
@@ -20,15 +29,15 @@ async def http_get_event_by_id(id: int) -> Event:
     return Event.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
-@event_router.get("/", response_model=GetListEvent)
+@event_router.get("/")
 async def http_get_events(
     start: datetime.date | None = Query(default=None, description="Default: Today"),
     end: datetime.date | None = Query(default=None, description="Default: Tomorrow"),
     group_id: int | None = None,
     lecturer_id: int | None = None,
     room_id: int | None = None,
-    detail: Literal["comment", ""] = ""
-) -> GetListEvent:
+    detail: list[Literal["comment", "description", ""]] = Query(...),
+):
     start = start or datetime.date.today()
     end = end or datetime.date.today() + datetime.timedelta(days=1)
     if not group_id and not lecturer_id and not room_id:
@@ -37,45 +46,30 @@ async def http_get_events(
         logger.debug(f"Getting events for group_id:{group_id}")
         if lecturer_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        result = GetListEvent(
-            items=await utils.get_group_lessons_in_daterange(
-                await utils.get_group_by_id(group_id, db.session), start, end
-            )
+        list_events = await utils.get_group_lessons_in_daterange(
+            await utils.get_group_by_id(group_id, db.session), start, end
         )
-        if not detail:
-            for row in result.items:
-                row.comments = None
-                for row2 in row.lecturer:
-                    row2.comments = None
-        return result
     if lecturer_id:
         logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
         if group_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        result = GetListEvent(
-            items=await utils.get_lecturer_lessons_in_daterange(
-                await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
-            )
+        list_events = await utils.get_lecturer_lessons_in_daterange(
+            await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
         )
-        if not detail:
-            for row in result:
-                row.comments = None
-                for row2 in row.lecturer:
-                    row2.comments = None
-        return result
     if room_id:
         logger.debug(f"Getting events for room_id:{room_id}")
         if lecturer_id or group_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        result = GetListEvent(
-            items=await utils.get_room_lessons_in_daterange(await utils.get_room_by_id(room_id, db.session), start, end)
+        list_events = await utils.get_room_lessons_in_daterange(
+            await utils.get_room_by_id(room_id, db.session), start, end
         )
-        if not detail:
-            for row in result:
-                row.comments = None
-                for row2 in row.lecturer:
-                    row2.comments = None
-        return result
+    if "" in detail:
+        return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
+    if "comment" not in detail and "description" in detail:
+        return GetListEventWithoutLecturerComments(items=list_events)
+    if "description" not in detail and "comment" in detail:
+        return GetListEventWithoutLecturerDescription(items=list_events)
+    return GetListEvent(items=list_events)
 
 
 @event_router.post("/", response_model=Event)
@@ -122,6 +116,6 @@ async def http_comment_event(id: int, author_name: str, text: str) -> CommentEve
 
 
 @event_router.patch("/{id}/comment", response_model=CommentEvent)
-async def http_udpate_comment(comment_id: int, new_text: str)  -> CommentEvent:
+async def http_udpate_comment(comment_id: int, new_text: str) -> CommentEvent:
     logger.debug(f"Updating comment: {comment_id}")
     return CommentEvent.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))
