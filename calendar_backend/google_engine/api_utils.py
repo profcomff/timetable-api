@@ -1,11 +1,11 @@
+import logging
+
 import googleapiclient.discovery
 from sqlalchemy.orm import Session
 
-from .event_from_db import create_google_events_from_db
+from calendar_backend import get_settings
 from .event import Event
-from .. import get_settings
-from dataclasses import asdict
-import logging
+from .event_from_db import create_google_events_from_db
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

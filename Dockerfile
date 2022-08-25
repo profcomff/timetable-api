@@ -7,5 +7,5 @@ COPY ./alembic.ini /app/alembic.ini
 COPY ./migrations /app/migrations
 COPY ./calendar_backend /app/calendar_backend
 
-RUN mkdir cache && pip install --no-cache-dir -r /app/requirements.txt
+RUN mkdir cache && mkdir -p photo/lecturer && pip install --no-cache-dir -r /app/requirements.txt
 CMD [ "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "/app/gunicorn_conf.py", "calendar_backend.routes.base:app" ]

@@ -5,20 +5,25 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
+from starlette import status
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.types import ASGIApp
 
 from calendar_backend import exceptions
 from calendar_backend import get_settings
+from .auth import auth_router
 from .event import event_router
 from .gcal import gcal
 from .group import group_router
 from .lecturer import lecturer_router
 from .room import room_router
-from .timetable import timetable_router
-from .auth import auth_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
-app = FastAPI(description="""API для работы с календарем физфака.
+app = FastAPI(
+    description="""API для работы с календарем физфака.
 Пример работы на питоне(Создание Room):
 ```python
 import reqests, json
@@ -38,7 +43,8 @@ create_room = requests.post(
 )
 
 ```
-""")
+"""
+)
 
 
 @app.exception_handler(exceptions.NoGroupFoundError)
@@ -91,6 +97,24 @@ async def http_no_lessons_found_error_handler(request: starlette.requests.Reques
     return PlainTextResponse("No lessons found error", status_code=404)
 
 
+@app.exception_handler(exceptions.PhotoNotFoundError)
+async def http_no_photo_found_handler(request: starlette.requests.Request, exc: exceptions.PhotoNotFoundError):
+    logger.info(f"Photo not found, request: {request.path_params}, error: {exc}")
+    return PlainTextResponse("No photo found error", status_code=404)
+
+
+@app.exception_handler(exceptions.LecturerPhotoNotFoundError)
+async def http_no_photo_found_handler(request: starlette.requests.Request, exc: exceptions.LecturerPhotoNotFoundError):
+    logger.info(f"Lecturer photo not found, request: {request.path_params}, error: {exc}")
+    return PlainTextResponse("Lecturer photo not found error", status_code=404)
+
+
+@app.exception_handler(exceptions.CommentNotFoundError)
+async def http_no_comment_found_error(request: starlette.requests.Request, exc: exceptions.CommentNotFoundError):
+    logger.info(f"Comment not found, request: {request.path_params}, error: {exc}")
+    return PlainTextResponse("Comment not found error", status_code=404)
+
+
 @app.exception_handler(ValueError)
 async def http_value_error_handler(request: starlette.requests.Request, exc: ValueError):
     logger.info(f"Failed to parse data, request: {request.path_params}, exc: {exc}")
@@ -101,6 +125,21 @@ async def http_value_error_handler(request: starlette.requests.Request, exc: Val
 async def http_critical_error_handler(request: starlette.requests.Request, exc: Exception):
     logger.critical(f"Critical error occurred:{exc}, request: {request.path_params}")
     return PlainTextResponse("Error", status_code=500)
+
+
+class LimitUploadSize(BaseHTTPMiddleware):
+    def __init__(self, app: ASGIApp, max_upload_size: int) -> None:
+        super().__init__(app)
+        self.max_upload_size = max_upload_size
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.method == 'POST':
+            if 'content-length' not in request.headers:
+                return Response(status_code=status.HTTP_411_LENGTH_REQUIRED)
+            content_length = int(request.headers['content-length'])
+            if content_length > self.max_upload_size:
+                return Response(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        return await call_next(request)
 
 
 app.add_middleware(
@@ -115,11 +154,11 @@ app.add_middleware(
     allow_methods=settings.CORS_ALLOW_METHODS,
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
+app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
 
 app.include_router(gcal)
 app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(lecturer_router)
-app.include_router(timetable_router)
 app.include_router(group_router)
 app.include_router(auth_router)

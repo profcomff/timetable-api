@@ -1,4 +1,4 @@
-from ..methods import get_end_of_semester_date
+from calendar_backend.methods import utils
 from pydantic import BaseModel
 
 
@@ -19,7 +19,8 @@ def create_google_calendar_event(
     """
     Creates a dict with a Google calendar params
     """
-    end_sem_date = f"{str(get_end_of_semester_date()).replace('-', '')}T235900Z"
+    end_sem_date = str(utils.get_end_of_semester_date()).replace('-', '')
+    end_sem_date_format = f"{end_sem_date}T235900Z"
     event = Event(
         summary=summary,
         location=location,
@@ -32,7 +33,7 @@ def create_google_calendar_event(
             "dateTime": end_time,
             "timeZone": "Europe/Moscow",
         },
-        recurrence=[f"RRULE:FREQ=WEEKLY;UNTIL={end_sem_date};INTERVAL=2"],
+        recurrence=[f"RRULE:FREQ=WEEKLY;UNTIL={end_sem_date_format};INTERVAL=2"],
         attendees=[],
         reminders={"useDefault": False},
     )

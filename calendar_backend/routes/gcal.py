@@ -1,27 +1,25 @@
-import asyncio
+import logging
+import os
 from functools import lru_cache
+from urllib.parse import unquote
 
-import anyio.to_thread
 from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
-from pydantic.types import Json
-from urllib.parse import unquote
-from googleapiclient.discovery import build, UnknownApiNameOrVersion
+from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
-from google_auth_oauthlib.flow import Flow
-from ..google_engine import create_calendar_with_timetable
 from fastapi_sqlalchemy.exceptions import (
     SessionNotInitialisedError,
     MissingSessionError,
 )
-from ..models import Credentials
-from .. import get_settings
-from ..google_engine import get_calendar_service_from_token
-from starlette.concurrency import run_in_threadpool
-from fastapi.templating import Jinja2Templates
-import os
-import logging
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build, UnknownApiNameOrVersion
+from pydantic.types import Json
+
 from calendar_backend.methods import utils
+from calendar_backend import get_settings
+from calendar_backend.google_engine import create_calendar_with_timetable
+from calendar_backend.google_engine import get_calendar_service_from_token
+from calendar_backend.models import Credentials
 
 gcal = APIRouter(tags=["Google calendar"])
 settings = get_settings()
