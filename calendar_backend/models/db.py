@@ -33,6 +33,7 @@ class Room(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", back_populates="room", secondary="lessons_rooms", order_by="(Lesson.start_ts)"
     )
@@ -49,6 +50,7 @@ class Lecturer(Base):
     avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
     avatar_link = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("photo.link"))
     description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys="Lecturer.avatar_id")
     photos: list[Photo] = sqlalchemy.orm.relationship(
@@ -81,6 +83,7 @@ class Group(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     number = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     lessons: list[Lesson] = sqlalchemy.orm.relationship(
         "Lesson", foreign_keys="Lesson.group_id", order_by="(Lesson.start_ts)"
     )
@@ -95,6 +98,7 @@ class Lesson(Base):
     group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("group.id"))
     start_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     end_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     room: list[Room] = sqlalchemy.orm.relationship("Room", back_populates="lessons", secondary="lessons_rooms")
     group: Group = sqlalchemy.orm.relationship("Group", foreign_keys="Lesson.group_id", back_populates="lessons")
@@ -130,6 +134,7 @@ class Photo(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(sqlalchemy.String, unique=True)
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     lecturer: Lecturer = sqlalchemy.orm.relationship(
         "Lecturer", foreign_keys="Photo.lecturer_id", order_by="Lecturer.id", back_populates="photos"
@@ -143,6 +148,7 @@ class CommentsLecturer(Base):
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     lecturer: Lecturer = sqlalchemy.orm.relationship(
         "Lecturer", foreign_keys="CommentsLecturer.lecturer_id", back_populates="comments"
@@ -156,6 +162,7 @@ class CommentsLesson(Base):
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     lesson: Lesson = sqlalchemy.orm.relationship(
         "Lesson", foreign_keys="CommentsLesson.lesson_id", back_populates="comments"

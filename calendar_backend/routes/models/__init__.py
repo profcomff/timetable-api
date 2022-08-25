@@ -1,7 +1,69 @@
-from . import lecturer_models
-from . import room_models
-from . import event_models
-from . import group_models
-from . import base
+from .base import Lecturer, CommentLecturer, CommentEvent, Event, Group, Room
+from .lecturer import (
+    Lecturer,
+    LecturerPost,
+    LecturerPatch,
+    LecturerPhotos,
+    LecturerEvents,
+    LecturerWithoutDescription,
+    LecturerWithoutDescriptionAndComments,
+    LecturerWithoutComments,
+    LecturerWithNonNoneCommentsAndDescription,
+    CommentLecturer,
+    GetListLecturer,
+    Photo,
+)
+from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom
+from .event import (
+    EventPost,
+    EventPatch,
+    EventWithLecturerCommentsAndDecription,
+    EventWithoutLecturerDescriptionAndComments,
+    EventWithoutLecturerComments,
+    EventWithoutLecturerDescription,
+    GetListEventWithoutLecturerComments,
+    GetListEventWithoutLecturerDescriptionAndComments,
+    GetListEvent,
+    GetListEventWithoutLecturerDescription,
+    CommentEvent,
+    LecturerWithoutDescription,
+    LecturerWithoutDescriptionAndComments,
+    LecturerWithoutComments,
+    LecturerWithNonNoneCommentsAndDescription,
+)
+from .group import GroupPost, GroupPatch, GroupEvents, GetListGroup
 
-__all__ = ["lecturer_models", "room_models", "event_models", "group_models", "base"]
+__all__ = [
+    "Room",
+    "RoomEvents",
+    "RoomPost",
+    "RoomPatch",
+    "GetListRoom",
+    "Lecturer",
+    "LecturerEvents",
+    "LecturerPhotos",
+    "LecturerPost",
+    "LecturerPatch",
+    "LecturerWithoutComments",
+    "LecturerWithoutDescription",
+    "LecturerWithoutDescriptionAndComments",
+    "GetListEvent",
+    "Group",
+    "GetListLecturer",
+    "GetListGroup",
+    "GroupEvents",
+    "GroupPost",
+    "GroupPatch",
+    "Event",
+    "EventPost",
+    "EventPatch",
+    "CommentEvent",
+    "CommentLecturer",
+    "Photo",
+    "EventWithoutLecturerComments",
+    "EventWithoutLecturerDescriptionAndComments",
+    "EventWithoutLecturerDescription",
+    "GetListEventWithoutLecturerComments",
+    "GetListEventWithoutLecturerDescription",
+    "GetListEventWithoutLecturerDescriptionAndComments",
+]
