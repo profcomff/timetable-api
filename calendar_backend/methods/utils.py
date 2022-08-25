@@ -317,14 +317,18 @@ async def create_comment_lecturer(lecturer_id: int, session: Session, text: str,
 
 
 async def update_comment_lecturer(comment_id: int, session: Session, new_text: str) -> CommentsLecturer:
-    comment = session.query(CommentsLecturer).get(comment_id)
+    comment = session.query(CommentsLecturer).filter(CommentsLecturer.id == comment_id).one_or_none()
+    if not comment:
+        raise exceptions.CommentNotFoundError(comment_id)
     comment.text = new_text
     session.flush()
     return comment
 
 
 async def update_comment_event(comment_id: int, session: Session, new_text: str) -> CommentsLesson:
-    comment = session.query(CommentsLesson).get(comment_id)
+    comment = session.query(CommentsLesson).filter(CommentsLesson.id == comment_id).one_or_none()
+    if not comment:
+        raise exceptions.CommentNotFoundError(comment_id)
     comment.text = new_text
     session.flush()
     return comment

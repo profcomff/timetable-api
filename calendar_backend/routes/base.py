@@ -110,6 +110,12 @@ async def http_no_photo_found_handler(request: starlette.requests.Request, exc: 
     return PlainTextResponse("Lecturer photo not found error", status_code=404)
 
 
+@app.exception_handler(exceptions.CommentNotFoundError)
+async def http_no_comment_found_error(request: starlette.requests.Request, exc: exceptions.CommentNotFoundError):
+    logger.info(f"Comment not found, request: {request.path_params}, error: {exc}")
+    return PlainTextResponse("Comment not found error", status_code=404)
+
+
 @app.exception_handler(ValueError)
 async def http_value_error_handler(request: starlette.requests.Request, exc: ValueError):
     logger.info(f"Failed to parse data, request: {request.path_params}, exc: {exc}")
