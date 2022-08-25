@@ -1,6 +1,6 @@
 import datetime
 
-from .base import Base, Event, Lecturer, Room, Group, CommentEvent
+from .base import Base, Room, Group, CommentEvent
 from .lecturer_models import LecturerWithoutComments, LecturerWithoutDescription, LecturerWithoutDescriptionAndComments, \
     LecturerWithNonNoneCommentsAndDescription
 
