@@ -5,10 +5,12 @@ import string
 
 import aiofiles
 from fastapi import UploadFile, File
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from calendar_backend import exceptions, get_settings
 from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
+from calendar_backend.models.base import CustomQuery
 from calendar_backend.models.db import Photo, CommentsLecturer, CommentsLesson, LessonsLecturers, LessonsRooms
 
 settings = get_settings()
@@ -18,46 +20,46 @@ settings = get_settings()
 
 
 async def get_group_by_id(group_id: int, session: Session) -> Group:
-    result = session.query(Group).filter(Group.id == group_id).one_or_none()
+    result = session.query(Group).filter(and_(Group.id == group_id, Group.is_deleted is False)).one_or_none()
     if not result:
         raise exceptions.NoGroupFoundError(group=group_id)
     return result
 
 
 async def get_room_by_id(room_id: int, session: Session) -> Room:
-    result = session.query(Room).filter(Room.id == room_id).one_or_none()
+    result = session.query(Room).filter(and_(Room.id == room_id, Room.is_deleted is False)).one_or_none()
     if not result:
         raise exceptions.NoAudienceFoundError(audience=room_id)
     return result
 
 
 async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
-    result = session.query(Lecturer).filter(Lecturer.id == lecturer_id).one_or_none()
+    result = session.query(Lecturer).filter(and_(Lecturer.id == lecturer_id, Lecturer.is_deleted is False)).one_or_none()
     if not result:
         raise exceptions.NoTeacherFoundError(teacher=lecturer_id)
     return result
 
 
 async def get_list_groups(
-    session: Session, query: str = "", limit: int = 10, offset: int = 0
+        session: Session, query: str = "", limit: int = 10, offset: int = 0
 ) -> tuple[list[Group], int]:
-    result = session.query(Group).filter(Group.number.contains(query)).offset(offset)
+    result = session.query(Group).filter(and_(Group.number.contains(query), Group.is_deleted is False)).offset(offset)
     if limit > 0:
         result = result.limit(limit)
     return result.all(), result.count()
 
 
 async def get_list_rooms(session: Session, query: str = "", limit: int = 10, offset: int = 0) -> tuple[list[Room], int]:
-    result = session.query(Room).filter(Room.name.contains(query)).offset(offset)
+    result = session.query(Room).filter(and_(Room.name.contains(query), Room.is_deleted is False)).offset(offset)
     if limit > 0:
         result = result.limit(limit)
     return result.all(), result.count()
 
 
 async def get_list_lecturers(
-    session: Session, query: str = "", limit: int = 10, offset: int = 0
+        session: Session, query: str = "", limit: int = 10, offset: int = 0
 ) -> tuple[list[Lecturer], int]:
-    result = session.query(Lecturer).filter(Lecturer.search(query)).offset(offset)
+    result = session.query(Lecturer).filter(and_(Lecturer.search(query), Lecturer.is_deleted is False)).offset(offset)
     if limit > 0:
         result = result.limit(limit)
     return result.all(), result.count()
@@ -65,7 +67,7 @@ async def get_list_lecturers(
 
 async def get_list_lessons(session: Session, filter_name: str | None = None) -> list[Lesson] | Lesson:
     result = (
-        session.query(Lesson).filter(Lesson.name == filter_name).all() if filter_name else session.query(Lesson).all()
+        session.query(Lesson).filter(and_(Lesson.name == filter_name, Lesson.is_deleted is False)).all() if filter_name else session.query(Lesson).all()
     )
     if not result:
         raise exceptions.LessonsNotFound()
@@ -94,55 +96,58 @@ async def get_lessons_by_group_from_date(group: Group, date: datetime.date) -> l
 
 
 async def get_lesson_by_id(id: int, session: Session) -> Lesson:
-    result = session.query(Lesson).filter(Lesson.id == id).one_or_none()
+    result = session.query(Lesson).filter(and_(Lesson.id == id, Lesson.is_deleted is False)).one_or_none()
     if not result:
         raise exceptions.EventNotFound(id)
     return result
 
 
 async def update_room(
-    room: Room, session: Session, new_name: str | None = None, new_direction: str | None = None
+        room: Room, session: Session, new_name: str | None = None, new_direction: str | None = None, new_is_deleted: bool | None = None
 ) -> Room:
     room.name = new_name or room.name
     room.direction = new_direction or room.direction
+    room.is_deleted = new_is_deleted or room.is_deleted
     session.flush()
     return room
 
 
 async def update_group(
-    group: Group, session: Session, new_number: str | None = None, new_name: str | None = None
+        group: Group, session: Session, new_number: str | None = None, new_name: str | None = None, new_is_deleted: bool | None = None
 ) -> Group:
     group.number = new_number or group.number
     group.name = new_name or group.name
+    group.is_deleted = new_is_deleted or group.is_deleted
     session.flush()
     return group
 
 
 async def update_lecturer(
-    lecturer: Lecturer,
-    session: Session,
-    new_first_name: str | None = None,
-    new_middle_name: str | None = None,
-    new_last_name: str | None = None,
-    new_description: str | None = None,
+        lecturer: Lecturer,
+        session: Session,
+        new_first_name: str | None = None,
+        new_middle_name: str | None = None,
+        new_last_name: str | None = None,
+        new_description: str | None = None, new_is_deleted: bool | None = None
 ) -> Lecturer:
     lecturer.first_name = new_first_name or lecturer.first_name
     lecturer.middle_name = new_middle_name or lecturer.middle_name
     lecturer.last_name = new_last_name or lecturer.last_name
     lecturer.description = new_description or lecturer.description
+    lecturer.is_deleted = new_is_deleted or lecturer.is_deleted
     session.flush()
     return lecturer
 
 
 async def update_lesson(
-    lesson: Lesson,
-    session: Session,
-    new_name: str | None = None,
-    new_room_id: list[int] | None = None,
-    new_group_id: int | None = None,
-    new_lecturer_id: list[int] | None = None,
-    new_start_ts: datetime.datetime | None = None,
-    new_end_ts: datetime.datetime | None = None,
+        lesson: Lesson,
+        session: Session,
+        new_name: str | None = None,
+        new_room_id: list[int] | None = None,
+        new_group_id: int | None = None,
+        new_lecturer_id: list[int] | None = None,
+        new_start_ts: datetime.datetime | None = None,
+        new_end_ts: datetime.datetime | None = None, new_is_deleted: bool | None = None
 ) -> Lesson:
     lesson.name = new_name or lesson.name
     lesson.group_id = new_group_id or lesson.group
@@ -152,45 +157,31 @@ async def update_lesson(
     )
     lesson.start_ts = new_start_ts or lesson.start_ts
     lesson.end_ts = new_end_ts or lesson.end_ts
+    lesson.is_deleted = new_is_deleted or lesson.is_deleted
     session.flush()
     return lesson
 
 
 async def delete_room(room: Room, session: Session) -> None:
-    session.query(LessonsRooms).filter(LessonsRooms.room_id == room.id).delete()
-    for row in room.lessons:
-        session.delete(row)
-    session.delete(room)
+    room.is_deleted = True
     session.flush()
     return None
 
 
 async def delete_group(group: Group, session: Session) -> None:
-    for row in group.lessons:
-        session.delete(row)
-    session.delete(group)
+    group.is_deleted = True
     session.flush()
     return None
 
 
 async def delete_lecturer(lecturer: Lecturer, session: Session) -> None:
-    for row in lecturer.lessons:
-        await delete_lesson(row, session)
-    for row in lecturer.photos:
-        session.delete(row)
-    for row in lecturer.comments:
-        session.delete(row)
-    session.delete(lecturer)
+    lecturer.is_deleted = True
     session.flush()
     return None
 
 
 async def delete_lesson(lesson: Lesson, session: Session) -> None:
-    for row in lesson.comments:
-        session.delete(row)
-    session.query(LessonsLecturers).filter(LessonsLecturers.lesson_id == lesson.id).delete()
-    session.query(LessonsRooms).filter(LessonsRooms.lesson_id == lesson.id).delete()
-    session.delete(lesson)
+    lesson.is_deleted = True
     session.flush()
     return None
 
@@ -210,7 +201,7 @@ async def create_group(number: str, name: str, session: Session) -> Group:
 
 
 async def create_lecturer(
-    first_name: str, middle_name: str, last_name: str, description: str, session: Session
+        first_name: str, middle_name: str, last_name: str, description: str, session: Session
 ) -> Lecturer:
     lecturer = Lecturer(first_name=first_name, middle_name=middle_name, last_name=last_name, description=description)
     session.add(lecturer)
@@ -219,13 +210,13 @@ async def create_lecturer(
 
 
 async def create_lesson(
-    room_id: list[int],
-    lecturer_id: list[int],
-    group_id: int,
-    name: str,
-    start_ts: datetime.datetime,
-    end_ts: datetime.datetime,
-    session: Session,
+        room_id: list[int],
+        lecturer_id: list[int],
+        group_id: int,
+        name: str,
+        start_ts: datetime.datetime,
+        end_ts: datetime.datetime,
+        session: Session,
 ) -> Lesson:
     if not session.query(Group).filter(Group.id == group_id).one_or_none():
         raise exceptions.NoGroupFoundError(group_id)
@@ -244,7 +235,7 @@ async def create_lesson(
 
 
 async def get_group_lessons_in_daterange(
-    group: Group, date_start: datetime.date, date_end: datetime.date
+        group: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     lessons_list = []
     lessons = group.lessons
@@ -264,7 +255,7 @@ async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, d
 
 
 async def get_lecturer_lessons_in_daterange(
-    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
+        lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     lessons_list = []
     lessons = lecturer.lessons
@@ -293,9 +284,10 @@ async def check_room_existing(session: Session, room_name: str) -> bool:
 
 async def check_lecturer_existing(session: Session, first_name: str, middle_name: str, last_name: str) -> bool:
     if (
-        session.query(Lecturer)
-        .filter(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name, Lecturer.last_name == last_name)
-        .one_or_none()
+            session.query(Lecturer)
+                    .filter(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name,
+                            Lecturer.last_name == last_name)
+                    .one_or_none()
     ):
         return True
     return False
@@ -328,20 +320,22 @@ async def create_comment_lecturer(lecturer_id: int, session: Session, text: str,
     return comment
 
 
-async def update_comment_lecturer(comment_id: int, session: Session, new_text: str) -> CommentsLecturer:
+async def update_comment_lecturer(comment_id: int, session: Session, new_text: str, new_is_deleted: bool | None = None) -> CommentsLecturer:
     comment = session.query(CommentsLecturer).filter(CommentsLecturer.id == comment_id).one_or_none()
     if not comment:
         raise exceptions.CommentNotFoundError(comment_id)
     comment.text = new_text
+    comment.is_deleted = new_is_deleted
     session.flush()
     return comment
 
 
-async def update_comment_event(comment_id: int, session: Session, new_text: str) -> CommentsLesson:
+async def update_comment_event(comment_id: int, session: Session, new_text: str, new_is_deleted: bool | None = None) -> CommentsLesson:
     comment = session.query(CommentsLesson).filter(CommentsLesson.id == comment_id).one_or_none()
     if not comment:
         raise exceptions.CommentNotFoundError(comment_id)
     comment.text = new_text
+    comment.is_deleted = new_is_deleted
     session.flush()
     return comment
 

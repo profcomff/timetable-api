@@ -121,10 +121,10 @@ async def http_value_error_handler(request: starlette.requests.Request, exc: Val
     return PlainTextResponse("Error", status_code=500)
 
 
-@app.exception_handler(Exception)
-async def http_critical_error_handler(request: starlette.requests.Request, exc: Exception):
-    logger.critical(f"Critical error occurred:{exc}, request: {request.path_params}")
-    return PlainTextResponse("Error", status_code=500)
+# @app.exception_handler(Exception)
+# async def http_critical_error_handler(request: starlette.requests.Request, exc: Exception):
+#     logger.critical(f"Critical error occurred:{exc}, request: {request.path_params}")
+#     return PlainTextResponse("Error", status_code=500)
 
 
 class LimitUploadSize(BaseHTTPMiddleware):
