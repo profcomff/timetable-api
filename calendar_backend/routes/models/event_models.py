@@ -1,7 +1,8 @@
 import datetime
 
 from .base import Base, Event, Lecturer, Room, Group, CommentEvent
-from .lecturer_models import LecturerWithoutComments, LecturerWithoutDescription, LecturerWithoutDescriptionAndComments
+from .lecturer_models import LecturerWithoutComments, LecturerWithoutDescription, LecturerWithoutDescriptionAndComments, \
+    LecturerWithNonNoneCommentsAndDescription
 
 
 class EventPatch(Base):
@@ -36,9 +37,18 @@ class EventPost(Base):
             f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})"
         )
 
+class EventWithLecturerCommentsAndDecription(Base):
+    id: int
+    name: str
+    room: list[Room]
+    group: Group
+    lecturer: list[LecturerWithNonNoneCommentsAndDescription]
+    start_ts: datetime.datetime
+    end_ts: datetime.datetime
+
 
 class GetListEvent(Base):
-    items: list[Event]
+    items: list[EventWithLecturerCommentsAndDecription]
 
 
 class EventWithoutLecturerComments(Base):
@@ -59,7 +69,7 @@ class EventWithoutLecturerDescription(Base):
     lecturer: list[LecturerWithoutDescription]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
-    comments: list[CommentEvent] | None
+    comments: list[CommentEvent]
 
 
 class EventWithoutLecturerDescriptionAndComments(Base):

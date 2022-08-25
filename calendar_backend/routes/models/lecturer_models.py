@@ -1,6 +1,15 @@
-import datetime
-
 from .base import Base, Lecturer, Event, CommentLecturer
+
+
+class LecturerWithNonNoneCommentsAndDescription(Base):
+    id: int
+    first_name: str
+    middle_name: str
+    last_name: str
+    avatar_id: int | None
+    avatar_link: str | None
+    description: str
+    comments: list[CommentLecturer]
 
 
 class LecturerWithoutComments(Base):
@@ -10,7 +19,7 @@ class LecturerWithoutComments(Base):
     last_name: str
     avatar_id: int | None
     avatar_link: str | None
-    description: str | None
+    description: str
 
 
 class LecturerWithoutDescription(Base):
@@ -20,7 +29,7 @@ class LecturerWithoutDescription(Base):
     last_name: str
     avatar_id: int | None
     avatar_link: str | None
-    comments: list[CommentLecturer] | None
+    comments: list[CommentLecturer]
 
 
 class LecturerWithoutDescriptionAndComments(Base):

@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Literal
+from typing import Literal, Union
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi_sqlalchemy import db
@@ -20,7 +20,7 @@ async def http_get_event_by_id(id: int) -> base.Event:
     return base.Event.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
-@event_router.get("/")
+@event_router.get("/", response_model=Union[event_models.GetListEvent, event_models.GetListEventWithoutLecturerComments, event_models.GetListEventWithoutLecturerDescription, event_models.GetListEventWithoutLecturerDescriptionAndComments])
 async def http_get_events(
     start: datetime.date | None = Query(default=None, description="Default: Today"),
     end: datetime.date | None = Query(default=None, description="Default: Tomorrow"),
@@ -28,7 +28,7 @@ async def http_get_events(
     lecturer_id: int | None = None,
     room_id: int | None = None,
     detail: list[Literal["comment", "description", ""]] = Query(...),
-):
+) -> Union[event_models.GetListEvent, event_models.GetListEventWithoutLecturerComments, event_models.GetListEventWithoutLecturerDescription, event_models.GetListEventWithoutLecturerDescriptionAndComments]:
     start = start or datetime.date.today()
     end = end or datetime.date.today() + datetime.timedelta(days=1)
     if not group_id and not lecturer_id and not room_id:
