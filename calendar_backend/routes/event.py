@@ -7,27 +7,17 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import (
-    Event,
-    EventPatch,
-    EventPost,
-    GetListEvent,
-    CommentEvent,
-    GetListEventWithoutLecturerDescription,
-    GetListEventWithoutLecturerDescriptionAndComments,
-    GetListEventWithoutLecturerComments,
-    EventWithoutLecturerDescriptionAndComments
-)
+from calendar_backend.routes.models import event_models, base
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@event_router.get("/{id}", response_model=Event)
-async def http_get_event_by_id(id: int) -> Event:
+@event_router.get("/{id}", response_model=event_models.Event)
+async def http_get_event_by_id(id: int) -> base.Event:
     logger.debug(f"Getting event id:{id}")
-    return Event.from_orm(await utils.get_lesson_by_id(id, db.session))
+    return base.Event.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
 @event_router.get("/")
@@ -65,31 +55,33 @@ async def http_get_events(
             await utils.get_room_by_id(room_id, db.session), start, end
         )
     if "" in detail:
-        return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
+        return event_models.GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
     if "comment" not in detail and "description" in detail:
-        return GetListEventWithoutLecturerComments(items=list_events)
+        return event_models.GetListEventWithoutLecturerComments(items=list_events)
     if "description" not in detail and "comment" in detail:
-        return GetListEventWithoutLecturerDescription(items=list_events)
-    return GetListEvent(items=list_events)
+        return event_models.GetListEventWithoutLecturerDescription(items=list_events)
+    return event_models.GetListEvent(items=list_events)
 
 
-@event_router.post("/", response_model=EventWithoutLecturerDescriptionAndComments)
-async def http_create_event(lesson: EventPost, current_user: auth.User = Depends(auth.get_current_user)) -> EventWithoutLecturerDescriptionAndComments:
+@event_router.post("/", response_model=event_models.EventWithoutLecturerDescriptionAndComments)
+async def http_create_event(
+    lesson: event_models.EventPost, current_user: auth.User = Depends(auth.get_current_user)
+) -> event_models.EventWithoutLecturerDescriptionAndComments:
     logger.debug(f"Creating event: {lesson}", extra={"user": current_user})
-    return EventWithoutLecturerDescriptionAndComments.from_orm(
+    return event_models.EventWithoutLecturerDescriptionAndComments.from_orm(
         await utils.create_lesson(
             lesson.room_id, lesson.lecturer_id, lesson.group_id, lesson.name, lesson.start_ts, lesson.end_ts, db.session
         )
     )
 
 
-@event_router.patch("/{id}", response_model=EventWithoutLecturerDescriptionAndComments)
+@event_router.patch("/{id}", response_model=event_models.EventWithoutLecturerDescriptionAndComments)
 async def http_patch_event(
-    id: int, lesson_pydantic: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
-) -> EventWithoutLecturerDescriptionAndComments:
+    id: int, lesson_pydantic: event_models.EventPatch, current_user: auth.User = Depends(auth.get_current_user)
+) -> event_models.EventWithoutLecturerDescriptionAndComments:
     logger.debug(f"Patcing event id:{id}", extra={"user": current_user})
     lesson = await utils.get_lesson_by_id(id, db.session)
-    return EventWithoutLecturerDescriptionAndComments.from_orm(
+    return event_models.EventWithoutLecturerDescriptionAndComments.from_orm(
         await utils.update_lesson(
             lesson,
             db.session,
@@ -110,13 +102,13 @@ async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_
     return await utils.delete_lesson(lesson, db.session)
 
 
-@event_router.post("/{id}/comment", response_model=CommentEvent)
-async def http_comment_event(id: int, author_name: str, text: str) -> CommentEvent:
+@event_router.post("/{id}/comment", response_model=base.CommentEvent)
+async def http_comment_event(id: int, author_name: str, text: str) -> base.CommentEvent:
     logger.debug(f"Creating comment to event: {id}")
-    return CommentEvent.from_orm(await utils.create_comment_event(id, db.session, text, author_name))
+    return base.CommentEvent.from_orm(await utils.create_comment_event(id, db.session, text, author_name))
 
 
-@event_router.patch("/{id}/comment", response_model=CommentEvent)
-async def http_udpate_comment(comment_id: int, new_text: str) -> CommentEvent:
+@event_router.patch("/{id}/comment", response_model=base.CommentEvent)
+async def http_udpate_comment(comment_id: int, new_text: str) -> base.CommentEvent:
     logger.debug(f"Updating comment: {comment_id}")
-    return CommentEvent.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))
+    return base.CommentEvent.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))

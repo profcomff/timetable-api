@@ -64,5 +64,3 @@ class CommentNotFoundError(NotFound):
     def __init__(self, id: int):
         message = f"Comment {id} not found"
         super().__init__(message)
-
-

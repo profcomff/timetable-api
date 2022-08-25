@@ -1,40 +1,7 @@
-from .lecturer_models import *
-from .room_models import *
-from .event_models import *
-from .group_models import *
-from .base import Event, CommentEvent, Group, CommentLecturer, Lecturer, Room
+from . import lecturer_models
+from . import room_models
+from . import event_models
+from . import group_models
+from . import base
 
-__all__ = [
-    "Room",
-    "RoomEvents",
-    "RoomPost",
-    "RoomPatch",
-    "GetListRoom",
-    "Lecturer",
-    "LecturerEvents",
-    "LecturerPhotos",
-    "LecturerPost",
-    "LecturerPatch",
-    "LecturerWithoutComments",
-    "LecturerWithoutDescription",
-    "LecturerWithoutDescriptionAndComments",
-    "GetListEvent",
-    "Group",
-    "GetListLecturer",
-    "GetListGroup",
-    "GroupEvents",
-    "GroupPost",
-    "GroupPatch",
-    "Event",
-    "EventPost",
-    "EventPatch",
-    "CommentEvent",
-    "CommentLecturer",
-    "Photo",
-    "EventWithoutLecturerComments",
-    "EventWithoutLecturerDescriptionAndComments",
-    "EventWithoutLecturerDescription",
-    "GetListEventWithoutLecturerComments",
-    "GetListEventWithoutLecturerDescription",
-    "GetListEventWithoutLecturerDescriptionAndComments",
-]
+__all__ = ["lecturer_models", "room_models", "event_models", "group_models", "base"]

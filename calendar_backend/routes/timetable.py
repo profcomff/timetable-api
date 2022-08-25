@@ -9,17 +9,17 @@ from fastapi_sqlalchemy import db
 from calendar_backend import get_settings
 from calendar_backend.methods import list_calendar
 from calendar_backend.methods import utils
-from .models import Event
+from .models import base
 
 timetable_router = APIRouter(prefix="/timetable", tags=["Timetable"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@timetable_router.get("/by_group/{group_num}", response_model=list[Event], deprecated=True)
+@timetable_router.get("/by_group/{group_num}", response_model=list[base.Event], deprecated=True)
 async def get_timetable_by_group(
     group_num: str, start: datetime.date, end: datetime.date, format: Literal['ics', 'json'] = 'json'
-) -> list[Event] | FileResponse:
+) -> list[base.Event] | FileResponse:
     match format:
         case 'ics':
             logger.debug(f"Downloading .ics file for {group_num} calendar...")
