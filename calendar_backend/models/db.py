@@ -47,6 +47,7 @@ class Lecturer(Base):
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
+    avatar_link = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("photo.link"))
     description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
 
     avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys="Lecturer.avatar_id")
@@ -129,7 +130,7 @@ class Photo(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(
-        sqlalchemy.String,
+        sqlalchemy.String, unique=True
     )
 
     lecturer: Lecturer = sqlalchemy.orm.relationship(
