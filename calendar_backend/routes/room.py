@@ -45,11 +45,11 @@ async def http_create_room(
 
 @room_router.patch("/{id}", response_model=Room)
 async def http_patch_room(
-    id: int, room_pydantic: RoomPatch, current_user: auth.User = Depends(auth.get_current_user)
+    id: int, room_inp: RoomPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Room:
     logger.debug(f"Patching room id:{id}", extra={"user": current_user})
     room = await utils.get_room_by_id(id, db.session, True)
-    return Room.from_orm(await utils.update_room(room, db.session, room_pydantic.name, room_pydantic.direction, room_pydantic.is_deleted))
+    return Room.from_orm(await utils.update_room(room, db.session, room_inp.name, room_inp.direction, room_inp.is_deleted))
 
 
 @room_router.delete("/{id}", response_model=None)

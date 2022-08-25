@@ -64,7 +64,7 @@ async def http_create_lecturer(
 
 @lecturer_router.patch("/{id}", response_model=Lecturer)
 async def http_patch_lecturer(
-    id: int, lecturer_pydantic: LecturerPatch, current_user: auth.User = Depends(auth.get_current_user)
+    id: int, lecturer_inp: LecturerPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Lecturer:
     logger.debug(f"Patching lecturer id:{id}", extra={"user": current_user})
     lecturer = await utils.get_lecturer_by_id(id, db.session, True)
@@ -72,11 +72,11 @@ async def http_patch_lecturer(
         await utils.update_lecturer(
             lecturer,
             db.session,
-            lecturer_pydantic.first_name,
-            lecturer_pydantic.middle_name,
-            lecturer_pydantic.last_name,
-            lecturer_pydantic.description,
-            lecturer_pydantic.is_deleted
+            lecturer_inp.first_name,
+            lecturer_inp.middle_name,
+            lecturer_inp.last_name,
+            lecturer_inp.description,
+            lecturer_inp.is_deleted
         )
     )
 

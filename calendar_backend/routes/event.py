@@ -92,7 +92,7 @@ async def http_create_event(
 
 @event_router.patch("/{id}", response_model=EventWithoutLecturerDescriptionAndComments)
 async def http_patch_event(
-    id: int, lesson_pydantic: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
+    id: int, event_inp: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> EventWithoutLecturerDescriptionAndComments:
     logger.debug(f"Patcing event id:{id}", extra={"user": current_user})
     lesson = await utils.get_lesson_by_id(id, db.session, True)
@@ -100,13 +100,13 @@ async def http_patch_event(
         await utils.update_lesson(
             lesson,
             db.session,
-            lesson_pydantic.name,
-            lesson_pydantic.room_id,
+            event_inp.name,
+            event_inp.room_id,
             lesson.group_id,
             [row.id for row in lesson.lecturer],
             lesson.start_ts,
-            lesson_pydantic.end_ts,
-            lesson_pydantic.is_deleted
+            event_inp.end_ts,
+            event_inp.is_deleted
         )
     )
 
