@@ -7,9 +7,17 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import GetListEvent, GetListEventWithoutLecturerComments, \
-    GetListEventWithoutLecturerDescription, GetListEventWithoutLecturerDescriptionAndComments, \
-    EventWithoutLecturerDescriptionAndComments, EventPatch, CommentEvent, Event, EventPost
+from calendar_backend.routes.models import (
+    GetListEvent,
+    GetListEventWithoutLecturerComments,
+    GetListEventWithoutLecturerDescription,
+    GetListEventWithoutLecturerDescriptionAndComments,
+    EventWithoutLecturerDescriptionAndComments,
+    EventPatch,
+    CommentEvent,
+    Event,
+    EventPost,
+)
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
@@ -106,7 +114,7 @@ async def http_patch_event(
             [row.id for row in lesson.lecturer],
             lesson.start_ts,
             event_inp.end_ts,
-            event_inp.is_deleted
+            event_inp.is_deleted,
         )
     )
 

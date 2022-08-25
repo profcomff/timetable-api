@@ -39,9 +39,7 @@ async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> 
 
 
 @group_router.post("/", response_model=Group)
-async def http_create_group(
-    group: GroupPost, current_user: auth.User = Depends(auth.get_current_user)
-) -> Group:
+async def http_create_group(group: GroupPost, current_user: auth.User = Depends(auth.get_current_user)) -> Group:
     logger.debug(f"Creating group: {group}", extra={"user": current_user})
     if await utils.check_group_existing(db.session, group.number):
         raise HTTPException(status_code=423, detail="Already exists")
@@ -54,7 +52,9 @@ async def http_patch_group(
 ) -> Group:
     logger.debug(f"Pathcing group id:{id}", extra={"user": current_user})
     group = await utils.get_group_by_id(id, db.session, True)
-    return Group.from_orm(await utils.update_group(group, db.session, group_inp.number, group_inp.name, group_inp.is_deleted))
+    return Group.from_orm(
+        await utils.update_group(group, db.session, group_inp.number, group_inp.name, group_inp.is_deleted)
+    )
 
 
 @group_router.delete("/{id}", response_model=None)

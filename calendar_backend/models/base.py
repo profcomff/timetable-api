@@ -14,6 +14,7 @@ class CustomQuery(Query):
 @as_declarative()
 class Base:
     """Base class for all database entities"""
+
     query_class = CustomQuery
 
     @declared_attr

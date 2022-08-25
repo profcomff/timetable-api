@@ -7,8 +7,16 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import LecturerEvents, GetListLecturer, Lecturer, LecturerPost, LecturerPatch, \
-    Photo, LecturerPhotos, CommentLecturer
+from calendar_backend.routes.models import (
+    LecturerEvents,
+    GetListLecturer,
+    Lecturer,
+    LecturerPost,
+    LecturerPatch,
+    Photo,
+    LecturerPhotos,
+    CommentLecturer,
+)
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -76,7 +84,7 @@ async def http_patch_lecturer(
             lecturer_inp.middle_name,
             lecturer_inp.last_name,
             lecturer_inp.description,
-            lecturer_inp.is_deleted
+            lecturer_inp.is_deleted,
         )
     )
 

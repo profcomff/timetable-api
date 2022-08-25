@@ -40,7 +40,9 @@ async def get_room_by_id(room_id: int, session: Session, with_deleted: bool) -> 
 
 async def get_lecturer_by_id(lecturer_id: int, session: Session, with_deleted: bool) -> Lecturer:
     if not with_deleted:
-        result = session.query(Lecturer).filter(and_(Lecturer.id == lecturer_id, Lecturer.is_deleted == False)).one_or_none()
+        result = (
+            session.query(Lecturer).filter(and_(Lecturer.id == lecturer_id, Lecturer.is_deleted == False)).one_or_none()
+        )
     else:
         result = session.query(Lecturer).filter(Lecturer.id == lecturer_id).one_or_none()
     if not result:
@@ -49,7 +51,7 @@ async def get_lecturer_by_id(lecturer_id: int, session: Session, with_deleted: b
 
 
 async def get_list_groups(
-        session: Session, query: str = "", limit: int = 10, offset: int = 0
+    session: Session, query: str = "", limit: int = 10, offset: int = 0
 ) -> tuple[list[Group], int]:
     result = session.query(Group).filter(and_(Group.number.contains(query), Group.is_deleted == False)).offset(offset)
     if limit > 0:
@@ -65,7 +67,7 @@ async def get_list_rooms(session: Session, query: str = "", limit: int = 10, off
 
 
 async def get_list_lecturers(
-        session: Session, query: str = "", limit: int = 10, offset: int = 0
+    session: Session, query: str = "", limit: int = 10, offset: int = 0
 ) -> tuple[list[Lecturer], int]:
     result = session.query(Lecturer).filter(and_(Lecturer.search(query), Lecturer.is_deleted == False)).offset(offset)
     if limit > 0:
@@ -75,7 +77,9 @@ async def get_list_lecturers(
 
 async def get_list_lessons(session: Session, filter_name: str | None = None) -> list[Lesson] | Lesson:
     result = (
-        session.query(Lesson).filter(and_(Lesson.name == filter_name, Lesson.is_deleted == False)).all() if filter_name else session.query(Lesson).all()
+        session.query(Lesson).filter(and_(Lesson.name == filter_name, Lesson.is_deleted == False)).all()
+        if filter_name
+        else session.query(Lesson).all()
     )
     if not result:
         raise exceptions.LessonsNotFound()
@@ -114,7 +118,11 @@ async def get_lesson_by_id(id: int, session: Session, with_deleted: bool) -> Les
 
 
 async def update_room(
-        room: Room, session: Session, new_name: str | None = None, new_direction: str | None = None, new_is_deleted: bool | None = None
+    room: Room,
+    session: Session,
+    new_name: str | None = None,
+    new_direction: str | None = None,
+    new_is_deleted: bool | None = None,
 ) -> Room:
     room.name = new_name or room.name
     room.direction = new_direction or room.direction
@@ -124,7 +132,11 @@ async def update_room(
 
 
 async def update_group(
-        group: Group, session: Session, new_number: str | None = None, new_name: str | None = None, new_is_deleted: bool | None = None
+    group: Group,
+    session: Session,
+    new_number: str | None = None,
+    new_name: str | None = None,
+    new_is_deleted: bool | None = None,
 ) -> Group:
     group.number = new_number or group.number
     group.name = new_name or group.name
@@ -134,12 +146,13 @@ async def update_group(
 
 
 async def update_lecturer(
-        lecturer: Lecturer,
-        session: Session,
-        new_first_name: str | None = None,
-        new_middle_name: str | None = None,
-        new_last_name: str | None = None,
-        new_description: str | None = None, new_is_deleted: bool | None = None
+    lecturer: Lecturer,
+    session: Session,
+    new_first_name: str | None = None,
+    new_middle_name: str | None = None,
+    new_last_name: str | None = None,
+    new_description: str | None = None,
+    new_is_deleted: bool | None = None,
 ) -> Lecturer:
     lecturer.first_name = new_first_name or lecturer.first_name
     lecturer.middle_name = new_middle_name or lecturer.middle_name
@@ -152,14 +165,15 @@ async def update_lecturer(
 
 
 async def update_lesson(
-        lesson: Lesson,
-        session: Session,
-        new_name: str | None = None,
-        new_room_id: list[int] | None = None,
-        new_group_id: int | None = None,
-        new_lecturer_id: list[int] | None = None,
-        new_start_ts: datetime.datetime | None = None,
-        new_end_ts: datetime.datetime | None = None, new_is_deleted: bool | None = None
+    lesson: Lesson,
+    session: Session,
+    new_name: str | None = None,
+    new_room_id: list[int] | None = None,
+    new_group_id: int | None = None,
+    new_lecturer_id: list[int] | None = None,
+    new_start_ts: datetime.datetime | None = None,
+    new_end_ts: datetime.datetime | None = None,
+    new_is_deleted: bool | None = None,
 ) -> Lesson:
     lesson.name = new_name or lesson.name
     lesson.group_id = new_group_id or lesson.group
@@ -213,7 +227,7 @@ async def create_group(number: str, name: str, session: Session) -> Group:
 
 
 async def create_lecturer(
-        first_name: str, middle_name: str, last_name: str, description: str, session: Session
+    first_name: str, middle_name: str, last_name: str, description: str, session: Session
 ) -> Lecturer:
     lecturer = Lecturer(first_name=first_name, middle_name=middle_name, last_name=last_name, description=description)
     session.add(lecturer)
@@ -222,13 +236,13 @@ async def create_lecturer(
 
 
 async def create_lesson(
-        room_id: list[int],
-        lecturer_id: list[int],
-        group_id: int,
-        name: str,
-        start_ts: datetime.datetime,
-        end_ts: datetime.datetime,
-        session: Session,
+    room_id: list[int],
+    lecturer_id: list[int],
+    group_id: int,
+    name: str,
+    start_ts: datetime.datetime,
+    end_ts: datetime.datetime,
+    session: Session,
 ) -> Lesson:
     if not session.query(Group).filter(Group.id == group_id).one_or_none():
         raise exceptions.NoGroupFoundError(group_id)
@@ -247,7 +261,7 @@ async def create_lesson(
 
 
 async def get_group_lessons_in_daterange(
-        group: Group, date_start: datetime.date, date_end: datetime.date
+    group: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     lessons_list = []
     lessons = group.lessons
@@ -267,7 +281,7 @@ async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, d
 
 
 async def get_lecturer_lessons_in_daterange(
-        lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
+    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
 ) -> list[Lesson]:
     lessons_list = []
     lessons = lecturer.lessons
@@ -296,10 +310,9 @@ async def check_room_existing(session: Session, room_name: str) -> bool:
 
 async def check_lecturer_existing(session: Session, first_name: str, middle_name: str, last_name: str) -> bool:
     if (
-            session.query(Lecturer)
-                    .filter(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name,
-                            Lecturer.last_name == last_name)
-                    .one_or_none()
+        session.query(Lecturer)
+        .filter(Lecturer.first_name == first_name, Lecturer.middle_name == middle_name, Lecturer.last_name == last_name)
+        .one_or_none()
     ):
         return True
     return False
@@ -332,7 +345,9 @@ async def create_comment_lecturer(lecturer_id: int, session: Session, text: str,
     return comment
 
 
-async def update_comment_lecturer(comment_id: int, session: Session, new_text: str, new_is_deleted: bool | None = None) -> CommentsLecturer:
+async def update_comment_lecturer(
+    comment_id: int, session: Session, new_text: str, new_is_deleted: bool | None = None
+) -> CommentsLecturer:
     comment = session.query(CommentsLecturer).filter(CommentsLecturer.id == comment_id).one_or_none()
     if not comment:
         raise exceptions.CommentNotFoundError(comment_id)
@@ -342,7 +357,9 @@ async def update_comment_lecturer(comment_id: int, session: Session, new_text: s
     return comment
 
 
-async def update_comment_event(comment_id: int, session: Session, new_text: str, new_is_deleted: bool | None = None) -> CommentsLesson:
+async def update_comment_event(
+    comment_id: int, session: Session, new_text: str, new_is_deleted: bool | None = None
+) -> CommentsLesson:
     comment = session.query(CommentsLesson).filter(CommentsLesson.id == comment_id).one_or_none()
     if not comment:
         raise exceptions.CommentNotFoundError(comment_id)
