@@ -2,6 +2,7 @@ import logging.config
 
 import uvicorn
 
+
 from calendar_backend.routes import app
 
 LOGGING_CONFIG = {

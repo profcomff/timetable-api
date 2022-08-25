@@ -58,3 +58,9 @@ class LecturerPhotoNotFoundError(PhotoNotFoundError):
     def __init__(self, id: int, lecturer_id: int):
         message = f"Photo {id} of lecturer {lecturer_id} not found"
         super(PhotoNotFoundError, self).__init__(message)
+
+
+class CommentNotFoundError(NotFound):
+    def __init__(self, id: int):
+        message = f"Comment {id} not found"
+        super().__init__(message)

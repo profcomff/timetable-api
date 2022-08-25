@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 import string
 
@@ -290,7 +291,8 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
-    path = f"{settings.PHOTO_LECTURER_PATH}/{random_string}.{file.content_type.split('/')[1]}"
+    ext = file.filename.split('.')[-1]
+    path = os.path.join(settings.PHOTO_LECTURER_PATH, f"{random_string}.{ext}")
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
@@ -315,14 +317,18 @@ async def create_comment_lecturer(lecturer_id: int, session: Session, text: str,
 
 
 async def update_comment_lecturer(comment_id: int, session: Session, new_text: str) -> CommentsLecturer:
-    comment = session.query(CommentsLecturer).get(comment_id)
+    comment = session.query(CommentsLecturer).filter(CommentsLecturer.id == comment_id).one_or_none()
+    if not comment:
+        raise exceptions.CommentNotFoundError(comment_id)
     comment.text = new_text
     session.flush()
     return comment
 
 
 async def update_comment_event(comment_id: int, session: Session, new_text: str) -> CommentsLesson:
-    comment = session.query(CommentsLesson).get(comment_id)
+    comment = session.query(CommentsLesson).filter(CommentsLesson.id == comment_id).one_or_none()
+    if not comment:
+        raise exceptions.CommentNotFoundError(comment_id)
     comment.text = new_text
     session.flush()
     return comment
@@ -338,7 +344,9 @@ async def get_photo_by_id(photo_id: int, session: Session) -> Photo:
 async def set_lecturer_avatar(lecturer_id: int, photo_id: int, session: Session) -> Lecturer:
     lecturer = await get_lecturer_by_id(lecturer_id, session)
     if photo_id in [row.id for row in lecturer.photos]:
-        lecturer.avatar = await get_photo_by_id(photo_id, session)
+        photo = await get_photo_by_id(photo_id, session)
+        lecturer.avatar_id = photo.id
+        lecturer.avatar_link = photo.link
         return lecturer
     else:
         raise exceptions.LecturerPhotoNotFoundError(id=photo_id, lecturer_id=lecturer_id)
