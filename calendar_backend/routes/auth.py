@@ -21,4 +21,3 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not hashed_password == user.password:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     return {"access_token": user.username, "token_type": "bearer"}
-
