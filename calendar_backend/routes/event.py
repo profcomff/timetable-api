@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Literal, Union
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi_sqlalchemy import db
@@ -16,6 +16,7 @@ from calendar_backend.routes.models import (
     GetListEventWithoutLecturerDescription,
     GetListEventWithoutLecturerDescriptionAndComments,
     GetListEventWithoutLecturerComments,
+    EventWithoutLecturerDescriptionAndComments
 )
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
@@ -72,23 +73,23 @@ async def http_get_events(
     return GetListEvent(items=list_events)
 
 
-@event_router.post("/", response_model=Event)
-async def http_create_event(lesson: EventPost, current_user: auth.User = Depends(auth.get_current_user)) -> Event:
+@event_router.post("/", response_model=EventWithoutLecturerDescriptionAndComments)
+async def http_create_event(lesson: EventPost, current_user: auth.User = Depends(auth.get_current_user)) -> EventWithoutLecturerDescriptionAndComments:
     logger.debug(f"Creating event: {lesson}", extra={"user": current_user})
-    return Event.from_orm(
+    return EventWithoutLecturerDescriptionAndComments.from_orm(
         await utils.create_lesson(
             lesson.room_id, lesson.lecturer_id, lesson.group_id, lesson.name, lesson.start_ts, lesson.end_ts, db.session
         )
     )
 
 
-@event_router.patch("/{id}", response_model=Event)
+@event_router.patch("/{id}", response_model=EventWithoutLecturerDescriptionAndComments)
 async def http_patch_event(
     id: int, lesson_pydantic: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
-) -> Event:
+) -> EventWithoutLecturerDescriptionAndComments:
     logger.debug(f"Patcing event id:{id}", extra={"user": current_user})
     lesson = await utils.get_lesson_by_id(id, db.session)
-    return Event.from_orm(
+    return EventWithoutLecturerDescriptionAndComments.from_orm(
         await utils.update_lesson(
             lesson,
             db.session,
