@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 import string
 
@@ -290,7 +291,8 @@ async def check_lecturer_existing(session: Session, first_name: str, middle_name
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
-    path = f"{settings.PHOTO_LECTURER_PATH}/{random_string}.{file.content_type.split('/')[1]}"
+    ext = file.filename.split('.')[-1]
+    path = os.path.join(settings.PHOTO_LECTURER_PATH, f"{random_string}.{ext}")
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
