@@ -19,7 +19,7 @@ async def http_get_group_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> GroupEvents:
     logger.debug(f"Getting group id:{id}")
-    group = await utils.get_group_by_id(id, db.session)
+    group = await utils.get_group_by_id(id, db.session, False)
     result = GroupEvents.from_orm(group)
     if start and end:
         result.events = await utils.get_group_lessons_in_daterange(group, start, end)
@@ -53,12 +53,12 @@ async def http_patch_group(
     id: int, group_pydantic: GroupPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Group:
     logger.debug(f"Pathcing group id:{id}", extra={"user": current_user})
-    group = await utils.get_group_by_id(id, db.session)
-    return Group.from_orm(await utils.update_group(group, db.session, group_pydantic.number, group_pydantic.name))
+    group = await utils.get_group_by_id(id, db.session, True)
+    return Group.from_orm(await utils.update_group(group, db.session, group_pydantic.number, group_pydantic.name, group_pydantic.is_deleted))
 
 
 @group_router.delete("/{id}", response_model=None)
 async def http_delete_group(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
     logger.debug(f"Deleting group id:{id}", extra={"user": current_user})
-    group = await utils.get_group_by_id(id, db.session)
+    group = await utils.get_group_by_id(id, db.session, False)
     return await utils.delete_group(group, db.session)

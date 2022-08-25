@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 @event_router.get("/{id}", response_model=Event)
 async def http_get_event_by_id(id: int) -> Event:
     logger.debug(f"Getting event id:{id}")
-    return Event.from_orm(await utils.get_lesson_by_id(id, db.session))
+    return Event.from_orm(await utils.get_lesson_by_id(id, db.session, False))
 
 
 @event_router.get(
@@ -53,21 +53,21 @@ async def http_get_events(
         if lecturer_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
         list_events = await utils.get_group_lessons_in_daterange(
-            await utils.get_group_by_id(group_id, db.session), start, end
+            await utils.get_group_by_id(group_id, db.session, False), start, end
         )
     if lecturer_id:
         logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
         if group_id or room_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
         list_events = await utils.get_lecturer_lessons_in_daterange(
-            await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
+            await utils.get_lecturer_by_id(lecturer_id, db.session, False), start, end
         )
     if room_id:
         logger.debug(f"Getting events for room_id:{room_id}")
         if lecturer_id or group_id:
             raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
         list_events = await utils.get_room_lessons_in_daterange(
-            await utils.get_room_by_id(room_id, db.session), start, end
+            await utils.get_room_by_id(room_id, db.session, False), start, end
         )
     if "" in detail:
         return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
@@ -95,7 +95,7 @@ async def http_patch_event(
     id: int, lesson_pydantic: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> EventWithoutLecturerDescriptionAndComments:
     logger.debug(f"Patcing event id:{id}", extra={"user": current_user})
-    lesson = await utils.get_lesson_by_id(id, db.session)
+    lesson = await utils.get_lesson_by_id(id, db.session, True)
     return EventWithoutLecturerDescriptionAndComments.from_orm(
         await utils.update_lesson(
             lesson,
@@ -106,6 +106,7 @@ async def http_patch_event(
             [row.id for row in lesson.lecturer],
             lesson.start_ts,
             lesson_pydantic.end_ts,
+            lesson_pydantic.is_deleted
         )
     )
 
@@ -113,7 +114,7 @@ async def http_patch_event(
 @event_router.delete("/{id}", response_model=None)
 async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
     logger.debug(f"Deleting event id:{id}", extra={"user": current_user})
-    lesson = await utils.get_lesson_by_id(id, db.session)
+    lesson = await utils.get_lesson_by_id(id, db.session, False)
     return await utils.delete_lesson(lesson, db.session)
 
 

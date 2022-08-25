@@ -20,7 +20,7 @@ async def http_get_lecturer_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> LecturerEvents:
     logger.debug(f"Getting lecturer id:{id}")
-    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer = await utils.get_lecturer_by_id(id, db.session, False)
     lecturer.photo_link = lecturer.avatar.link if lecturer.avatar else None
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
@@ -67,7 +67,7 @@ async def http_patch_lecturer(
     id: int, lecturer_pydantic: LecturerPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Lecturer:
     logger.debug(f"Patching lecturer id:{id}", extra={"user": current_user})
-    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer = await utils.get_lecturer_by_id(id, db.session, True)
     return Lecturer.from_orm(
         await utils.update_lecturer(
             lecturer,
@@ -76,6 +76,7 @@ async def http_patch_lecturer(
             lecturer_pydantic.middle_name,
             lecturer_pydantic.last_name,
             lecturer_pydantic.description,
+            lecturer_pydantic.is_deleted
         )
     )
 
@@ -83,7 +84,7 @@ async def http_patch_lecturer(
 @lecturer_router.delete("/{id}", response_model=None)
 async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
     logger.debug(f"Deleting lectuer id:{id}", extra={"user": current_user})
-    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer = await utils.get_lecturer_by_id(id, db.session, False)
     return await utils.delete_lecturer(lecturer, db.session)
 
 
@@ -96,7 +97,7 @@ async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
 @lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
 async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
     logger.debug(f"Getting lecturer: {id} photos")
-    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer = await utils.get_lecturer_by_id(id, db.session, False)
     lecturer.links = [row.link for row in lecturer.photos]
     return LecturerPhotos.from_orm(lecturer)
 

@@ -50,6 +50,7 @@ class LecturerPatch(Base):
     middle_name: str | None
     last_name: str | None
     description: str | None
+    is_deleted: bool | None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"

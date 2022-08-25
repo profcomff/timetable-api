@@ -5,6 +5,7 @@ from calendar_backend.models import Direction
 class RoomPatch(Base):
     name: str | None
     direction: Direction | None
+    is_deleted: bool | None
 
     def __repr__(self):
         return f"Room(name={self.name}, direction={self.direction})"

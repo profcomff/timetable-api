@@ -17,6 +17,7 @@ class EventPatch(Base):
     start_ts: datetime.datetime | None
     end_ts: datetime.datetime | None
     comments: list[str] | None
+    is_deleted: bool | None
 
     def __repr__(self):
         return (
