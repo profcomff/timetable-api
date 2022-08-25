@@ -6,20 +6,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
 from starlette import status
-from starlette.requests import Request
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
 from calendar_backend import exceptions
 from calendar_backend import get_settings
+from .auth import auth_router
 from .event import event_router
 from .gcal import gcal
 from .group import group_router
 from .lecturer import lecturer_router
 from .room import room_router
-from .timetable import timetable_router
-from .auth import auth_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -161,6 +160,5 @@ app.include_router(gcal)
 app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(lecturer_router)
-app.include_router(timetable_router)
 app.include_router(group_router)
 app.include_router(auth_router)
