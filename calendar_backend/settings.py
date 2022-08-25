@@ -8,7 +8,6 @@ class Settings(BaseSettings):
 
     DB_DSN: PostgresDsn
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
-    ICS_PATH: DirectoryPath = 'cache'
     SCOPES: list[str] = [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
