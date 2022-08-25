@@ -7,8 +7,16 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import Lecturer, LecturerPatch, LecturerPost, GetListLecturer, LecturerEvents, \
-    CommentLecturer, LecturerPhotos, Photo
+from calendar_backend.routes.models import (
+    Lecturer,
+    LecturerPatch,
+    LecturerPost,
+    GetListLecturer,
+    LecturerEvents,
+    CommentLecturer,
+    LecturerPhotos,
+    Photo,
+)
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -30,21 +38,24 @@ async def http_get_lecturer_by_id(
 
 @lecturer_router.get("/", response_model=GetListLecturer)
 async def http_get_lecturers(
-    query: str = "", limit: int = 10, offset: int = 0, details: list[Literal["photo", "description", "comments", ""]] = Query(...)
+    query: str = "",
+    limit: int = 10,
+    offset: int = 0,
+    details: list[Literal["photo", "description", "comments", ""]] = Query(...),
 ) -> dict[str, Any]:
     logger.debug(f"Getting rooms list, filter: {query}")
     list_lecturer, total = await utils.get_list_lecturers(db.session, query, limit, offset)
     result = [Lecturer.from_orm(row) for row in list_lecturer]
+    exclude = []
+    if "" in details:
+        exclude.append(["photo", "description", "comments"])
     if "photo" not in details:
-        for row in result:
-            row.avatar_id = None
+        exclude.append("photo")
     if "description" not in details:
-        for row in result:
-            row.description = None
+        exclude.append("description")
     if "comments" not in details:
-        for row in result:
-            row.comments = None
-    return {"items": result, "limit": limit, "offset": offset, "total": total}
+        exclude.append("comments")
+    return {"items": [row.dict(exclude={*exclude}) for row in result], "limit": limit, "offset": offset, "total": total}
 
 
 @lecturer_router.post("/", response_model=Lecturer)

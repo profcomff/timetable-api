@@ -62,7 +62,7 @@ async def http_no_room_found_error_handler(request: starlette.requests.Request, 
 
 @app.exception_handler(exceptions.NoTeacherFoundError)
 async def http_no_lecturer_found_error_handler(
-        request: starlette.requests.Request, exc: exceptions.NoTeacherFoundError
+    request: starlette.requests.Request, exc: exceptions.NoTeacherFoundError
 ):
     logger.info(f"No lecturer found error, request: {request.path_params}, error: {exc}")
     return PlainTextResponse("No lecturer found error", status_code=404)
