@@ -314,7 +314,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
-        photo = Photo(lecturer_id=lecturer_id, link=random_string)
+        photo = Photo(lecturer_id=lecturer_id, link=path)
         session.add(photo)
         session.flush()
     return photo

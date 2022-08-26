@@ -9,6 +9,7 @@ from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
+from fastapi.staticfiles import StaticFiles
 from starlette.types import ASGIApp
 
 from calendar_backend import exceptions
@@ -155,6 +156,8 @@ app.add_middleware(
     allow_headers=settings.CORS_ALLOW_HEADERS,
 )
 app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
+
+app.mount('/static', StaticFiles(directory='static'), 'static')
 
 app.include_router(gcal)
 app.include_router(room_router)
