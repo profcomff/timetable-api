@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi_sqlalchemy import db
 
 from calendar_backend import get_settings
-from calendar_backend.methods import utils, auth
+from calendar_backend.methods import utils, auth, list_calendar
 from calendar_backend.routes.models import (
     GetListEvent,
     GetListEventWithoutLecturerComments,
@@ -46,6 +46,7 @@ async def http_get_events(
     lecturer_id: int | None = None,
     room_id: int | None = None,
     detail: list[Literal["comment", "description", ""]] = Query(...),
+    format: Literal["json", "ics"] = "json"
 ) -> Union[
     GetListEvent,
     GetListEventWithoutLecturerComments,
@@ -56,35 +57,39 @@ async def http_get_events(
     end = end or datetime.date.today() + datetime.timedelta(days=1)
     if not group_id and not lecturer_id and not room_id:
         raise HTTPException(status_code=400, detail=f"One argument reqiured, but no one received")
-    if group_id:
-        logger.debug(f"Getting events for group_id:{group_id}")
-        if lecturer_id or room_id:
-            raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        list_events = await utils.get_group_lessons_in_daterange(
-            await utils.get_group_by_id(group_id, db.session, False), start, end
-        )
-    if lecturer_id:
-        logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
-        if group_id or room_id:
-            raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        list_events = await utils.get_lecturer_lessons_in_daterange(
-            await utils.get_lecturer_by_id(lecturer_id, db.session, False), start, end
-        )
-    if room_id:
-        logger.debug(f"Getting events for room_id:{room_id}")
-        if lecturer_id or group_id:
-            raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
-        list_events = await utils.get_room_lessons_in_daterange(
-            await utils.get_room_by_id(room_id, db.session, False), start, end
-        )
-    if "" in detail:
-        return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
-    if "comment" not in detail and "description" in detail:
-        return GetListEventWithoutLecturerComments(items=list_events)
-    if "description" not in detail and "comment" in detail:
-        return GetListEventWithoutLecturerDescription(items=list_events)
-    return GetListEvent(items=list_events)
-
+    match format:
+        case "json":
+            if group_id:
+                logger.debug(f"Getting events for group_id:{group_id}")
+                if lecturer_id or room_id:
+                    raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
+                list_events = await utils.get_group_lessons_in_daterange(
+                    await utils.get_group_by_id(group_id, db.session, False), start, end
+                )
+            if lecturer_id:
+                logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
+                if group_id or room_id:
+                    raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
+                list_events = await utils.get_lecturer_lessons_in_daterange(
+                    await utils.get_lecturer_by_id(lecturer_id, db.session, False), start, end
+                )
+            if room_id:
+                logger.debug(f"Getting events for room_id:{room_id}")
+                if lecturer_id or group_id:
+                    raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
+                list_events = await utils.get_room_lessons_in_daterange(
+                    await utils.get_room_by_id(room_id, db.session, False), start, end
+                )
+            if "" in detail:
+                return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
+            if "comment" not in detail and "description" in detail:
+                return GetListEventWithoutLecturerComments(items=list_events)
+            if "description" not in detail and "comment" in detail:
+                return GetListEventWithoutLecturerDescription(items=list_events)
+            return GetListEvent(items=list_events)
+        case "ics":
+            logger.debug(f"Downloading .ics file for {group_id} calendar...")
+            return await list_calendar.create_ics(group_id, start, end, db.session)
 
 @event_router.post("/", response_model=EventWithoutLecturerDescriptionAndComments)
 async def http_create_event(
