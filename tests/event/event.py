@@ -7,18 +7,23 @@ RESOURCE = "/timetable/event/"
 
 
 def test_create(client_auth: TestClient, dbsession: Session):
+    room = Room(name="5-07", direction="North")
+    lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
+    group = Group(name="", number="202")
+    dbsession.add([room, lecturer, group])
+    dbsession.commit()
     request_obj = {
-          "name": "string",
-          "room_id": [
-            0
-          ],
-          "group_id": 0,
-          "lecturer_id": [
-            0
-          ],
-          "start_ts": "2022-08-26T22:32:38.575Z",
-          "end_ts": "2022-08-26T22:32:38.575Z"
-}
+        "name": "string",
+        "room_id": [
+            room.id
+        ],
+        "group_id": group.id,
+        "lecturer_id": [
+            lecturer.id
+        ],
+        "start_ts": "2022-08-26T22:32:38.575Z",
+        "end_ts": "2022-08-26T22:32:38.575Z"
+    }
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     response_obj = response.json()
@@ -35,6 +40,9 @@ def test_create(client_auth: TestClient, dbsession: Session):
     assert response_model.group_id == request_obj["group_id"]
     assert response_model.start_ts == request_obj["start_ts"]
     assert response_model.end_ts == request_obj["end_ts"]
+
+    dbsession.delete([room, group, lecturer])
+    dbsession.commit()
 
 
 def test_read(client_auth: TestClient, dbsession: Session):
