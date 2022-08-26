@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from calendar_backend.models import Group
 from calendar_backend.models.db import Lecturer
 
 
