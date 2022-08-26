@@ -19,33 +19,24 @@ settings = get_settings()
 # TODO: Tests
 
 
-async def get_group_by_id(group_id: int, session: Session, with_deleted: bool) -> Group:
-    if not with_deleted:
-        result = session.query(Group).filter(and_(Group.id == group_id, Group.is_deleted == False)).one_or_none()
-    else:
-        result = session.query(Group).filter(Group.id == group_id).one_or_none()
+async def get_group_by_id(group_id: int, session: Session) -> Group:
+    result = session.query(Group).filter(and_(Group.id == group_id, Group.is_deleted == False)).one_or_none()
     if not result:
         raise exceptions.NoGroupFoundError(group=group_id)
     return result
 
 
-async def get_room_by_id(room_id: int, session: Session, with_deleted: bool) -> Room:
-    if not with_deleted:
-        result = session.query(Room).filter(and_(Room.id == room_id, Room.is_deleted == False)).one_or_none()
-    else:
-        result = session.query(Room).filter(Room.id == room_id).one_or_none()
+async def get_room_by_id(room_id: int, session: Session) -> Room:
+    result = session.query(Room).filter(and_(Room.id == room_id, Room.is_deleted == False)).one_or_none()
     if not result:
         raise exceptions.NoAudienceFoundError(audience=room_id)
     return result
 
 
-async def get_lecturer_by_id(lecturer_id: int, session: Session, with_deleted: bool) -> Lecturer:
-    if not with_deleted:
-        result = (
-            session.query(Lecturer).filter(and_(Lecturer.id == lecturer_id, Lecturer.is_deleted == False)).one_or_none()
-        )
-    else:
-        result = session.query(Lecturer).filter(Lecturer.id == lecturer_id).one_or_none()
+async def get_lecturer_by_id(lecturer_id: int, session: Session) -> Lecturer:
+    result = (
+        session.query(Lecturer).filter(and_(Lecturer.id == lecturer_id, Lecturer.is_deleted == False)).one_or_none()
+    )
     if not result:
         raise exceptions.NoTeacherFoundError(teacher=lecturer_id)
     return result
@@ -108,11 +99,8 @@ async def get_lessons_by_group_from_date(group: Group, date: datetime.date) -> l
     return lessons_from_date
 
 
-async def get_lesson_by_id(id: int, session: Session, with_deleted: bool) -> Lesson:
-    if not with_deleted:
-        result = session.query(Lesson).filter(and_(Lesson.id == id, Lesson.is_deleted == False)).one_or_none()
-    else:
-        result = session.query(Lesson).filter(Lesson.id == id).one_or_none()
+async def get_lesson_by_id(id: int, session: Session) -> Lesson:
+    result = session.query(Lesson).filter(and_(Lesson.id == id, Lesson.is_deleted == False)).one_or_none()
     if not result:
         raise exceptions.EventNotFound(id)
     return result
@@ -253,8 +241,8 @@ async def create_lesson(
     for row in lecturer_id:
         if not session.query(Lecturer).filter(Lecturer.id == row).one_or_none():
             raise exceptions.NoTeacherFoundError(row)
-    room = [await get_room_by_id(row, session, False) for row in room_id]
-    lecturer = [await get_lecturer_by_id(row, session, False) for row in lecturer_id]
+    room = [await get_room_by_id(row, session) for row in room_id]
+    lecturer = [await get_lecturer_by_id(row, session) for row in lecturer_id]
     lesson = Lesson(name=name, room=room, lecturer=lecturer, group_id=group_id, start_ts=start_ts, end_ts=end_ts)
     session.add(lesson)
     session.flush()
@@ -378,7 +366,7 @@ async def get_photo_by_id(photo_id: int, session: Session) -> Photo:
 
 
 async def set_lecturer_avatar(lecturer_id: int, photo_id: int, session: Session) -> Lecturer:
-    lecturer = await get_lecturer_by_id(lecturer_id, session, False)
+    lecturer = await get_lecturer_by_id(lecturer_id, session)
     if photo_id in [row.id for row in lecturer.photos]:
         photo = await get_photo_by_id(photo_id, session)
         lecturer.avatar_id = photo.id

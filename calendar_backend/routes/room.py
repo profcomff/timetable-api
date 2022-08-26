@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 async def http_get_room_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> RoomEvents:
-    room = await utils.get_room_by_id(id, db.session, False)
+    room = await utils.get_room_by_id(id, db.session)
     result = RoomEvents.from_orm(room)
     if start and end:
         result.events = await utils.get_room_lessons_in_daterange(room, start, end)
@@ -42,7 +42,7 @@ async def http_create_room(room: RoomPost, current_user: auth.User = Depends(aut
 async def http_patch_room(
     id: int, room_inp: RoomPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Room:
-    room = await utils.get_room_by_id(id, db.session, True)
+    room = await utils.get_room_by_id(id, db.session)
     return Room.from_orm(
         await utils.update_room(room, db.session, room_inp.name, room_inp.direction, room_inp.is_deleted)
     )
@@ -50,5 +50,5 @@ async def http_patch_room(
 
 @room_router.delete("/{id}", response_model=None)
 async def http_delete_room(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    room = await utils.get_room_by_id(id, db.session, False)
+    room = await utils.get_room_by_id(id, db.session)
     return await utils.delete_room(room, db.session)

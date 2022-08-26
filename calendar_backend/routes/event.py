@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @event_router.get("/{id}", response_model=Event)
 async def http_get_event_by_id(id: int) -> Event:
-    return Event.from_orm(await utils.get_lesson_by_id(id, db.session, False))
+    return Event.from_orm(await utils.get_lesson_by_id(id, db.session))
 
 
 @event_router.get(
@@ -63,21 +63,21 @@ async def http_get_events(
                 if lecturer_id or room_id:
                     raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
                 list_events = await utils.get_group_lessons_in_daterange(
-                    await utils.get_group_by_id(group_id, db.session, False), start, end
+                    await utils.get_group_by_id(group_id, db.session), start, end
                 )
             if lecturer_id:
                 logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
                 if group_id or room_id:
                     raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
                 list_events = await utils.get_lecturer_lessons_in_daterange(
-                    await utils.get_lecturer_by_id(lecturer_id, db.session, False), start, end
+                    await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
                 )
             if room_id:
                 logger.debug(f"Getting events for room_id:{room_id}")
                 if lecturer_id or group_id:
                     raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
                 list_events = await utils.get_room_lessons_in_daterange(
-                    await utils.get_room_by_id(room_id, db.session, False), start, end
+                    await utils.get_room_by_id(room_id, db.session), start, end
                 )
             if "" in detail:
                 return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
@@ -106,7 +106,7 @@ async def http_create_event(
 async def http_patch_event(
     id: int, event_inp: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> EventWithoutLecturerDescriptionAndComments:
-    lesson = await utils.get_lesson_by_id(id, db.session, True)
+    lesson = await utils.get_lesson_by_id(id, db.session)
     return EventWithoutLecturerDescriptionAndComments.from_orm(
         await utils.update_lesson(
             lesson,
@@ -124,7 +124,7 @@ async def http_patch_event(
 
 @event_router.delete("/{id}", response_model=None)
 async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    lesson = await utils.get_lesson_by_id(id, db.session, False)
+    lesson = await utils.get_lesson_by_id(id, db.session)
     return await utils.delete_lesson(lesson, db.session)
 
 
