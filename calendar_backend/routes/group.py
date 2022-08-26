@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
 from calendar_backend.routes.models import GroupEvents, Group, GroupPost, GroupPatch, GetListGroup
 

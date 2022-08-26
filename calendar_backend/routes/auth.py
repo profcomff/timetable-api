@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from calendar_backend.methods import auth
 
 auth_router = APIRouter(prefix="", tags=["Auth"])

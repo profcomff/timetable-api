@@ -16,7 +16,7 @@ from googleapiclient.discovery import build, UnknownApiNameOrVersion
 from pydantic.types import Json
 
 from calendar_backend.methods import utils
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from calendar_backend.google_engine import create_calendar_with_timetable
 from calendar_backend.google_engine import get_calendar_service_from_token
 from calendar_backend.models import Credentials

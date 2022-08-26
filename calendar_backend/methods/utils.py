@@ -8,7 +8,8 @@ from fastapi import UploadFile, File
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from calendar_backend import exceptions, get_settings
+from calendar_backend import exceptions
+from calendar_backend.settings import get_settings
 from calendar_backend.models import Group, Lesson, Lecturer, Room, Direction
 from calendar_backend.models.db import Photo, CommentsLecturer, CommentsLesson
 

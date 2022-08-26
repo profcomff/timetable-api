@@ -10,8 +10,7 @@ from fastapi.responses import FileResponse
 import pytz
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
-
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from . import utils
 
 settings = get_settings()

@@ -5,7 +5,7 @@ from typing import Literal, Union
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth, list_calendar
 from calendar_backend.routes.models import (
     GetListEvent,
