@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 client_secret.json
+static/**
