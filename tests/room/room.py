@@ -9,7 +9,7 @@ RESOURCE = "/timetable/room/"
 
 def test_create(client_auth: TestClient, dbsession: Session):
     request_obj = {
-        "name": "5-02",
+        "name": "5-02" + datetime.datetime.utcnow().isoformat(),
         "direction": "North"
     }
     response = client_auth.post(RESOURCE, json=request_obj)
