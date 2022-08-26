@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 async def http_get_group_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> GroupEvents:
-    group = await utils.get_group_by_id(id, db.session, False)
+    group = await utils.get_group_by_id(id, db.session)
     result = GroupEvents.from_orm(group)
     if start and end:
         result.events = await utils.get_group_lessons_in_daterange(group, start, end)
@@ -47,7 +47,7 @@ async def http_create_group(group: GroupPost, current_user: auth.User = Depends(
 async def http_patch_group(
     id: int, group_inp: GroupPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Group:
-    group = await utils.get_group_by_id(id, db.session, True)
+    group = await utils.get_group_by_id(id, db.session)
     return Group.from_orm(
         await utils.update_group(group, db.session, group_inp.number, group_inp.name, group_inp.is_deleted)
     )
@@ -55,5 +55,5 @@ async def http_patch_group(
 
 @group_router.delete("/{id}", response_model=None)
 async def http_delete_group(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    group = await utils.get_group_by_id(id, db.session, False)
+    group = await utils.get_group_by_id(id, db.session)
     return await utils.delete_group(group, db.session)

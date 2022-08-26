@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 async def http_get_lecturer_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> LecturerEvents:
-    lecturer = await utils.get_lecturer_by_id(id, db.session, False)
-    lecturer.photo_link = lecturer.avatar.link if lecturer.avatar else None
+    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
         result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
@@ -43,6 +43,8 @@ async def http_get_lecturers(
     details: list[Literal["photo", "description", "comments", ""]] = Query(...),
 ) -> dict[str, Any]:
     list_lecturer, total = await utils.get_list_lecturers(db.session, query, limit, offset)
+    for row in list_lecturer:
+        row.avatar_link = row.avatar.link if row.avatar else None
     result = [Lecturer.from_orm(row) for row in list_lecturer]
     exclude = []
     if "" in details:
@@ -71,7 +73,8 @@ async def http_create_lecturer(
 async def http_patch_lecturer(
     id: int, lecturer_inp: LecturerPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Lecturer:
-    lecturer = await utils.get_lecturer_by_id(id, db.session, True)
+    lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
     return Lecturer.from_orm(
         await utils.update_lecturer(
             lecturer,
@@ -87,7 +90,7 @@ async def http_patch_lecturer(
 
 @lecturer_router.delete("/{id}", response_model=None)
 async def http_delete_lecturer(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    lecturer = await utils.get_lecturer_by_id(id, db.session, False)
+    lecturer = await utils.get_lecturer_by_id(id, db.session)
     return await utils.delete_lecturer(lecturer, db.session)
 
 
@@ -98,7 +101,7 @@ async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
 
 @lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
 async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
-    lecturer = await utils.get_lecturer_by_id(id, db.session, False)
+    lecturer = await utils.get_lecturer_by_id(id, db.session)
     lecturer.links = [row.link for row in lecturer.photos]
     return LecturerPhotos.from_orm(lecturer)
 
@@ -116,3 +119,4 @@ async def http_update_comment_lecturer(comment_id: int, new_text: str) -> Commen
 @lecturer_router.post("/{id}/avatar", response_model=Lecturer)
 async def http_set_lecturer_avatar(id: int, photo_id: int) -> Lecturer:
     return Lecturer.from_orm(await utils.set_lecturer_avatar(id, photo_id, db.session))
+

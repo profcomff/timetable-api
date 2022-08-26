@@ -17,7 +17,7 @@ async def create_google_events_from_db(group_id: int, session: Session) -> list[
     Creates a timetable for certain group from db.
     Returns list[Event] of events/subjects
     """
-    group, _ = await get_group_by_id(group_id, session, False)
+    group, _ = await get_group_by_id(group_id, session)
     group_lessons: list[Lesson] = await get_lessons_by_group_from_date(group, datetime.date.today())
     list_of_lessons: list[Event] = []
     time_zone = "+03:00"

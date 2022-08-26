@@ -22,7 +22,7 @@ async def get_user_calendar(group_id: int, session: Session, start_date: date_, 
     Returns event iCalendar object
     """
     logger.debug(f"Getting user calendar (iCal) for group {group_id}")
-    group = await utils.get_group_by_id(group_id, session, False)
+    group = await utils.get_group_by_id(group_id, session)
     user_calendar = Calendar()
     timetable = await utils.get_group_lessons_in_daterange(group, start_date, end_date)
     for lesson in timetable:
@@ -31,7 +31,7 @@ async def get_user_calendar(group_id: int, session: Session, start_date: date_, 
             if lesson.lecturer
             else "-"
         )
-        place = str([row.name for row in lesson.room])if lesson.room else "-"
+        place = str([row.name for row in lesson.room]) if lesson.room else "-"
         event = Event()
         event.add("summary", f"{lesson.name}, {teacher}")
         event.add(

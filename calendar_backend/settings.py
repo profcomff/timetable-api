@@ -12,8 +12,8 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
-    ICS_PATH: DirectoryPath = "cache"
-    PHOTO_LECTURER_PATH: DirectoryPath = 'photo/lecturer'
+    ICS_PATH: DirectoryPath = "static/cache"
+    PHOTO_LECTURER_PATH: DirectoryPath = 'static/photo/lecturer'
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
     GOOGLE_CLIENT_SECRET: Json | None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
