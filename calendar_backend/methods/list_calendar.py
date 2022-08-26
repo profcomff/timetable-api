@@ -70,11 +70,7 @@ def get_end_of_semester_date() -> date_:
     elif datetime.today().month in range(9, 13):
         return date_(date_.today().year, 12, 24)
     else:
-        return date_(
-            date_.today().year,
-            date_.today().month,
-            date_.today().day,
-        )
+        return date_.today()
 
 
 def check_file_for_creation_date(path_file: str) -> bool:
