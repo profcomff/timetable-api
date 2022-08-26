@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+
 from calendar_backend.models import Lesson, Room, Lecturer, Group
 
 RESOURCE = "/timetable/event/"
@@ -91,6 +90,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
 
     # Clear db
     dbsession.delete(response_model)
+    dbsession.delete([room, group, lecturer])
     dbsession.commit()
 
 
@@ -170,6 +170,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Clear db
     dbsession.delete(response_model)
+    dbsession.delete([room, group, lecturer])
     dbsession.commit()
 
 
@@ -271,4 +272,5 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Clear db
     dbsession.delete(response_model)
+    dbsession.delete([room, group, lecturer])
     dbsession.commit()
