@@ -1,11 +1,12 @@
 FROM python:3.10
 WORKDIR /app
+RUN mkdir -p static/cache && mkdir -p static/photo/lecturer
 
-COPY ./gunicorn_conf.py /app/gunicorn_conf.py
 COPY ./requirements.txt /app/
-COPY ./alembic.ini /app/alembic.ini
-COPY ./migrations /app/migrations
-COPY ./calendar_backend /app/calendar_backend
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-RUN mkdir cache && mkdir -p photo/lecturer && pip install --no-cache-dir -r /app/requirements.txt
+ADD gunicorn_conf.py alembic.ini /app/
+ADD migrations /app/migrations
+ADD calendar_backend /app/calendar_backend
+
 CMD [ "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "/app/gunicorn_conf.py", "calendar_backend.routes.base:app" ]
