@@ -1,8 +1,10 @@
+import logging
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from calendar_backend.settings import get_settings
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -29,4 +31,5 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    logger.info("User auth successfull %s", user.username)
     return user.username
