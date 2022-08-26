@@ -28,7 +28,7 @@ async def http_get_lecturer_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> LecturerEvents:
     lecturer = await utils.get_lecturer_by_id(id, db.session)
-    lecturer.photo_link = lecturer.avatar.link if lecturer.avatar else None
+    lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
         result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
@@ -43,6 +43,8 @@ async def http_get_lecturers(
     details: list[Literal["photo", "description", "comments", ""]] = Query(...),
 ) -> dict[str, Any]:
     list_lecturer, total = await utils.get_list_lecturers(db.session, query, limit, offset)
+    for row in list_lecturer:
+        row.avatar_link = row.avatar.link if row.avatar else None
     result = [Lecturer.from_orm(row) for row in list_lecturer]
     exclude = []
     if "" in details:
@@ -72,6 +74,7 @@ async def http_patch_lecturer(
     id: int, lecturer_inp: LecturerPatch, current_user: auth.User = Depends(auth.get_current_user)
 ) -> Lecturer:
     lecturer = await utils.get_lecturer_by_id(id, db.session)
+    lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
     return Lecturer.from_orm(
         await utils.update_lecturer(
             lecturer,

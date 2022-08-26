@@ -31,7 +31,7 @@ async def get_user_calendar(group_id: int, session: Session, start_date: date_, 
             if lesson.lecturer
             else "-"
         )
-        place = str([row.name for row in lesson.room])if lesson.room else "-"
+        place = str([row.name for row in lesson.room]) if lesson.room else "-"
         event = Event()
         event.add("summary", f"{lesson.name}, {teacher}")
         event.add(

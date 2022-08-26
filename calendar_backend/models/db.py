@@ -48,7 +48,6 @@ class Lecturer(Base):
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
-    avatar_link = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("photo.link"))
     description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
