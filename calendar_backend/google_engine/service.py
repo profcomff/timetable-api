@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from calendar_backend.models import Credentials
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from fastapi_sqlalchemy import db
 from pydantic import Json
 

@@ -12,7 +12,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 from calendar_backend import exceptions
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from .auth import auth_router
 from .event import event_router
 from .gcal import gcal

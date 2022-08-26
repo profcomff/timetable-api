@@ -16,7 +16,7 @@ from googleapiclient.discovery import build, UnknownApiNameOrVersion
 from pydantic.types import Json
 
 from calendar_backend.methods import utils
-from calendar_backend import get_settings
+from calendar_backend.settings import get_settings
 from calendar_backend.google_engine import create_calendar_with_timetable
 from calendar_backend.google_engine import get_calendar_service_from_token
 from calendar_backend.models import Credentials
@@ -30,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 @lru_cache(2)
 def get_flow(state=""):
-    logger.debug(f"Getting flow with state '{state}'")
     return Flow.from_client_config(
         settings.GOOGLE_CLIENT_SECRET,
         scopes=settings.SCOPES,
@@ -94,7 +93,6 @@ async def get_credentials(
     try:
         db_records = db.session.query(Credentials).filter(Credentials.email == email)
         if len(db_records.all()) == 0:
-            logger.debug(f"User {email} not found in db. Adding...")
             db.session.add(
                 Credentials(
                     group=group,
@@ -104,7 +102,6 @@ async def get_credentials(
                 )
             )
         else:
-            logger.debug(f"User {email} is already in db. Updating...")
             db_records.update(
                 dict(
                     group=group,
