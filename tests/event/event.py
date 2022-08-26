@@ -10,7 +10,9 @@ def test_create(client_auth: TestClient, dbsession: Session):
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
     group = Group(name="", number="202")
-    dbsession.add([room, lecturer, group])
+    dbsession.add(room)
+    dbsession.add(lecturer)
+    dbsession.add(group)
     dbsession.commit()
     request_obj = {
         "name": "string",
@@ -41,7 +43,9 @@ def test_create(client_auth: TestClient, dbsession: Session):
     assert response_model.start_ts == request_obj["start_ts"]
     assert response_model.end_ts == request_obj["end_ts"]
 
-    dbsession.delete([room, group, lecturer])
+    dbsession.delete(room)
+    dbsession.delete(lecturer)
+    dbsession.delete(group)
     dbsession.commit()
 
 
@@ -50,7 +54,9 @@ def test_read(client_auth: TestClient, dbsession: Session):
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
     group = Group(name="", number="202")
-    dbsession.add([room, lecturer, group])
+    dbsession.add(room)
+    dbsession.add(lecturer)
+    dbsession.add(group)
     dbsession.commit()
     request_obj = {
           "name": "string",
@@ -98,7 +104,9 @@ def test_read(client_auth: TestClient, dbsession: Session):
 
     # Clear db
     dbsession.delete(response_model)
-    dbsession.delete([room, group, lecturer])
+    dbsession.delete(room)
+    dbsession.delete(lecturer)
+    dbsession.delete(group)
     dbsession.commit()
 
 
@@ -107,7 +115,9 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
     group = Group(name="", number="202")
-    dbsession.add([room, lecturer, group])
+    dbsession.add(room)
+    dbsession.add(lecturer)
+    dbsession.add(group)
     dbsession.commit()
     request_obj = {
         "name": "string",
@@ -178,7 +188,9 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Clear db
     dbsession.delete(response_model)
-    dbsession.delete([room, group, lecturer])
+    dbsession.delete(room)
+    dbsession.delete(lecturer)
+    dbsession.delete(group)
     dbsession.commit()
 
 
@@ -187,7 +199,9 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
     group = Group(name="", number="202")
-    dbsession.add([room, lecturer, group])
+    dbsession.add(room)
+    dbsession.add(lecturer)
+    dbsession.add(group)
     dbsession.commit()
     request_obj = {
         "name": "string",
@@ -280,5 +294,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Clear db
     dbsession.delete(response_model)
-    dbsession.delete([room, group, lecturer])
+    dbsession.delete(room)
+    dbsession.delete(lecturer)
+    dbsession.delete(group)
     dbsession.commit()
