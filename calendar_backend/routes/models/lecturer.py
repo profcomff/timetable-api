@@ -1,7 +1,8 @@
 from .base import Base, LecturerGet, EventGet
 
 
-class LecturerPhotos(LecturerGet):
+class LecturerPhotos(Base):
+    id: int
     links: list[str]
     limit: int
     offset: int

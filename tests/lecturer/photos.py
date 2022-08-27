@@ -7,7 +7,7 @@ def test_read_all(client_auth: TestClient, photo_path: str):
     assert response.ok, response.json()
     response_obj = response.json()
     assert response_obj["limit"] == 10
-    assert len(response_obj["items"]) <= 10
+    assert len(response_obj["links"]) <= 10
 
 
 def test_delete(client_auth: TestClient, photo_path: str):

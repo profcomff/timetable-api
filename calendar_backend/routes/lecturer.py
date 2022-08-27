@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Query
 from fastapi_sqlalchemy import db
 from calendar_backend.models.db import Lecturer
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
+from calendar_backend.models.db import Photo as DbPhoto
 
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
@@ -91,9 +92,13 @@ async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
 
 
 @lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
-async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
+async def http_get_lecturer_photos(id: int, limit: int = 10,
+    offset: int = 0) -> LecturerPhotos:
     lecturer = Lecturer.get(id, session=db.session)
     lecturer.links = [row.link for row in lecturer.photos]
+    lecturer.limit = limit
+    lecturer.offset = offset
+    lecturer.total = len(lecturer.links)
     return LecturerPhotos.from_orm(lecturer)
 
 
@@ -121,5 +126,10 @@ async def http_delete_comment(id: int, _: auth.User = Depends(auth.get_current_u
 @lecturer_router.get("/{id}/comment", response_model=CommentLecturer)
 async def http_get_comment(id: int) -> CommentLecturer:
     return CommentLecturer.from_orm(DbCommentLecturer.get(id=id, session=db.session))
+
+
+@lecturer_router.delete("/{id}/photo", response_model=None)
+async def http_delete_photo(id: int) -> None:
+    return DbPhoto.delete(id=id, session=db.session)
 
 

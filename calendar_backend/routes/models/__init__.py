@@ -5,7 +5,6 @@ from .lecturer import (
     LecturerPatch,
     LecturerPhotos,
     LecturerEvents,
-    CommentLecturer,
     GetListLecturer,
     Photo,
     CommentLecturerPost,
