@@ -56,7 +56,7 @@ def room_path(client_auth: TestClient, dbsession: Session):
 def group_path(client_auth: TestClient, dbsession: Session):
     RESOURCE = "/timetable/group/"
     request_obj = {
-        "name": ""
+        "name": "",
         "number": datetime.now().isoformat(),
     }
     response = client_auth.post(RESOURCE, json=request_obj)
