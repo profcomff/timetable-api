@@ -54,7 +54,7 @@ class BaseDbModel(DeclarativeBase):
         if not with_deleted and hasattr(cls, "is_deleted"):
             objs = objs.filter(not_(cls.is_deleted))
         try:
-            return objs.filter(cls.id==id).one()
+            return objs.filter(cls.id == id).one()
         except NoResultFound:
             raise ObjectNotFound(cls, id)
 

@@ -47,6 +47,7 @@ create_room = requests.post(
 """
 )
 
+
 @app.exception_handler(ObjectNotFound)
 async def not_found_error(request: starlette.requests.Request, exc: ObjectNotFound):
     return JSONResponse({"error": exc.args[0], "request": request.path_params}, status_code=404)

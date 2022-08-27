@@ -46,7 +46,9 @@ async def http_create_group(group: GroupPost, _: auth.User = Depends(auth.get_cu
 
 @group_router.patch("/{id}", response_model=GroupGet)
 async def http_patch_group(
-    id: int, group_inp: GroupPatch, _: auth.User = Depends(auth.get_current_user)
+    id: int,
+    group_inp: GroupPatch,
+    _: auth.User = Depends(auth.get_current_user),
 ) -> GroupGet:
     return Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session)
 
