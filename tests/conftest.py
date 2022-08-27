@@ -46,7 +46,7 @@ def room_path(client_auth: TestClient, dbsession: Session):
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield RESOURCE + "{id_}"
+    yield RESOURCE + str(id_)
     response_model: Room = dbsession.query(Room).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
@@ -62,7 +62,7 @@ def group_path(client_auth: TestClient, dbsession: Session):
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield RESOURCE + "{id_}"
+    yield RESOURCE + str(id_)
     response_model: Group = dbsession.query(Group).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
@@ -80,7 +80,7 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield f"/timetable/lecturer/{id_}"
+    yield RESOURCE + str(id_)
     response_model: Lecturer = dbsession.query(Lecturer).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
@@ -88,14 +88,14 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
 
 @pytest.fixture()
 def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
-    RESOURCE = f"{lecturer_path}/comment"
+    RESOURCE = f"{lecturer_path}/comment/"
     request_obj = {
         "author_name": "Аноним",
         "comment_text": "Очень умный коммент",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
-    yield f"{lecturer_path}/comment/{id_}"
+    yield RESOURCE + str(id_)
     response_model: CommentsLecturer = dbsession.query(CommentsLecturer).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
@@ -103,12 +103,12 @@ def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int
 
 @pytest.fixture()
 def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
-    RESOURCE = f"{lecturer_path}/photo"
+    RESOURCE = f"{lecturer_path}/photo/"
     with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield f"{lecturer_path}/photo/{id_}"
+    yield RESOURCE + str(id_)
     response_model: CommentsLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
