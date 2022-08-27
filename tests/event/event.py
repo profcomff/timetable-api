@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 import datetime
 from sqlalchemy.orm import Session
 
-from calendar_backend.models import Lesson, Room, Lecturer, Group
+from calendar_backend.models import Event, Room, Lecturer, Group
 
 RESOURCE = "/timetable/event/"
 
@@ -32,7 +32,7 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
     assert response_obj["lecturer"][0]["id"] == lecturer_id
     assert response_obj["start_ts"][:20] == request_obj["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj["end_ts"][:20]
-    response_model: Lesson = dbsession.query(Lesson).get(response_obj["id"])
+    response_model: Event = dbsession.query(Event).get(response_obj["id"])
     assert response_model.name == request_obj["name"]
     assert [row.id for row in response_model.room] == request_obj["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj["lecturer_id"]
@@ -107,7 +107,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     assert response_obj["end_ts"] == request_obj["end_ts"]
 
     # Ok db
-    response_model: Lesson = dbsession.query(Lesson).get(response_obj["id"])
+    response_model: Event = dbsession.query(Event).get(response_obj["id"])
     assert response_model.name == request_obj["name"]
     assert [row.id for row in response_model.room] == request_obj["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj["lecturer_id"]
@@ -204,7 +204,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
 
     # Ok db
-    response_model: Lesson = dbsession.query(Lesson).get(response_obj["id"])
+    response_model: Event = dbsession.query(Event).get(response_obj["id"])
     assert response_model.name == request_obj["name"]
     assert [row.id for row in response_model.room] == request_obj["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj["lecturer_id"]

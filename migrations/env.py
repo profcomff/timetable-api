@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from calendar_backend.models.base import Base
+from calendar_backend.models.base import DeclarativeBase
 from calendar_backend.settings import get_settings
 
 # this is the Alembic Config object, which provides
@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata
+target_metadata = DeclarativeBase.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

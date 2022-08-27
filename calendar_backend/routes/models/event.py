@@ -1,6 +1,6 @@
 import datetime
 
-from .base import Base, Room, Group, CommentEvent
+from .base import Base, RoomGet, GroupGet, CommentEventGet
 from .lecturer import (
     LecturerWithoutComments,
     LecturerWithoutDescription,
@@ -46,8 +46,8 @@ class EventPost(Base):
 class EventWithLecturerCommentsAndDecription(Base):
     id: int
     name: str
-    room: list[Room]
-    group: Group
+    room: list[RoomGet]
+    group: GroupGet
     lecturer: list[LecturerWithNonNoneCommentsAndDescription]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
@@ -60,8 +60,8 @@ class GetListEvent(Base):
 class EventWithoutLecturerComments(Base):
     id: int
     name: str
-    room: list[Room]
-    group: Group
+    room: list[RoomGet]
+    group: GroupGet
     lecturer: list[LecturerWithoutComments]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
@@ -70,19 +70,19 @@ class EventWithoutLecturerComments(Base):
 class EventWithoutLecturerDescription(Base):
     id: int
     name: str
-    room: list[Room]
-    group: Group
+    room: list[RoomGet]
+    group: GroupGet
     lecturer: list[LecturerWithoutDescription]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
-    comments: list[CommentEvent]
+    comments: list[CommentEventGet]
 
 
 class EventWithoutLecturerDescriptionAndComments(Base):
     id: int
     name: str
-    room: list[Room]
-    group: Group
+    room: list[RoomGet]
+    group: GroupGet
     lecturer: list[LecturerWithoutDescriptionAndComments]
     start_ts: datetime.datetime
     end_ts: datetime.datetime

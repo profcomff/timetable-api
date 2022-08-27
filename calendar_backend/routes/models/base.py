@@ -17,7 +17,7 @@ class CommentLecturer(Base):
     update_ts: datetime.datetime
 
 
-class CommentEvent(Base):
+class CommentEventGet(Base):
     id: int
     lesson_id: int
     text: str
@@ -26,7 +26,7 @@ class CommentEvent(Base):
     update_ts: datetime.datetime
 
 
-class Group(Base):
+class GroupGet(Base):
     id: int
     name: str | None
     number: str
@@ -44,7 +44,7 @@ class Group(Base):
         return f"Group(id={self.id}, name={self.name}, number={self.number})"
 
 
-class Lecturer(Base):
+class LecturerGet(Base):
     id: int
     first_name: str
     middle_name: str
@@ -58,7 +58,7 @@ class Lecturer(Base):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
 
-class Room(Base):
+class RoomGet(Base):
     id: int
     name: str
     direction: str | None
@@ -67,15 +67,15 @@ class Room(Base):
         return f"Room(id={self.id}, name={self.name}, direction={self.direction})"
 
 
-class Event(Base):
+class EventGet(Base):
     id: int
     name: str
-    room: list[Room]
-    group: Group
-    lecturer: list[Lecturer]
+    room: list[RoomGet]
+    group: GroupGet
+    lecturer: list[LecturerGet]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
-    comments: list[CommentEvent] | None
+    comments: list[CommentEventGet] | None
 
     def __repr__(self):
         return (

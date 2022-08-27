@@ -2,31 +2,33 @@ import datetime
 import logging
 from typing import Literal, Union
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi_sqlalchemy import db
 
-from calendar_backend.settings import get_settings
-from calendar_backend.methods import utils, auth, list_calendar
+from calendar_backend.methods import auth, list_calendar, utils
+from calendar_backend.models import Group, Room, Lecturer, Event, CommentEvent
 from calendar_backend.routes.models import (
+    CommentEventGet,
+    EventGet,
+    EventPatch,
+    EventPost,
+    EventWithoutLecturerDescriptionAndComments,
     GetListEvent,
     GetListEventWithoutLecturerComments,
     GetListEventWithoutLecturerDescription,
     GetListEventWithoutLecturerDescriptionAndComments,
-    EventWithoutLecturerDescriptionAndComments,
-    EventPatch,
-    CommentEvent,
-    Event,
-    EventPost,
 )
+from calendar_backend.settings import get_settings
+
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@event_router.get("/{id}", response_model=Event)
-async def http_get_event_by_id(id: int) -> Event:
-    return Event.from_orm(await utils.get_lesson_by_id(id, db.session))
+@event_router.get("/{id}", response_model=EventGet)
+async def http_get_event_by_id(id: int) -> EventGet:
+    return EventGet.from_orm(Event.get(id, session=db.session))
 
 
 @event_router.get(
@@ -45,7 +47,7 @@ async def http_get_events(
     lecturer_id: int | None = None,
     room_id: int | None = None,
     detail: list[Literal["comment", "description", ""]] = Query(...),
-    format: Literal["json", "ics"] = "json"
+    format: Literal["json", "ics"] = "json",
 ) -> Union[
     GetListEvent,
     GetListEventWithoutLecturerComments,
@@ -63,21 +65,21 @@ async def http_get_events(
                 if lecturer_id or room_id:
                     raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
                 list_events = await utils.get_group_lessons_in_daterange(
-                    await utils.get_group_by_id(group_id, db.session), start, end
+                    Group.get(group_id, session=db.session), start, end
                 )
             if lecturer_id:
                 logger.debug(f"Getting events for lecturer_id:{lecturer_id}")
                 if group_id or room_id:
                     raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
                 list_events = await utils.get_lecturer_lessons_in_daterange(
-                    await utils.get_lecturer_by_id(lecturer_id, db.session), start, end
+                    Lecturer.get(lecturer_id, session=db.session), start, end
                 )
             if room_id:
                 logger.debug(f"Getting events for room_id:{room_id}")
                 if lecturer_id or group_id:
                     raise HTTPException(status_code=400, detail=f"Only one argument reqiured, but more received")
                 list_events = await utils.get_room_lessons_in_daterange(
-                    await utils.get_room_by_id(room_id, db.session), start, end
+                    Room.get(room_id, session=db.session), start, end
                 )
             if "" in detail:
                 return GetListEventWithoutLecturerDescriptionAndComments(items=list_events)
@@ -91,48 +93,41 @@ async def http_get_events(
                 raise HTTPException(status_code=400, detail=f"'group_id' argument reqiured, but not received")
             return await list_calendar.create_ics(group_id, start, end, db.session)
 
+
 @event_router.post("/", response_model=EventWithoutLecturerDescriptionAndComments)
 async def http_create_event(
-    lesson: EventPost, current_user: auth.User = Depends(auth.get_current_user)
+    event: EventPost, _: auth.User = Depends(auth.get_current_user)
 ) -> EventWithoutLecturerDescriptionAndComments:
+    event_dict = event.dict()
+    rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
+    lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
     return EventWithoutLecturerDescriptionAndComments.from_orm(
-        await utils.create_lesson(
-            lesson.room_id, lesson.lecturer_id, lesson.group_id, lesson.name, lesson.start_ts, lesson.end_ts, db.session
+        Event.create(
+            **event_dict,
+            room=rooms,
+            lecturer=lecturers,
+            session=db.session,
         )
     )
 
 
 @event_router.patch("/{id}", response_model=EventWithoutLecturerDescriptionAndComments)
 async def http_patch_event(
-    id: int, event_inp: EventPatch, current_user: auth.User = Depends(auth.get_current_user)
+    id: int, event_inp: EventPatch, _: auth.User = Depends(auth.get_current_user)
 ) -> EventWithoutLecturerDescriptionAndComments:
-    lesson = await utils.get_lesson_by_id(id, db.session)
-    return EventWithoutLecturerDescriptionAndComments.from_orm(
-        await utils.update_lesson(
-            lesson,
-            db.session,
-            event_inp.name,
-            event_inp.room_id,
-            lesson.group_id,
-            [row.id for row in lesson.lecturer],
-            lesson.start_ts,
-            event_inp.end_ts,
-            event_inp.is_deleted,
-        )
-    )
+    return Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True))
 
 
 @event_router.delete("/{id}", response_model=None)
-async def http_delete_event(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    lesson = await utils.get_lesson_by_id(id, db.session)
-    return await utils.delete_lesson(lesson, db.session)
+async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    Event.delete(id, session=db.session)
 
 
-@event_router.post("/{id}/comment", response_model=CommentEvent)
-async def http_comment_event(id: int, author_name: str, text: str) -> CommentEvent:
-    return CommentEvent.from_orm(await utils.create_comment_event(id, db.session, text, author_name))
+# @event_router.post("/{event_id}/comment", response_model=CommentEventGet, deprecated=True)
+# async def http_comment_event(event_id: int, author_name: str, text: str) -> CommentEventGet:
+#     return CommentEventGet.from_orm(CommentEvent(event_id=event_id, db.session, text, author_name))
 
 
-@event_router.patch("/{id}/comment", response_model=CommentEvent)
-async def http_udpate_comment(comment_id: int, new_text: str) -> CommentEvent:
-    return CommentEvent.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))
+# @event_router.patch("/{id}/comment", response_model=CommentEventGet, deprecated=True)
+# async def http_udpate_comment(comment_id: int, new_text: str) -> CommentEventGet:
+#     return CommentEventGet.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))

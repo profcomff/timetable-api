@@ -1,4 +1,4 @@
-from .base import Base, Lecturer, Event, CommentLecturer
+from .base import Base, LecturerGet, EventGet, CommentLecturer
 
 
 class LecturerWithNonNoneCommentsAndDescription(Base):
@@ -41,7 +41,7 @@ class LecturerWithoutDescriptionAndComments(Base):
     avatar_link: str | None
 
 
-class LecturerPhotos(Lecturer):
+class LecturerPhotos(LecturerGet):
     links: list[str]
 
 
@@ -67,7 +67,7 @@ class LecturerPost(Base):
 
 
 class GetListLecturer(Base):
-    items: list[Lecturer]
+    items: list[LecturerGet]
     limit: int
     offset: int
     total: int
@@ -79,5 +79,5 @@ class Photo(Base):
     link: str
 
 
-class LecturerEvents(Lecturer):
-    events: list[Event] = []
+class LecturerEvents(LecturerGet):
+    events: list[EventGet] = []

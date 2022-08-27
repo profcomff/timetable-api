@@ -1,6 +1,6 @@
-from .base import Lecturer, CommentLecturer, CommentEvent, Event, Group, Room
+from .base import LecturerGet, CommentLecturer, CommentEventGet, EventGet, GroupGet, RoomGet
 from .lecturer import (
-    Lecturer,
+    LecturerGet,
     LecturerPost,
     LecturerPatch,
     LecturerPhotos,
@@ -25,7 +25,7 @@ from .event import (
     GetListEventWithoutLecturerDescriptionAndComments,
     GetListEvent,
     GetListEventWithoutLecturerDescription,
-    CommentEvent,
+    CommentEventGet,
     LecturerWithoutDescription,
     LecturerWithoutDescriptionAndComments,
     LecturerWithoutComments,
@@ -34,12 +34,12 @@ from .event import (
 from .group import GroupPost, GroupPatch, GroupEvents, GetListGroup
 
 __all__ = [
-    "Room",
+    "RoomGet",
     "RoomEvents",
     "RoomPost",
     "RoomPatch",
     "GetListRoom",
-    "Lecturer",
+    "LecturerGet",
     "LecturerEvents",
     "LecturerPhotos",
     "LecturerPost",
@@ -48,16 +48,16 @@ __all__ = [
     "LecturerWithoutDescription",
     "LecturerWithoutDescriptionAndComments",
     "GetListEvent",
-    "Group",
+    "GroupGet",
     "GetListLecturer",
     "GetListGroup",
     "GroupEvents",
     "GroupPost",
     "GroupPatch",
-    "Event",
+    "EventGet",
     "EventPost",
     "EventPatch",
-    "CommentEvent",
+    "CommentEventGet",
     "CommentLecturer",
     "Photo",
     "EventWithoutLecturerComments",

@@ -4,8 +4,8 @@ import logging
 from sqlalchemy.orm import Session
 
 from calendar_backend.settings import get_settings
-from calendar_backend.methods.utils import get_lessons_by_group_from_date, get_group_by_id
-from calendar_backend.models import Lesson
+from calendar_backend.methods.utils import get_lessons_by_group_from_date
+from calendar_backend.models import Event, Group
 from .event import create_google_calendar_event, Event
 
 settings = get_settings()
@@ -17,8 +17,8 @@ async def create_google_events_from_db(group_id: int, session: Session) -> list[
     Creates a timetable for certain group from db.
     Returns list[Event] of events/subjects
     """
-    group, _ = await get_group_by_id(group_id, session)
-    group_lessons: list[Lesson] = await get_lessons_by_group_from_date(group, datetime.date.today())
+    group, _ = Group.get(group_id, session=session)
+    group_lessons: list[Event] = await get_lessons_by_group_from_date(group, datetime.date.today())
     list_of_lessons: list[Event] = []
     time_zone = "+03:00"
     logger.debug(f"Getting list of subjects for {group}...")
