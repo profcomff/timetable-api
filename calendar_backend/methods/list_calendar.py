@@ -12,6 +12,7 @@ from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
 from calendar_backend.settings import get_settings
 from . import utils
+from calendar_backend.models import Group
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ async def get_user_calendar(group_id: int, session: Session, start_date: date_, 
     Returns event iCalendar object
     """
     logger.debug(f"Getting user calendar (iCal) for group {group_id}")
-    group = await utils.get_group_by_id(group_id, session)
+    group = Group.get(group_id, session=session)
     user_calendar = Calendar()
     timetable = await utils.get_group_lessons_in_daterange(group, start_date, end_date)
     for lesson in timetable:

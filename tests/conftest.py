@@ -7,8 +7,8 @@ from pytest_mock import MockerFixture
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from calendar_backend.models.base import Base
-from calendar_backend.models.db import CommentsLecturer, Group, Lecturer, Photo, Room
+from calendar_backend.models.base import DeclarativeBase
+from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room
 from calendar_backend.routes import app
 from calendar_backend.settings import get_settings
 
@@ -32,7 +32,7 @@ def dbsession():
     settings = get_settings()
     engine = create_engine(settings.DB_DSN)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    Base.metadata.create_all(bind=engine)
+    DeclarativeBase.metadata.create_all(bind=engine)
     return TestingSessionLocal()
 
 
@@ -96,7 +96,7 @@ def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
     yield RESOURCE + str(id_)
-    response_model: CommentsLecturer = dbsession.query(CommentsLecturer).get(id_)
+    response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
 
@@ -109,6 +109,33 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
     assert response.ok, response.json()
     id_ = response.json()["id"]
     yield RESOURCE + "/" + str(id_)
-    response_model: CommentsLecturer = dbsession.query(Photo).get(id_)
+    response_model: CommentLecturer = dbsession.query(Photo).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
+
+@pytest.fixture()
+def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_path, group_path):
+    RESOURCE = f"/timetable/event/"
+    room_id = int(room_path.split("/")[-1])
+    group_id = int(group_path.split("/")[-1])
+    lecturer_id = int(lecturer_path.split("/")[-1])
+    request_obj = {
+        "name": "string",
+        "room_id": [
+            room_id
+        ],
+        "group_id": group_id,
+        "lecturer_id": [
+            lecturer_id
+        ],
+        "start_ts": "2022-08-26T22:32:38.575Z",
+        "end_ts": "2022-08-26T22:32:38.575Z"
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    assert response.ok, response.json()
+    id_ = response.json()["id"]
+    yield RESOURCE + "/" + str(id_)
+    response_model = dbsession.query(Event).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()

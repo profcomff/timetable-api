@@ -137,7 +137,8 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     } == set(response_obj.keys())
 
     # Delete
-    response = client_auth.delete(RESOURCE + f"{id_}/")
+    response = client_auth.delete(RESOURCE + f"{id_}")
+    assert response.ok, response.json()
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
@@ -145,7 +146,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Read all
     response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
-    assert response.ok
+    assert response.ok, response.json()
     for item in response.json()["items"]:
         assert item["id"] != id_
 
@@ -269,7 +270,8 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "description": "Третья попытка",
     }
     request_obj.update(request_obj_2)
-    client_auth.patch(RESOURCE + f"{id_}/", json=request_obj_2)
+    client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
+    assert response.ok, response.json()
     response = client_auth.get(RESOURCE + f"{id_}/")
     assert response.ok, response.json()
     response_obj = response.json()
@@ -299,7 +301,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "middle_name": response_model.middle_name,
         "last_name": response_model.last_name,
         "description": response_model.description,
-    } == request_obj.update(request_obj_2)
+    } == request_obj
 
     # Clear db
     dbsession.delete(response_model)

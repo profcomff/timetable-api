@@ -1,47 +1,7 @@
-from .base import Base, Lecturer, Event, CommentLecturer
+from .base import Base, LecturerGet, EventGet, CommentLecturer
 
 
-class LecturerWithNonNoneCommentsAndDescription(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    description: str
-    comments: list[CommentLecturer]
-
-
-class LecturerWithoutComments(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    description: str
-
-
-class LecturerWithoutDescription(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    comments: list[CommentLecturer]
-
-
-class LecturerWithoutDescriptionAndComments(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-
-
-class LecturerPhotos(Lecturer):
+class LecturerPhotos(LecturerGet):
     links: list[str]
 
 
@@ -67,7 +27,7 @@ class LecturerPost(Base):
 
 
 class GetListLecturer(Base):
-    items: list[Lecturer]
+    items: list[LecturerGet]
     limit: int
     offset: int
     total: int
@@ -79,5 +39,5 @@ class Photo(Base):
     link: str
 
 
-class LecturerEvents(Lecturer):
-    events: list[Event] = []
+class LecturerEvents(LecturerGet):
+    events: list[EventGet] = []

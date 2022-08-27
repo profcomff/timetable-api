@@ -5,14 +5,17 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-import sqlalchemy.orm
-from sqlalchemy import Column, Enum as DbEnum, and_, or_
+import sqlalchemy
+from sqlalchemy import Column
+from sqlalchemy import Enum as DbEnum
+from sqlalchemy import and_, or_
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm import relationship
 
-from .base import Base
+from .base import BaseDbModel
 
 
-class Credentials(Base):
+class Credentials(BaseDbModel):
     """User credentials"""
 
     id = Column(sqlalchemy.Integer, primary_key=True)
@@ -29,21 +32,21 @@ class Direction(str, Enum):
     SOUTH: str = "South"
 
 
-class Room(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Room(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
-    lessons: list[Lesson] = sqlalchemy.orm.relationship(
-        "Lesson", back_populates="room", secondary="lessons_rooms", order_by="(Lesson.start_ts)"
+
+    events: list[Event] = relationship(
+        "Event",
+        back_populates="room",
+        secondary="events_rooms",
+        secondaryjoin="and_(Event.id==EventsRooms.event_id, not_(Event.is_deleted))",
+        order_by="(Event.start_ts)",
     )
 
-    def __repr__(self):
-        return f"Room(id={self.id}, name={self.name}, direction={self.direction})"
 
-
-class Lecturer(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Lecturer(BaseDbModel):
     first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -51,17 +54,31 @@ class Lecturer(Base):
     description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
-    avatar: Photo = sqlalchemy.orm.relationship("Photo", foreign_keys="Lecturer.avatar_id")
-    photos: list[Photo] = sqlalchemy.orm.relationship(
-        "Photo", foreign_keys="Photo.lecturer_id", order_by="Photo.id", back_populates="lecturer"
+    avatar: Photo = relationship(
+        "Photo",
+        foreign_keys="Lecturer.avatar_id",
+        backref="is_avatar_for",
+        primaryjoin="and_(Lecturer.avatar_id==Photo.id, not_(Photo.is_deleted))",
     )
-
-    lessons: list[Lesson] = sqlalchemy.orm.relationship(
-        "Lesson", secondary="lessons_lecturers", order_by="(Lesson.start_ts)", back_populates="lecturer"
+    photos: list[Photo] = relationship(
+        "Photo",
+        back_populates="lecturer",
+        foreign_keys="Photo.lecturer_id",
+        order_by="Photo.id",
+        primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Photo.is_deleted))",
     )
-
-    comments: list[CommentsLecturer] = sqlalchemy.orm.relationship(
-        "CommentsLecturer", foreign_keys="CommentsLecturer.lecturer_id", back_populates="lecturer"
+    events: list[Event] = relationship(
+        "Event",
+        secondary="events_lecturers",
+        order_by="(Event.start_ts)",
+        back_populates="lecturer",
+        secondaryjoin="and_(Event.id==EventsLecturers.event_id, not_(Event.is_deleted))",
+    )
+    comments: list[CommentLecturer] = relationship(
+        "CommentLecturer",
+        back_populates="lecturer",
+        foreign_keys="CommentLecturer.lecturer_id",
+        primaryjoin="and_(Lecturer.id==CommentLecturer.lecturer_id, not_(CommentLecturer.is_deleted))",
     )
 
     @hybrid_method
@@ -74,74 +91,78 @@ class Lecturer(Base):
             )
         return response
 
-    def __repr__(self):
-        return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
-
-class Group(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Group(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     number = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
-    lessons: list[Lesson] = sqlalchemy.orm.relationship(
-        "Lesson", foreign_keys="Lesson.group_id", order_by="(Lesson.start_ts)"
+
+    events: list[Event] = relationship(
+        "Event",
+        foreign_keys="Event.group_id",
+        order_by="(Event.start_ts)",
+        primaryjoin="and_(Group.id==Event.group_id, not_(Event.is_deleted))",
     )
 
-    def __repr__(self):
-        return f"Group(id={self.id}, name={self.name}, number={self.number})"
 
-
-class Lesson(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Event(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("group.id"))
     start_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     end_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
-    room: list[Room] = sqlalchemy.orm.relationship("Room", back_populates="lessons", secondary="lessons_rooms")
-    group: Group = sqlalchemy.orm.relationship("Group", foreign_keys="Lesson.group_id", back_populates="lessons")
-    lecturer: list[Lecturer] = sqlalchemy.orm.relationship(
-        "Lecturer", back_populates="lessons", secondary="lessons_lecturers"
+    room: list[Room] = relationship(
+        "Room",
+        back_populates="events",
+        secondary="events_rooms",
+        secondaryjoin="and_(Room.id==EventsRooms.room_id, not_(Room.is_deleted))",
+    )
+    group: Group = relationship(
+        "Group",
+        back_populates="events",
+        foreign_keys="Event.group_id",
+        primaryjoin="and_(Group.id==Event.group_id, not_(Group.is_deleted))",
+    )
+    lecturer: list[Lecturer] = relationship(
+        "Lecturer",
+        back_populates="events",
+        secondary="events_lecturers",
+        secondaryjoin="and_(Lecturer.id==EventsLecturers.lecturer_id, not_(Lecturer.is_deleted))",
+    )
+    comments: list[CommentEvent] = relationship(
+        "CommentEvent",
+        foreign_keys="CommentEvent.event_id",
+        back_populates="event",
+        primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted))",
     )
 
-    comments: list[CommentsLesson] = sqlalchemy.orm.relationship(
-        "CommentsLesson", foreign_keys="CommentsLesson.lesson_id", back_populates="lesson"
-    )
 
-    def __repr__(self):
-        return (
-            f"Lesson(id={self.id}, name={self.name},"
-            f" room={self.room}, group={self.group},"
-            f" lecturer={self.lecturer}, start_ts={self.start_ts}, end_ts={self.end_ts})"
-        )
-
-
-class LessonsLecturers(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
+class EventsLecturers(BaseDbModel):
+    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
 
 
-class LessonsRooms(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
+class EventsRooms(BaseDbModel):
+    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
     room_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("room.id"))
 
 
-class Photo(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class Photo(BaseDbModel):
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(sqlalchemy.String, unique=True)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
-    lecturer: Lecturer = sqlalchemy.orm.relationship(
-        "Lecturer", foreign_keys="Photo.lecturer_id", order_by="Lecturer.id", back_populates="photos"
+    lecturer: Lecturer = relationship(
+        "Lecturer",
+        back_populates="photos",
+        foreign_keys="Photo.lecturer_id",
+        order_by="Lecturer.id",
+        primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Lecturer.is_deleted))",
     )
 
 
-class CommentsLecturer(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+class CommentLecturer(BaseDbModel):
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -149,20 +170,25 @@ class CommentsLecturer(Base):
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
-    lecturer: Lecturer = sqlalchemy.orm.relationship(
-        "Lecturer", foreign_keys="CommentsLecturer.lecturer_id", back_populates="comments"
+    lecturer: Lecturer = relationship(
+        "Lecturer",
+        back_populates="comments",
+        foreign_keys="CommentLecturer.lecturer_id",
+        primaryjoin="and_(Lecturer.id==CommentLecturer.lecturer_id, not_(Lecturer.is_deleted))",
     )
 
 
-class CommentsLesson(Base):
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
+class CommentEvent(BaseDbModel):
+    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
-    lesson: Lesson = sqlalchemy.orm.relationship(
-        "Lesson", foreign_keys="CommentsLesson.lesson_id", back_populates="comments"
+    event: Event = relationship(
+        "Event",
+        back_populates="comments",
+        foreign_keys="CommentEvent.event_id",
+        primaryjoin="and_(Event.id==CommentEvent.event_id, not_(Event.is_deleted))",
     )

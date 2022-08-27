@@ -1,6 +1,6 @@
 from pydantic import validator
 
-from .base import Base, Group, Event
+from .base import Base, GroupGet, EventGet
 
 
 class GroupPatch(Base):
@@ -43,11 +43,11 @@ class GroupPost(Base):
 
 
 class GetListGroup(Base):
-    items: list[Group]
+    items: list[GroupGet]
     limit: int
     offset: int
     total: int
 
 
-class GroupEvents(Group):
-    events: list[Event] = []
+class GroupEvents(GroupGet):
+    events: list[EventGet] = []

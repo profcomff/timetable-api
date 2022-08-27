@@ -80,11 +80,12 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     assert response_obj["number"] == request_obj["number"]
 
     # Delete
-    response = client_auth.delete(RESOURCE+f"{id_}/")
+    response = client_auth.delete(RESOURCE+f"{id_}")
+    assert response.ok, response.json()
 
     # Read
     response = client_auth.get(RESOURCE+f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == 404, response.json()
 
     # Read all
     response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
@@ -92,16 +93,11 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     for item in response.json()["items"]:
         assert item["id"] != id_
 
-    # Ok reverse
-    assert response.ok, response.json()
-    response_obj = response.json()
-    assert response_obj["name"] == request_obj["name"]
-    assert response_obj["number"] == request_obj["number"]
-
     # Ok db
     response_model: Group = dbsession.query(Group).get(response_obj["id"])
     assert response_model.name == request_obj["name"]
     assert response_model.number == request_obj["number"]
+    assert response_model.is_deleted == True
 
     # Clear db
     dbsession.delete(response_model)

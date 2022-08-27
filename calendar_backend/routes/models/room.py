@@ -1,4 +1,4 @@
-from .base import Base, Room, Event
+from .base import Base, RoomGet, EventGet
 from calendar_backend.models import Direction
 
 
@@ -16,12 +16,12 @@ class RoomPost(Base):
     direction: Direction | None
 
 
-class RoomEvents(Room):
-    events: list[Event] = []
+class RoomEvents(RoomGet):
+    events: list[EventGet] = []
 
 
 class GetListRoom(Base):
-    items: list[Room]
+    items: list[RoomGet]
     limit: int
     offset: int
     total: int

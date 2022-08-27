@@ -7,7 +7,8 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import RoomEvents, GetListRoom, RoomPost, RoomPatch, Room
+from calendar_backend.routes.models import RoomEvents, GetListRoom, RoomPost, RoomPatch, RoomGet
+from calendar_backend.models import Room
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 async def http_get_room_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> RoomEvents:
-    room = await utils.get_room_by_id(id, db.session)
+    room = Room.get(id, session=db.session)
     result = RoomEvents.from_orm(room)
     if start and end:
         result.events = await utils.get_room_lessons_in_daterange(room, start, end)
@@ -27,28 +28,31 @@ async def http_get_room_by_id(
 
 @room_router.get("/", response_model=GetListRoom)
 async def http_get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
-    result, total = await utils.get_list_rooms(db.session, query, limit, offset)
-    return {"items": [Room.from_orm(row) for row in result], "limit": limit, "offset": offset, "total": total}
+    result = Room.get_all(session=db.session).filter(Room.name.contains(query))
+    return {
+        "items": [RoomGet.from_orm(row) for row in result.offset(offset).limit(limit).all()],
+        "limit": limit,
+        "offset": offset,
+        "total": result.count(),
+    }
 
 
-@room_router.post("/", response_model=Room)
-async def http_create_room(room: RoomPost, current_user: auth.User = Depends(auth.get_current_user)) -> Room:
-    if await utils.check_room_existing(db.session, room.name):
+@room_router.post("/", response_model=RoomGet)
+async def http_create_room(room: RoomPost, current_user: auth.User = Depends(auth.get_current_user)) -> RoomGet:
+    if bool(Room.get_all(session=db.session).filter(Room.name == room.name).one_or_none()):
         raise HTTPException(status_code=423, detail="Already exists")
-    return Room.from_orm(await utils.create_room(room.name, room.direction, db.session))
+    return RoomGet.from_orm(Room.create(name=room.name, direction=room.direction, session=db.session))
 
 
-@room_router.patch("/{id}", response_model=Room)
+@room_router.patch("/{id}", response_model=RoomGet)
 async def http_patch_room(
-    id: int, room_inp: RoomPatch, current_user: auth.User = Depends(auth.get_current_user)
-) -> Room:
-    room = await utils.get_room_by_id(id, db.session)
-    return Room.from_orm(
-        await utils.update_room(room, db.session, room_inp.name, room_inp.direction, room_inp.is_deleted)
-    )
+    id: int, room: RoomPatch, current_user: auth.User = Depends(auth.get_current_user)
+) -> RoomGet:
+    if bool(Room.get_all(session=db.session).filter(Room.name == room.name).one_or_none()):
+        raise HTTPException(status_code=423, detail="Already exists")
+    return Room.update(id, **room.dict(exclude_unset=True), session=db.session)
 
 
 @room_router.delete("/{id}", response_model=None)
 async def http_delete_room(id: int, current_user: auth.User = Depends(auth.get_current_user)) -> None:
-    room = await utils.get_room_by_id(id, db.session)
-    return await utils.delete_room(room, db.session)
+    Room.delete(id, session=db.session)

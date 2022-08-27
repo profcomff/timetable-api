@@ -1,10 +1,3 @@
-from .db import Credentials, Group, Lecturer, Lesson, Room, Direction
+from .db import Credentials, Group, Lecturer, Event, Room, Direction, CommentEvent, CommentLecturer
 
-__all__ = [
-    "Credentials",
-    "Group",
-    "Lecturer",
-    "Lesson",
-    "Room",
-    "Direction",
-]
+__all__ = ["Credentials", "Group", "Lecturer", "Event", "Room", "Direction", "CommentEvent", "CommentLecturer"]
