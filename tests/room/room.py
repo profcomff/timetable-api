@@ -85,12 +85,6 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     for item in response.json()["items"]:
         assert item["id"] != id_
 
-    # Ok reverse
-    assert response.ok, response.json()
-    response_obj = response.json()
-    assert response_obj["name"] == request_obj["name"]
-    assert response_obj["direction"] == request_obj["direction"]
-
     # Ok db
     response_model: Room = dbsession.query(Room).get(response_obj["id"])
     assert response_model.name == request_obj["name"]

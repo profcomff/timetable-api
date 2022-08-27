@@ -41,7 +41,7 @@ async def http_get_lecturers(
     query: str = "",
     limit: int = 10,
     offset: int = 0,
-    details: list[Literal["photo", "description", "comments", ""]] = Query(...),
+    details: list[Literal["photo", "description", "comments", ""]] | None = Query([]),
 ) -> dict[str, Any]:
     res = Lecturer.get_all(session=db.session).filter(Lecturer.search(query))
     cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -49,6 +49,7 @@ async def http_get_lecturers(
         row.avatar_link = row.avatar.link if row.avatar else None
     result = [LecturerGet.from_orm(row) for row in res]
     exclude = []
+    details = details or [""]
     if "" in details:
         exclude.append(["photo", "description", "comments"])
     if "photo" not in details:

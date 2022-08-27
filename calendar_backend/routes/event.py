@@ -46,9 +46,9 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
     events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
 
     fmt = {}
-    if "comment" not in detail:
+    if detail and "comment" not in detail:
         fmt["comments"] = ...
-    if "description" not in detail:
+    if detail and "description" not in detail:
         fmt["lecturer"] = [{
             "avatar_id": ...,
             "description": ...,
@@ -65,7 +65,7 @@ async def http_get_events(
     group_id: int | None = None,
     lecturer_id: int | None = None,
     room_id: int | None = None,
-    detail: list[Literal["comment", "description"]] = Query([]),
+    detail: list[Literal["comment", "description", ""]] | None = Query(None),
     format: Literal["json", "ics"] = "json",
     limit: int = 100,
     offset: int = 0,
