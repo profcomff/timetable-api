@@ -123,11 +123,11 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Update
     request_obj_2 = {
-        "name": "hjbhb",
+        "name": "" + datetime.datetime.utcnow().isoformat(),
         "direction": "North"
     }
-    client_auth.patch(RESOURCE+f"{id_}/", json=request_obj_2)
-    response = client_auth.get(RESOURCE+f"{id_}/")
+    client_auth.patch(RESOURCE+f"{id_}", json=request_obj_2)
+    response = client_auth.get(RESOURCE+f"{id_}")
     assert response.ok, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj_2["name"]
@@ -140,17 +140,12 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         if item["id"] == id_:
             assert item["name"] == request_obj_2["name"]
             assert item["direction"] == request_obj_2["direction"]
-
-    # Ok reverse
-    assert response.ok, response.json()
-    response_obj = response.json()
-    assert response_obj["name"] == request_obj["name"]
-    assert response_obj["direction"] == request_obj["direction"]
+            break
 
     # Ok db
     response_model: Room = dbsession.query(Room).get(response_obj["id"])
-    assert response_model.name == request_obj["name"]
-    assert response_model.direction == request_obj["direction"]
+    assert response_model.name == request_obj_2["name"]
+    assert response_model.direction == request_obj_2["direction"]
 
     # Clear db
     dbsession.delete(response_model)

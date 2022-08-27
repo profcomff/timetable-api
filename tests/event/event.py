@@ -41,7 +41,7 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
 
 def test_delete(client_auth: TestClient, dbsession: Session):
     # Create
-    room = Room(name="5-07", direction="North")
+    room = Room(name="5-07" + datetime.datetime.utcnow().isoformat(), direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
     group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
     dbsession.add(room)
@@ -125,7 +125,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
 def test_update_all(client_auth: TestClient, dbsession: Session):
     # Create
-    room = Room(name="5-07", direction="North")
+    room = Room(name="5-07" + datetime.datetime.utcnow().isoformat(), direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
     group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
     dbsession.add(room)
