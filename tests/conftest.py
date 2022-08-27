@@ -88,7 +88,7 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
 
 @pytest.fixture()
 def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
-    RESOURCE = f"{lecturer_path}/comment/"
+    RESOURCE = f"{lecturer_path}/comment"
     request_obj = {
         "author_name": "Аноним",
         "comment_text": "Очень умный коммент",
@@ -103,12 +103,12 @@ def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int
 
 @pytest.fixture()
 def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
-    RESOURCE = f"{lecturer_path}/photo/"
+    RESOURCE = f"{lecturer_path}/photo"
     with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield RESOURCE + str(id_)
+    yield RESOURCE + "/" + str(id_)
     response_model: CommentsLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
