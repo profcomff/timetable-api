@@ -8,13 +8,14 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
-from calendar_backend.models import Group, Room, Lecturer, Event, CommentEvent
+from calendar_backend.models import Group, Room, Lecturer, Event
+from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.routes.models.event import (
     CommentEventGet,
     EventGet,
     EventPatch,
     EventPost,
-    GetListEvent,
+    GetListEvent, CommentEventPost, CommentEventPatch,
 )
 from calendar_backend.settings import get_settings
 
@@ -96,7 +97,7 @@ async def http_create_event(event: EventPost, _: auth.User = Depends(auth.get_cu
 
 @event_router.patch("/{id}", response_model=EventGet)
 async def http_patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
-    return Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True))
+    return EventGet.from_orm(Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True)))
 
 
 @event_router.delete("/{id}", response_model=None)
@@ -104,11 +105,23 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
     Event.delete(id, session=db.session)
 
 
-# @event_router.post("/{event_id}/comment", response_model=CommentEventGet, deprecated=True)
-# async def http_comment_event(event_id: int, author_name: str, text: str) -> CommentEventGet:
-#     return CommentEventGet.from_orm(CommentEvent(event_id=event_id, db.session, text, author_name))
+@event_router.post("/{id}/comment", response_model=CommentEventGet)
+async def http_comment_event(id: int, comment: CommentEventPost) -> CommentEventGet:
+    return CommentEventGet.from_orm(DbCommentEvent.create(event_id = id, session=db.session, **comment.dict()))
 
 
-# @event_router.patch("/{id}/comment", response_model=CommentEventGet, deprecated=True)
-# async def http_udpate_comment(comment_id: int, new_text: str) -> CommentEventGet:
-#     return CommentEventGet.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))
+@event_router.patch("/{id}/comment", response_model=CommentEventGet)
+async def http_udpate_comment(id: int, comment: CommentEventPatch) -> CommentEventGet:
+    return CommentEventGet.from_orm(DbCommentEvent.update(id=id, session=db.session, **comment.dict()))
+
+
+@event_router.get("/(id}/comment", response_model=CommentEventGet)
+async def http_get_comment(id: int) -> CommentEventGet:
+    return CommentEventGet.from_orm(DbCommentEvent.get(id=id))
+
+
+@event_router.delete("/{id}/comment", response_model=None)
+async def http_delete_comment(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    return DbCommentEvent.delete(id=id, session=db.session)
+
+

@@ -5,6 +5,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, Depends, UploadFile, File, Query
 from fastapi_sqlalchemy import db
 from calendar_backend.models.db import Lecturer
+from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
@@ -16,7 +17,7 @@ from calendar_backend.routes.models import (
     LecturerPatch,
     Photo,
     LecturerPhotos,
-    CommentLecturer,
+    CommentLecturer, CommentLecturerPost, CommentLecturerPatch,
 )
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
@@ -68,7 +69,7 @@ async def http_get_lecturers(
 
 @lecturer_router.post("/", response_model=LecturerGet)
 async def http_create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
-    return Lecturer.create(session=db.session, **lecturer.dict())
+    return LecturerGet.from_orm(Lecturer.create(session=db.session, **lecturer.dict()))
 
 
 @lecturer_router.patch("/{id}", response_model=LecturerGet)
@@ -97,15 +98,27 @@ async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
 
 
 @lecturer_router.post("/{id}/comment", response_model=CommentLecturer)
-async def http_comment_lecturer(id: int, comment_text: str, author_name: str) -> CommentLecturer:
-    return CommentLecturer.from_orm(await utils.create_comment_lecturer(id, db.session, comment_text, author_name))
+async def http_comment_lecturer(id: int, comment: CommentLecturerPost) -> CommentLecturer:
+    return CommentLecturer.from_orm(DbCommentLecturer.create(lecturer_id=id, session=db.session, **comment.dict()))
 
 
 @lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
-async def http_update_comment_lecturer(comment_id: int, new_text: str) -> CommentLecturer:
-    return CommentLecturer.from_orm(await utils.update_comment_lecturer(comment_id, db.session, new_text))
+async def http_update_comment_lecturer(comment_id: int, comment: CommentLecturerPatch) -> CommentLecturer:
+    return CommentLecturer.from_orm(DbCommentLecturer.update(comment_id, session=db.session, **comment.dict()))
 
 
 @lecturer_router.post("/{id}/avatar", response_model=LecturerGet)
 async def http_set_lecturer_avatar(id: int, photo_id: int) -> LecturerGet:
     return LecturerGet.from_orm(await utils.set_lecturer_avatar(id, photo_id, db.session))
+
+
+@lecturer_router.delete("/{id}/comment", response_model=None)
+async def http_delete_comment(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    return DbCommentLecturer.delete(id=id,session=db.session)
+
+
+@lecturer_router.get("/{id}/comment", response_model=CommentLecturer)
+async def http_get_comment(id: int) -> CommentLecturer:
+    return CommentLecturer.from_orm(DbCommentLecturer.get(id=id, session=db.session))
+
+

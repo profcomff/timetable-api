@@ -51,3 +51,13 @@ class GetListEvent(Base):
     limit: int
     offset: int
     total: int
+
+
+class CommentEventPost(Base):
+    text: str
+    author_name: str
+
+
+class CommentEventPatch(Base):
+    text: str
+    author_name: str

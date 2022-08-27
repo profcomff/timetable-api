@@ -8,6 +8,8 @@ from .lecturer import (
     CommentLecturer,
     GetListLecturer,
     Photo,
+    CommentLecturerPost,
+    CommentLecturerPatch,
 )
 from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom
 from .event import (

@@ -17,8 +17,8 @@ def test_delete(client_auth: TestClient, comment_path: str):
 
 def test_patch(client_auth: TestClient, comment_path: str):
     request = {
-        "comment_text": "Не очень умный коммент",
+        "text": "Не очень умный коммент",
     }
     response = client_auth.patch(comment_path, json=request)
     assert response.ok, response.json()
-    assert response.json()["comment_text"] == request["comment_text"]
+    assert response.json()["text"] == request["text"]

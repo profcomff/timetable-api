@@ -41,3 +41,13 @@ class Photo(Base):
 
 class LecturerEvents(LecturerGet):
     events: list[EventGet] = []
+
+
+class CommentLecturerPost(Base):
+    author_name: str
+    text: str
+
+
+class CommentLecturerPatch(Base):
+    author_name: str | None
+    text: str | None
