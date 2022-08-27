@@ -5,7 +5,7 @@ from sqlalchemy.exc import NoResultFound
 
 
 @as_declarative()
-class Base:
+class DeclarativeBase:
     """Base class for all database entities"""
 
     @declared_attr
@@ -15,6 +15,8 @@ class Base:
         """
         return re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__).lower()
 
+
+class BaseDbModel(DeclarativeBase):
     @classmethod
     def get_all(cls, *, with_deleted=False, session: Session):
         """Get all objects with soft deletes
@@ -36,7 +38,7 @@ class Base:
         except NoResultFound:
             return None
 
-    def delete(self, id: int):
+    def delete(self):
         """Soft delete object if possible, else hard delete
         """
         if hasattr(self, "is_deleted"):

@@ -9,10 +9,10 @@ import sqlalchemy.orm
 from sqlalchemy import Column, Enum as DbEnum, and_, or_
 from sqlalchemy.ext.hybrid import hybrid_method
 
-from .base import Base
+from .base import BaseDbModel
 
 
-class Credentials(Base):
+class Credentials(BaseDbModel):
     """User credentials"""
 
     id = Column(sqlalchemy.Integer, primary_key=True)
@@ -29,7 +29,7 @@ class Direction(str, Enum):
     SOUTH: str = "South"
 
 
-class Room(Base):
+class Room(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
@@ -42,7 +42,7 @@ class Room(Base):
         return f"Room(id={self.id}, name={self.name}, direction={self.direction})"
 
 
-class Lecturer(Base):
+class Lecturer(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -78,7 +78,7 @@ class Lecturer(Base):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
 
 
-class Group(Base):
+class Group(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     number = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
@@ -91,7 +91,7 @@ class Group(Base):
         return f"Group(id={self.id}, name={self.name}, number={self.number})"
 
 
-class Lesson(Base):
+class Lesson(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("group.id"))
@@ -117,19 +117,19 @@ class Lesson(Base):
         )
 
 
-class LessonsLecturers(Base):
+class LessonsLecturers(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
 
 
-class LessonsRooms(Base):
+class LessonsRooms(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
     room_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("room.id"))
 
 
-class Photo(Base):
+class Photo(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(sqlalchemy.String, unique=True)
@@ -140,7 +140,7 @@ class Photo(Base):
     )
 
 
-class CommentsLecturer(Base):
+class CommentsLecturer(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -154,7 +154,7 @@ class CommentsLecturer(Base):
     )
 
 
-class CommentsLesson(Base):
+class CommentsLesson(BaseDbModel):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lesson.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
