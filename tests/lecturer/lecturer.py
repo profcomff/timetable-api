@@ -199,16 +199,11 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
         "first_name": "Hello",
     }
     request_obj.update(request_obj_2)
-    response = client_auth.patch(RESOURCE + f"{id_}/", json=request_obj_2)
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
+    response = client_auth.get(RESOURCE + f"{id_}")
     assert response.ok, response.json()
     response_obj = response.json()
-    assert {
-        "first_name": response_obj["first_name"],
-        "middle_name": response_obj["middle_name"],
-        "last_name": response_obj["last_name"],
-        "description": response_obj["description"],
-    } == request_obj
+    assert response_obj["first_name"] == request_obj_2["first_name"]
 
     # Read all
     response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)

@@ -132,7 +132,7 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
     request_obj_2 = {
         "name": "Hello",
     }
-    response = client_auth.patch(RESOURCE+f"{id_}/", json=request_obj_2)
+    response = client_auth.patch(RESOURCE+f"{id_}", json=request_obj_2)
     response = client_auth.get(RESOURCE+f"{id_}/")
     assert response.ok, response.json()
     response_obj = response.json()
@@ -146,16 +146,11 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
         if item["id"] == id_:
             assert item["name"] == request_obj_2["name"]
             assert item["number"] == request_obj["number"]
-
-    # Ok reverse
-    assert response.ok, response.json()
-    response_obj = response.json()
-    assert response_obj["name"] == request_obj["name"]
-    assert response_obj["number"] == request_obj["number"]
+            break
 
     # Ok db
     response_model: Group = dbsession.query(Group).get(response_obj["id"])
-    assert response_model.name == request_obj["name"]
+    assert response_model.name == request_obj_2["name"]
     assert response_model.number == request_obj["number"]
 
     # Clear db
@@ -177,7 +172,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE+f"{id_}/")
+    response = client_auth.get(RESOURCE+f"{id_}")
     assert response.ok, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
@@ -188,8 +183,8 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "name": "HelloWorld",
         "number": "test105" + datetime.utcnow().isoformat()
     }
-    client_auth.patch(RESOURCE+f"{id_}/", json=request_obj_2)
-    response = client_auth.get(RESOURCE+f"{id_}/")
+    client_auth.patch(RESOURCE+f"{id_}", json=request_obj_2)
+    response = client_auth.get(RESOURCE+f"{id_}")
     assert response.ok, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj_2["name"]
@@ -202,17 +197,12 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         if item["id"] == id_:
             assert item["name"] == request_obj_2["name"]
             assert item["number"] == request_obj_2["number"]
-
-    # Ok reverse
-    assert response.ok, response.json()
-    response_obj = response.json()
-    assert response_obj["name"] == request_obj["name"]
-    assert response_obj["number"] == request_obj["number"]
+            break
 
     # Ok db
     response_model: Group = dbsession.query(Group).get(response_obj["id"])
-    assert response_model.name == request_obj["name"]
-    assert response_model.number == request_obj["number"]
+    assert response_model.name == request_obj_2["name"]
+    assert response_model.number == request_obj_2["number"]
 
     # Clear db
     dbsession.delete(response_model)
