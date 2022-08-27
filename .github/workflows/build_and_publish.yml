@@ -3,6 +3,9 @@ name: Build, publish and deploy docker
 on:
   push:
     branches: ['main']
+    tags:
+      - 'v*'
+
 
 env:
   REGISTRY: ghcr.io
@@ -32,6 +35,10 @@ jobs:
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=test,enable=true
 
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
@@ -54,19 +61,23 @@ jobs:
       packages: read
 
     steps:
-      - name: Run docker container
-        run: |
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-          docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
+      - name: Pull new version
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
 
+      - name: Migrate DB
+        run: |
           docker run \
             --rm \
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --name ${{ env.CONTAITER_NAME }}_migration \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test \
             alembic upgrade head
 
+      - name: Run new version
+        id: run_test
+        run: |
+          docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
           docker run \
             --detach \
             --restart on-failure:3 \
@@ -74,4 +85,46 @@ jobs:
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
             --name ${{ env.CONTAITER_NAME }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+
+  deploy-production:
+    name: Deploy Production
+    needs: build-and-push-image
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: [self-hosted, Linux]
+    environment:
+      name: Production
+      url: https://timetable.api.profcomff.com/
+    env:
+      CONTAITER_NAME: com_profcomff_api_timetable
+    permissions:
+      packages: read
+
+    steps:
+      - name: Pull new version
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Migrate DB
+        run: |
+          docker run \
+            --rm \
+            --network=web \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --name ${{ env.CONTAITER_NAME }}_migration \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            alembic upgrade head
+
+      - name: Run new version
+        id: run_test
+        run: |
+          docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
+          docker run \
+            --detach \
+            --restart on-failure:3 \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env ADMIN_SECRET='${{ secrets.ADMIN_SECRET }}' \
+            --env REDIRECT_URL='https://www.profcomff.com/timetable/google' \
+            --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
+            --name ${{ env.CONTAITER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
