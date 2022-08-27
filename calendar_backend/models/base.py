@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import re
 
-from sqlalchemy import Column, Integer, not_
+from sqlalchemy import Column, Integer, and_, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, RelationshipProperty, Session
 
 from calendar_backend.exceptions import ObjectNotFound
 
@@ -29,8 +29,8 @@ class BaseDbModel(DeclarativeBase):
     def __repr__(self):
         attrs = []
         for c in self.__table__.columns:
-            attrs.append(f"{c}={getattr(self, c)}")
-        return "{}({})".format(c.__class__.__name__, ', '.join())
+            attrs.append(f"{c.name}={getattr(self, c.name)}")
+        return "{}({})".format(c.__class__.__name__, ', '.join(attrs))
 
     @classmethod
     def create(cls, *, session: Session, **kwargs) -> BaseDbModel:
