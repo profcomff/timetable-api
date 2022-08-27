@@ -1,8 +1,11 @@
-from .base import Base, LecturerGet, EventGet, CommentLecturer
+from .base import Base, LecturerGet, EventGet
 
 
 class LecturerPhotos(LecturerGet):
     links: list[str]
+    limit: int
+    offset: int
+    total: int
 
 
 class LecturerPatch(Base):

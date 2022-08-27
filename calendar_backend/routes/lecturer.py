@@ -103,8 +103,9 @@ async def http_comment_lecturer(id: int, comment: CommentLecturerPost) -> Commen
 
 
 @lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
-async def http_update_comment_lecturer(comment_id: int, comment: CommentLecturerPatch) -> CommentLecturer:
-    return CommentLecturer.from_orm(DbCommentLecturer.update(comment_id, session=db.session, **comment.dict()))
+async def http_update_comment_lecturer(id: int, comment_inp: CommentLecturerPatch) -> CommentLecturer:
+    comment = DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    return CommentLecturer.from_orm(comment)
 
 
 @lecturer_router.post("/{id}/avatar", response_model=LecturerGet)
@@ -114,7 +115,7 @@ async def http_set_lecturer_avatar(id: int, photo_id: int) -> LecturerGet:
 
 @lecturer_router.delete("/{id}/comment", response_model=None)
 async def http_delete_comment(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
-    return DbCommentLecturer.delete(id=id,session=db.session)
+    return DbCommentLecturer.delete(id=id, session=db.session)
 
 
 @lecturer_router.get("/{id}/comment", response_model=CommentLecturer)
