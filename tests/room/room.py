@@ -123,7 +123,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Update
     request_obj_2 = {
-        "name": "hjbhb" + datetime.datetime.utcnow().isoformat(),
+        "name": "hjbhb",
         "direction": "North"
     }
     client_auth.patch(RESOURCE+f"{id_}/", json=request_obj_2)
