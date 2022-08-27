@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import datetime
 from sqlalchemy.orm import Session
 
 from calendar_backend.models import Lesson, Room, Lecturer, Group
@@ -9,7 +10,7 @@ RESOURCE = "/timetable/event/"
 def test_create(client_auth: TestClient, dbsession: Session):
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
-    group = Group(name="", number="202")
+    group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
     dbsession.add(room)
     dbsession.add(lecturer)
     dbsession.add(group)
@@ -53,7 +54,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
     # Create
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
-    group = Group(name="", number="202")
+    group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
     dbsession.add(room)
     dbsession.add(lecturer)
     dbsession.add(group)
@@ -114,7 +115,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     # Create
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
-    group = Group(name="", number="202")
+    group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
     dbsession.add(room)
     dbsession.add(lecturer)
     dbsession.add(group)
@@ -198,7 +199,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     # Create
     room = Room(name="5-07", direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
-    group = Group(name="", number="202")
+    group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
     dbsession.add(room)
     dbsession.add(lecturer)
     dbsession.add(group)
