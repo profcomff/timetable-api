@@ -28,9 +28,9 @@ async def http_get_room_by_id(
 
 @room_router.get("/", response_model=GetListRoom)
 async def http_get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
-    result = Room.get_all(session=db.session).filter(Room.name.contains(query)).offset(offset).limit(limit)
+    result = Room.get_all(session=db.session).filter(Room.name.contains(query))
     return {
-        "items": [RoomGet.from_orm(row) for row in result.all()],
+        "items": [RoomGet.from_orm(row) for row in result.offset(offset).limit(limit).all()],
         "limit": limit,
         "offset": offset,
         "total": result.count(),

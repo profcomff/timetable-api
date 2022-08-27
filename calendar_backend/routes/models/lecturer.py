@@ -1,46 +1,6 @@
 from .base import Base, LecturerGet, EventGet, CommentLecturer
 
 
-class LecturerWithNonNoneCommentsAndDescription(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    description: str
-    comments: list[CommentLecturer]
-
-
-class LecturerWithoutComments(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    description: str
-
-
-class LecturerWithoutDescription(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    comments: list[CommentLecturer]
-
-
-class LecturerWithoutDescriptionAndComments(Base):
-    id: int
-    first_name: str
-    middle_name: str
-    last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-
-
 class LecturerPhotos(LecturerGet):
     links: list[str]
 

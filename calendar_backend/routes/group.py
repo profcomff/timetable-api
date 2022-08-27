@@ -28,9 +28,9 @@ async def http_get_group_by_id(
 
 @group_router.get("/", response_model=GetListGroup)
 async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
-    result = Group.get_all(session=db.session).filter(Group.number.contains(query)).offset(offset).limit(limit)
+    result = Group.get_all(session=db.session).filter(Group.number.contains(query))
     return {
-        "items": [GroupGet.from_orm(row) for row in result.all()],
+        "items": [GroupGet.from_orm(row) for row in result.offset(offset).limit(limit).all()],
         "limit": limit,
         "offset": offset,
         "total": result.count(),

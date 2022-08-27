@@ -44,7 +44,7 @@ class BaseDbModel(DeclarativeBase):
         """Get all objects with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
-            objs = objs.filter(cls.is_deleted)
+            objs = objs.filter(not_(cls.is_deleted))
         return objs
 
     @classmethod

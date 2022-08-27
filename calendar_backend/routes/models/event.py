@@ -1,12 +1,6 @@
 import datetime
 
-from .base import Base, RoomGet, GroupGet, CommentEventGet
-from .lecturer import (
-    LecturerWithoutComments,
-    LecturerWithoutDescription,
-    LecturerWithoutDescriptionAndComments,
-    LecturerWithNonNoneCommentsAndDescription,
-)
+from .base import Base, RoomGet, GroupGet, CommentEventGet, LecturerGet, EventGet
 
 
 class EventPatch(Base):
@@ -42,59 +36,18 @@ class EventPost(Base):
             f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})"
         )
 
-
-class EventWithLecturerCommentsAndDecription(Base):
+class Event(Base):
     id: int
     name: str
     room: list[RoomGet]
     group: GroupGet
-    lecturer: list[LecturerWithNonNoneCommentsAndDescription]
+    lecturer: list[LecturerGet]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
 
 
 class GetListEvent(Base):
-    items: list[EventWithLecturerCommentsAndDecription]
-
-
-class EventWithoutLecturerComments(Base):
-    id: int
-    name: str
-    room: list[RoomGet]
-    group: GroupGet
-    lecturer: list[LecturerWithoutComments]
-    start_ts: datetime.datetime
-    end_ts: datetime.datetime
-
-
-class EventWithoutLecturerDescription(Base):
-    id: int
-    name: str
-    room: list[RoomGet]
-    group: GroupGet
-    lecturer: list[LecturerWithoutDescription]
-    start_ts: datetime.datetime
-    end_ts: datetime.datetime
-    comments: list[CommentEventGet]
-
-
-class EventWithoutLecturerDescriptionAndComments(Base):
-    id: int
-    name: str
-    room: list[RoomGet]
-    group: GroupGet
-    lecturer: list[LecturerWithoutDescriptionAndComments]
-    start_ts: datetime.datetime
-    end_ts: datetime.datetime
-
-
-class GetListEventWithoutLecturerComments(Base):
-    items: list[EventWithoutLecturerComments]
-
-
-class GetListEventWithoutLecturerDescription(Base):
-    items: list[EventWithoutLecturerDescription]
-
-
-class GetListEventWithoutLecturerDescriptionAndComments(Base):
-    items: list[EventWithoutLecturerDescriptionAndComments]
+    items: list[Event]
+    limit: int
+    offset: int
+    total: int
