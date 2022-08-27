@@ -16,9 +16,6 @@ from calendar_backend.models.db import Photo, CommentsLecturer, CommentsLesson
 settings = get_settings()
 
 
-# TODO: Tests
-
-
 async def get_group_by_id(group_id: int, session: Session) -> Group:
     result = session.query(Group).filter(and_(Group.id == group_id, Group.is_deleted == False)).one_or_none()
     if not result:
