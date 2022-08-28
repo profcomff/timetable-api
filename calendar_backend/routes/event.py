@@ -44,7 +44,10 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
     elif room_id:
         events = events.filter(Event.lecturer == Room.get(room_id, session=db.session))
     cnt = events.count()
-    events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
+    if limit:
+        events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
+    else:
+        events = events.order_by(Event.start_ts).offset(offset).all()
 
     fmt = {}
     if detail and "comment" not in detail:
