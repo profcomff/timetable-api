@@ -87,11 +87,12 @@ async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
 async def http_get_lecturer_photos(id: int, limit: int = 10,
     offset: int = 0) -> LecturerPhotos:
     lecturer = Lecturer.get(id, session=db.session)
-    lecturer.links = [row.link for row in lecturer.photos]
-    lecturer.limit = limit
-    lecturer.offset = offset
-    lecturer.total = len(lecturer.links)
-    return LecturerPhotos.from_orm(lecturer)
+    return LecturerPhotos(**{
+        "items": [row.link for row in lecturer.photos],
+        "limit": limit,
+        "offset": offset,
+        "total": len([row.link for row in lecturer.photos])
+    })
 
 
 @lecturer_router.post("/{id}/comment", response_model=CommentLecturer)

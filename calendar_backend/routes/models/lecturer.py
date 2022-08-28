@@ -2,8 +2,7 @@ from .base import Base, LecturerGet, EventGet, CommentLecturer
 
 
 class LecturerPhotos(Base):
-    id: int
-    links: list[str]
+    items: list[str]
     limit: int
     offset: int
     total: int
