@@ -18,7 +18,7 @@ from calendar_backend.routes.models import (
     LecturerPatch,
     Photo,
     LecturerPhotos,
-    CommentLecturer, CommentLecturerPost, CommentLecturerPatch,
+    CommentLecturer, CommentLecturerPost, CommentLecturerPatch, LecturerComments
 )
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
@@ -132,4 +132,12 @@ async def http_get_comment(id: int) -> CommentLecturer:
 async def http_delete_photo(id: int) -> None:
     return DbPhoto.delete(id=id, session=db.session)
 
+
+@lecturer_router.get("/{id}/comments", response_model=LecturerComments)
+async def http_get_all_lecturer_comments(id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
+    lecturer = Lecturer.get(id, session=db.session)
+    lecturer.limit = limit
+    lecturer.offset = offset
+    lecturer.total = len(lecturer.comments)
+    return LecturerComments.from_orm(lecturer)
 

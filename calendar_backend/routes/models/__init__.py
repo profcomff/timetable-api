@@ -9,6 +9,7 @@ from .lecturer import (
     Photo,
     CommentLecturerPost,
     CommentLecturerPatch,
+    LecturerComments
 )
 from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom
 from .event import (

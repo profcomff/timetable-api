@@ -10,6 +10,6 @@ def test_read_all(client_auth: TestClient, photo_path: str):
     assert len(response_obj["links"]) <= 10
 
 
-def test_delete(client_auth: TestClient, photo_path: str):
-    response = client_auth.delete(photo_path)
+def test_delete(client_auth: TestClient, photo_path_for_delete: str):
+    response = client_auth.delete(photo_path_for_delete)
     assert response.ok, response.json()

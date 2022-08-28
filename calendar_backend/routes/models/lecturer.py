@@ -1,4 +1,4 @@
-from .base import Base, LecturerGet, EventGet
+from .base import Base, LecturerGet, EventGet, CommentLecturer
 
 
 class LecturerPhotos(Base):
@@ -55,3 +55,10 @@ class CommentLecturerPost(Base):
 class CommentLecturerPatch(Base):
     author_name: str | None
     text: str | None
+
+
+class LecturerComments(Base):
+    comments: list[CommentLecturer]
+    limit: int
+    offset: int
+    total: int

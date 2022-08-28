@@ -85,9 +85,22 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
     dbsession.delete(response_model)
     dbsession.commit()
 
+@pytest.fixture()
+def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
+    RESOURCE = f"{lecturer_path}/comment"
+    request_obj = {
+        "author_name": "Аноним",
+        "text": "Очень умный коммент",
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    id_ = response.json()["id"]
+    yield RESOURCE + "s"
+    response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
 
 @pytest.fixture()
-def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
+def comment_path_for_delete_and_patch(client_auth: TestClient, dbsession: Session, lecturer_path: str):
     RESOURCE = f"{lecturer_path}/comment"
     request_obj = {
         "author_name": "Аноним",
@@ -109,7 +122,22 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
+    RESOURCE_2 = f"timetable/lecturer/{id_}/photo"
     yield RESOURCE + "/" + str(id_)
+    response_model: CommentLecturer = dbsession.query(Photo).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
+
+@pytest.fixture()
+def photo_path_for_delete(client_auth: TestClient, dbsession: Session, lecturer_path: str):
+    RESOURCE = f"{lecturer_path}/photo"
+    with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
+        response = client_auth.post(RESOURCE, files={"photo": f})
+    assert response.ok, response.json()
+    id_ = response.json()["id"]
+    RESOURCE_2 = f"timetable/lecturer/{id_}/photo"
+    yield RESOURCE_2
     response_model: CommentLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
