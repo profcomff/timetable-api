@@ -47,12 +47,12 @@ class LecturerEvents(LecturerGet):
     events: list[EventGet] = []
 
 
-class CommentLecturerPost(Base):
+class LecturerCommentPost(Base):
     author_name: str
     text: str
 
 
-class CommentLecturerPatch(Base):
+class LecturerCommentPatch(Base):
     author_name: str | None
     text: str | None
 

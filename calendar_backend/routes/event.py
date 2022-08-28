@@ -15,7 +15,7 @@ from calendar_backend.routes.models.event import (
     EventGet,
     EventPatch,
     EventPost,
-    GetListEvent, CommentEventPost, CommentEventPatch,
+    GetListEvent, EventCommentPost, EventCommentPatch,
 )
 from calendar_backend.settings import get_settings
 
@@ -109,18 +109,18 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
 
 
 @event_router.post("/{id}/comment", response_model=CommentEventGet)
-async def http_comment_event(id: int, comment: CommentEventPost) -> CommentEventGet:
+async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
     return CommentEventGet.from_orm(DbCommentEvent.create(event_id = id, session=db.session, **comment.dict()))
 
 
 @event_router.patch("/{id}/comment", response_model=CommentEventGet)
-async def http_udpate_comment(id: int, comment: CommentEventPatch) -> CommentEventGet:
+async def http_udpate_comment(id: int, comment: EventCommentPatch) -> CommentEventGet:
     return CommentEventGet.from_orm(DbCommentEvent.update(id=id, session=db.session, **comment.dict()))
 
 
 @event_router.get("/(id}/comment", response_model=CommentEventGet)
 async def http_get_comment(id: int) -> CommentEventGet:
-    return CommentEventGet.from_orm(DbCommentEvent.get(id=id))
+    return CommentEventGet.from_orm(DbCommentEvent.get(id=id, session=db.session))
 
 
 @event_router.delete("/{id}/comment", response_model=None)

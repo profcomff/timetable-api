@@ -7,8 +7,8 @@ from .lecturer import (
     LecturerEvents,
     GetListLecturer,
     Photo,
-    CommentLecturerPost,
-    CommentLecturerPatch,
+    LecturerCommentPost,
+    LecturerCommentPatch,
     LecturerComments
 )
 from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom

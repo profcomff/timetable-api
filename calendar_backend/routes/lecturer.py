@@ -18,7 +18,7 @@ from calendar_backend.routes.models import (
     LecturerPatch,
     Photo,
     LecturerPhotos,
-    CommentLecturer, CommentLecturerPost, CommentLecturerPatch, LecturerComments
+    CommentLecturer, LecturerCommentPost, LecturerCommentPatch, LecturerComments
 )
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
@@ -95,12 +95,12 @@ async def http_get_lecturer_photos(id: int, limit: int = 10,
 
 
 @lecturer_router.post("/{id}/comment", response_model=CommentLecturer)
-async def http_comment_lecturer(id: int, comment: CommentLecturerPost) -> CommentLecturer:
+async def http_comment_lecturer(id: int, comment: LecturerCommentPost) -> CommentLecturer:
     return CommentLecturer.from_orm(DbCommentLecturer.create(lecturer_id=id, session=db.session, **comment.dict()))
 
 
 @lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
-async def http_update_comment_lecturer(id: int, comment_inp: CommentLecturerPatch) -> CommentLecturer:
+async def http_update_comment_lecturer(id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
     comment = DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
     return CommentLecturer.from_orm(comment)
 

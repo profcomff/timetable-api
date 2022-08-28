@@ -53,11 +53,13 @@ class GetListEvent(Base):
     total: int
 
 
-class CommentEventPost(Base):
+class EventCommentPost(Base):
     text: str
     author_name: str
 
 
-class CommentEventPatch(Base):
+class EventCommentPatch(Base):
     text: str
     author_name: str
+
+
