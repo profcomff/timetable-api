@@ -86,30 +86,30 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
     dbsession.commit()
 
 @pytest.fixture()
-def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: int):
-    RESOURCE = f"{lecturer_path}/comment"
+def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
+    RESOURCE = f"{lecturer_path}/comment/"
     request_obj = {
         "author_name": "Аноним",
         "text": "Очень умный коммент",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
-    yield RESOURCE + "s"
+    yield RESOURCE + str(id_)
     response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
 
+
 @pytest.fixture()
-def comment_path_for_delete_and_patch(client_auth: TestClient, dbsession: Session, lecturer_path: str):
-    RESOURCE = f"{lecturer_path}/comment"
+def comment_path_for_read_all(client_auth: TestClient, dbsession: Session, lecturer_path: str):
+    RESOURCE = f"{lecturer_path}/comment/"
     request_obj = {
         "author_name": "Аноним",
         "text": "Очень умный коммент",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
-    RESOURCE_2 = f"timetable/lecturer/{id_}/comment"
-    yield RESOURCE_2
+    yield RESOURCE
     response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()

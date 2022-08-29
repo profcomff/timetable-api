@@ -2,7 +2,7 @@ import datetime
 import logging
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, UploadFile, File, Query
+from fastapi import APIRouter, Depends, UploadFile, File, Query, HTTPException
 from fastapi_sqlalchemy import db
 from calendar_backend.models.db import Lecturer
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
@@ -95,14 +95,16 @@ async def http_get_lecturer_photos(id: int, limit: int = 10,
     })
 
 
-@lecturer_router.post("/{id}/comment", response_model=CommentLecturer)
-async def http_comment_lecturer(id: int, comment: LecturerCommentPost) -> CommentLecturer:
-    return CommentLecturer.from_orm(DbCommentLecturer.create(lecturer_id=id, session=db.session, **comment.dict()))
+@lecturer_router.post("/{lecturer_id}/comment/", response_model=CommentLecturer)
+async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
+    return CommentLecturer.from_orm(DbCommentLecturer.create(lecturer_id=lecturer_id, session=db.session, **comment.dict()))
 
 
-@lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
-async def http_update_comment_lecturer(id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
+@lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
+async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
     comment = DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    if comment.lecturer_id != lecturer_id:
+        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in lecturer:{lecturer_id} comments list")
     return CommentLecturer.from_orm(comment)
 
 
@@ -111,14 +113,20 @@ async def http_set_lecturer_avatar(id: int, photo_id: int) -> LecturerGet:
     return LecturerGet.from_orm(await utils.set_lecturer_avatar(id, photo_id, db.session))
 
 
-@lecturer_router.delete("/{id}/comment", response_model=None)
-async def http_delete_comment(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+@lecturer_router.delete("/{lecturer_id}/comment/{id}", response_model=None)
+async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    comment = DbCommentLecturer.get(id, session=db.session)
+    if comment.lecturer_id != lecturer_id:
+        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in lecturer:{lecturer_id} comments list")
     return DbCommentLecturer.delete(id=id, session=db.session)
 
 
-@lecturer_router.get("/{id}/comment", response_model=CommentLecturer)
-async def http_get_comment(id: int) -> CommentLecturer:
-    return CommentLecturer.from_orm(DbCommentLecturer.get(id=id, session=db.session))
+@lecturer_router.get("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
+async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
+    comment = DbCommentLecturer.get(id, session=db.session)
+    if not comment.lecturer_id == lecturer_id:
+        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in lecturer:{lecturer_id} comments list")
+    return CommentLecturer.from_orm(comment)
 
 
 @lecturer_router.delete("/{id}/photo", response_model=None)
@@ -126,11 +134,13 @@ async def http_delete_photo(id: int) -> None:
     return DbPhoto.delete(id=id, session=db.session)
 
 
-@lecturer_router.get("/{id}/comments", response_model=LecturerComments)
-async def http_get_all_lecturer_comments(id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
-    lecturer = Lecturer.get(id, session=db.session)
-    lecturer.limit = limit
-    lecturer.offset = offset
-    lecturer.total = len(lecturer.comments)
-    return LecturerComments.from_orm(lecturer)
+@lecturer_router.get("/{lecturer_id}/comment/", response_model=LecturerComments)
+async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
+    lecturer = Lecturer.get(lecturer_id, session=db.session)
+    return LecturerComments(**{
+        "items": lecturer.comments,
+        "limit": limit,
+        "offset": offset,
+        "total": len(lecturer.comments)
+    })
 

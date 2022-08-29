@@ -57,7 +57,7 @@ class LecturerCommentPatch(Base):
 
 
 class LecturerComments(Base):
-    comments: list[CommentLecturer]
+    items: list[CommentLecturer]
     limit: int
     offset: int
     total: int
