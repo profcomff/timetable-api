@@ -87,12 +87,16 @@ async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> 
 @lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
 async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10,
                                    offset: int = 0) -> LecturerPhotos:
-    lecturer = Lecturer.get(lecturer_id, session=db.session)
+    res = DbPhoto.get_all(session=db.session).filter(DbPhoto.lecturer_id == lecturer_id)
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
     return LecturerPhotos(**{
-        "items": [row.link for row in lecturer.photos],
+        "items": [row.link for row in res],
         "limit": limit,
         "offset": offset,
-        "total": len([row.link for row in lecturer.photos])
+        "total": cnt
     })
 
 
