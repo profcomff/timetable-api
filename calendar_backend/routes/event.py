@@ -8,7 +8,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
-from calendar_backend.models import Group, Room, Lecturer, Event
+from calendar_backend.models import Group, Room, Lecturer, Event, EventsLecturers, EventsRooms
 from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.routes.models.event import (
     CommentEventGet,
@@ -40,9 +40,11 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
     if group_id:
         events = events.filter(Event.group_id == group_id)
     elif lecturer_id:
-        events = events.filter(Event.lecturer == Lecturer.get(lecturer_id, session=db.session))
+        ids_ = EventsLecturers.get_all(session=db.session).filter(EventsLecturers.lecturer_id == lecturer_id).all()
+        events = events.filter(Event.id.in_(row.event_id for row in ids_))
     elif room_id:
-        events = events.filter(Event.lecturer == Room.get(room_id, session=db.session))
+        ids_ = EventsRooms.get_all(session=db.session).filter(EventsRooms.room_id == room_id).all()
+        events = events.filter(Event.id.in_(row.event_id for row in ids_))
     cnt = events.count()
     if limit:
         events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
