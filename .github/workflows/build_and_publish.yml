@@ -120,7 +120,7 @@ jobs:
           docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
           docker run \
             --detach \
-            --restart on-failure:3 \
+            --restart always \
             --network=web \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env ADMIN_SECRET='${{ secrets.ADMIN_SECRET }}' \
