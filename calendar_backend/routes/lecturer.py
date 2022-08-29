@@ -136,11 +136,15 @@ async def http_delete_photo(id: int) -> None:
 
 @lecturer_router.get("/{lecturer_id}/comment/", response_model=LecturerComments)
 async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
-    lecturer = Lecturer.get(lecturer_id, session=db.session)
+    res = DbCommentLecturer.get_all(session=db.session).filter(DbCommentLecturer.lecturer_id == lecturer_id)
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
     return LecturerComments(**{
-        "items": lecturer.comments,
+        "items": res,
         "limit": limit,
         "offset": offset,
-        "total": len(lecturer.comments)
+        "total": cnt
     })
 

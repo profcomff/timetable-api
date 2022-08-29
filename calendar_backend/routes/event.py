@@ -139,12 +139,16 @@ async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(aut
 
 @event_router.get("/{event_id}/comment", response_model=EventComments)
 async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
-    event = Event.get(event_id, session=db.session)
+    res = DbCommentEvent.get_all(session=db.session).filter(DbCommentEvent.event_id == event_id)
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
     return EventComments(**{
-        "items": event.comments,
+        "items": res,
         "limit": limit,
         "offset": offset,
-        "total": len(event.comments)
+        "total": cnt
     })
 
 
