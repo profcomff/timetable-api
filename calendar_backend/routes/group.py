@@ -27,14 +27,18 @@ async def http_get_group_by_id(
 
 
 @group_router.get("/", response_model=GetListGroup)
-async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> dict[str, Any]:
-    result = Group.get_all(session=db.session).filter(Group.number.contains(query))
-    return {
-        "items": [GroupGet.from_orm(row) for row in result.offset(offset).limit(limit).all()],
+async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetListGroup:
+    res = Group.get_all(session=db.session).filter(Group.number.contains(query))
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
+    return GetListGroup(**{
+        "items": res,
         "limit": limit,
         "offset": offset,
-        "total": result.count(),
-    }
+        "total": cnt,
+    })
 
 
 @group_router.post("/", response_model=GroupGet)
@@ -50,7 +54,7 @@ async def http_patch_group(
     group_inp: GroupPatch,
     _: auth.User = Depends(auth.get_current_user),
 ) -> GroupGet:
-    return Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session)
+    return GroupGet.from_orm(Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session))
 
 
 @group_router.delete("/{id}", response_model=None)

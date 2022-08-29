@@ -1,8 +1,11 @@
 from .base import Base, LecturerGet, EventGet, CommentLecturer
 
 
-class LecturerPhotos(LecturerGet):
-    links: list[str]
+class LecturerPhotos(Base):
+    items: list[str]
+    limit: int
+    offset: int
+    total: int
 
 
 class LecturerPatch(Base):
@@ -41,3 +44,20 @@ class Photo(Base):
 
 class LecturerEvents(LecturerGet):
     events: list[EventGet] = []
+
+
+class LecturerCommentPost(Base):
+    author_name: str
+    text: str
+
+
+class LecturerCommentPatch(Base):
+    author_name: str | None
+    text: str | None
+
+
+class LecturerComments(Base):
+    items: list[CommentLecturer]
+    limit: int
+    offset: int
+    total: int

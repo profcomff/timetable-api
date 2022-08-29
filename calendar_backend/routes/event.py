@@ -3,18 +3,19 @@ from fastapi.responses import FileResponse
 import logging
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi_sqlalchemy import db
 
-from calendar_backend.exceptions import NotEnoughCriteria
+from calendar_backend.exceptions import NotEnoughCriteria, ObjectNotFound
 from calendar_backend.methods import auth, list_calendar
-from calendar_backend.models import Group, Room, Lecturer, Event, CommentEvent
+from calendar_backend.models import Group, Room, Lecturer, Event, EventsLecturers, EventsRooms
+from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.routes.models.event import (
     CommentEventGet,
     EventGet,
     EventPatch,
     EventPost,
-    GetListEvent,
+    GetListEvent, EventCommentPost, EventCommentPatch, EventComments,
 )
 from calendar_backend.settings import get_settings
 
@@ -39,11 +40,16 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
     if group_id:
         events = events.filter(Event.group_id == group_id)
     elif lecturer_id:
-        events = events.filter(Event.lecturer == Lecturer.get(lecturer_id, session=db.session))
+        ids_ = EventsLecturers.get_all(session=db.session).filter(EventsLecturers.lecturer_id == lecturer_id).all()
+        events = events.filter(Event.id.in_(row.event_id for row in ids_))
     elif room_id:
-        events = events.filter(Event.lecturer == Room.get(room_id, session=db.session))
+        ids_ = EventsRooms.get_all(session=db.session).filter(EventsRooms.room_id == room_id).all()
+        events = events.filter(Event.id.in_(row.event_id for row in ids_))
     cnt = events.count()
-    events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
+    if limit:
+        events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
+    else:
+        events = events.order_by(Event.start_ts).offset(offset).all()
 
     fmt = {}
     if detail and "comment" not in detail:
@@ -96,7 +102,7 @@ async def http_create_event(event: EventPost, _: auth.User = Depends(auth.get_cu
 
 @event_router.patch("/{id}", response_model=EventGet)
 async def http_patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
-    return Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True))
+    return EventGet.from_orm(Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True)))
 
 
 @event_router.delete("/{id}", response_model=None)
@@ -104,11 +110,47 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
     Event.delete(id, session=db.session)
 
 
-# @event_router.post("/{event_id}/comment", response_model=CommentEventGet, deprecated=True)
-# async def http_comment_event(event_id: int, author_name: str, text: str) -> CommentEventGet:
-#     return CommentEventGet.from_orm(CommentEvent(event_id=event_id, db.session, text, author_name))
+@event_router.post("/{id}/comment", response_model=CommentEventGet)
+async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
+    return CommentEventGet.from_orm(DbCommentEvent.create(event_id = id, session=db.session, **comment.dict()))
 
 
-# @event_router.patch("/{id}/comment", response_model=CommentEventGet, deprecated=True)
-# async def http_udpate_comment(comment_id: int, new_text: str) -> CommentEventGet:
-#     return CommentEventGet.from_orm(await utils.update_comment_event(comment_id, db.session, new_text))
+@event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
+async def http_udpate_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
+    comment = DbCommentEvent.get(id, session=db.session)
+    if comment.event_id != event_id:
+        raise ObjectNotFound(DbCommentEvent, id)
+    return CommentEventGet.from_orm(DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True)))
+
+
+@event_router.get("/{event_id}/comment/{id}", response_model=CommentEventGet)
+async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
+    comment = DbCommentEvent.get(id, session=db.session)
+    if not comment.event_id == event_id:
+        raise ObjectNotFound(DbCommentEvent, id)
+    return CommentEventGet.from_orm(comment)
+
+
+@event_router.delete("/{id}/comment", response_model=None)
+async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    comment = DbCommentEvent.get(id, session=db.session)
+    if comment.event_id != event_id:
+        raise ObjectNotFound(DbCommentEvent, id)
+    return DbCommentEvent.delete(id=id, session=db.session)
+
+
+@event_router.get("/{event_id}/comment", response_model=EventComments)
+async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
+    res = DbCommentEvent.get_all(session=db.session).filter(DbCommentEvent.event_id == event_id)
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
+    return EventComments(**{
+        "items": res,
+        "limit": limit,
+        "offset": offset,
+        "total": cnt
+    })
+
+

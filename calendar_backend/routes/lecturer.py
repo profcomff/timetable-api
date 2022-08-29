@@ -2,9 +2,11 @@ import datetime
 import logging
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, UploadFile, File, Query
+from fastapi import APIRouter, Depends, UploadFile, File, Query, HTTPException
 from fastapi_sqlalchemy import db
 from calendar_backend.models.db import Lecturer
+from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
+from calendar_backend.models.db import Photo as DbPhoto
 
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
@@ -16,8 +18,9 @@ from calendar_backend.routes.models import (
     LecturerPatch,
     Photo,
     LecturerPhotos,
-    CommentLecturer,
+    CommentLecturer, LecturerCommentPost, LecturerCommentPatch, LecturerComments
 )
+from calendar_backend.exceptions import ObjectNotFound
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -41,25 +44,17 @@ async def http_get_lecturers(
     query: str = "",
     limit: int = 10,
     offset: int = 0,
-    details: list[Literal["photo", "description", "comments", ""]] | None = Query([]),
 ) -> dict[str, Any]:
     res = Lecturer.get_all(session=db.session).filter(Lecturer.search(query))
-    cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
     for row in res:
         row.avatar_link = row.avatar.link if row.avatar else None
     result = [LecturerGet.from_orm(row) for row in res]
-    exclude = []
-    details = details or [""]
-    if "" in details:
-        exclude.append(["photo", "description", "comments"])
-    if "photo" not in details:
-        exclude.append("photo")
-    if "description" not in details:
-        exclude.append("description")
-    if "comments" not in details:
-        exclude.append("comments")
     return {
-        "items": [row.dict(exclude={*exclude}) for row in result],
+        "items": result,
         "limit": limit,
         "offset": offset,
         "total": cnt,
@@ -68,7 +63,7 @@ async def http_get_lecturers(
 
 @lecturer_router.post("/", response_model=LecturerGet)
 async def http_create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
-    return Lecturer.create(session=db.session, **lecturer.dict())
+    return LecturerGet.from_orm(Lecturer.create(session=db.session, **lecturer.dict()))
 
 
 @lecturer_router.patch("/{id}", response_model=LecturerGet)
@@ -84,28 +79,88 @@ async def http_delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_
     Lecturer.delete(id, session=db.session)
 
 
-@lecturer_router.post("/{id}/photo", response_model=Photo)
-async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
-    return Photo.from_orm(await utils.upload_lecturer_photo(id, db.session, file=photo))
+@lecturer_router.post("/{lecturer_id}/photo", response_model=Photo)
+async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
+    return Photo.from_orm(await utils.upload_lecturer_photo(lecturer_id, db.session, file=photo))
 
 
-@lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
-async def http_get_lecturer_photos(id: int) -> LecturerPhotos:
-    lecturer = Lecturer.get(id, session=db.session)
-    lecturer.links = [row.link for row in lecturer.photos]
-    return LecturerPhotos.from_orm(lecturer)
+@lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
+async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10,
+                                   offset: int = 0) -> LecturerPhotos:
+    res = DbPhoto.get_all(session=db.session).filter(DbPhoto.lecturer_id == lecturer_id)
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
+    return LecturerPhotos(**{
+        "items": [row.link for row in res],
+        "limit": limit,
+        "offset": offset,
+        "total": cnt
+    })
 
 
-@lecturer_router.post("/{id}/comment", response_model=CommentLecturer)
-async def http_comment_lecturer(id: int, comment_text: str, author_name: str) -> CommentLecturer:
-    return CommentLecturer.from_orm(await utils.create_comment_lecturer(id, db.session, comment_text, author_name))
+@lecturer_router.post("/{lecturer_id}/comment/", response_model=CommentLecturer)
+async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
+    return CommentLecturer.from_orm(DbCommentLecturer.create(lecturer_id=lecturer_id, session=db.session, **comment.dict()))
 
 
-@lecturer_router.patch("/{id}/comment", response_model=CommentLecturer)
-async def http_update_comment_lecturer(comment_id: int, new_text: str) -> CommentLecturer:
-    return CommentLecturer.from_orm(await utils.update_comment_lecturer(comment_id, db.session, new_text))
+@lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
+async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
+    comment = DbCommentLecturer.get(id=id, session=db.session)
+    if comment.lecturer_id != lecturer_id:
+        raise ObjectNotFound(DbCommentLecturer, id)
+    return CommentLecturer.from_orm(DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True)))
 
 
 @lecturer_router.post("/{id}/avatar", response_model=LecturerGet)
 async def http_set_lecturer_avatar(id: int, photo_id: int) -> LecturerGet:
     return LecturerGet.from_orm(await utils.set_lecturer_avatar(id, photo_id, db.session))
+
+
+@lecturer_router.delete("/{lecturer_id}/comment/{id}", response_model=None)
+async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    comment = DbCommentLecturer.get(id, session=db.session)
+    if comment.lecturer_id != lecturer_id:
+        raise ObjectNotFound(DbCommentLecturer, id)
+    return DbCommentLecturer.delete(id=id, session=db.session)
+
+
+@lecturer_router.get("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
+async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
+    comment = DbCommentLecturer.get(id, session=db.session)
+    if not comment.lecturer_id == lecturer_id:
+        raise ObjectNotFound(DbCommentLecturer, id)
+    return CommentLecturer.from_orm(comment)
+
+
+@lecturer_router.delete("/{lecturer_id}/photo/{id}", response_model=None)
+async def http_delete_photo(id: int, lecturer_id: int) -> None:
+    photo = DbPhoto.get(id, session=db.session)
+    if photo.lecturer_id != lecturer_id:
+        raise ObjectNotFound(DbPhoto, id)
+    return DbPhoto.delete(id=id, session=db.session)
+
+
+@lecturer_router.get("/{lecturer_id}/comment/", response_model=LecturerComments)
+async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
+    res = DbCommentLecturer.get_all(session=db.session).filter(DbCommentLecturer.lecturer_id == lecturer_id)
+    if limit:
+        cnt, res = res.count(), res.offset(offset).limit(limit).all()
+    else:
+        cnt, res = res.count(), res.offset(offset).all()
+    return LecturerComments(**{
+        "items": res,
+        "limit": limit,
+        "offset": offset,
+        "total": cnt
+    })
+
+
+@lecturer_router.get("/{lecturer_id}/photo/{id}", response_model=Photo)
+async def get_photo(id: int, lecturer_id: int) -> Photo:
+    photo = DbPhoto.get(id, session=db.session)
+    if photo.lecturer_id != lecturer_id:
+        raise ObjectNotFound(DbPhoto, id)
+    return Photo.from_orm(photo)
+

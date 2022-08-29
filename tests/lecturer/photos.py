@@ -13,3 +13,6 @@ def test_read_all(client_auth: TestClient, photo_path: str):
 def test_delete(client_auth: TestClient, photo_path: str):
     response = client_auth.delete(photo_path)
     assert response.ok, response.json()
+
+    response = client_auth.get(photo_path)
+    assert response.status_code == 404

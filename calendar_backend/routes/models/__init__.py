@@ -5,9 +5,11 @@ from .lecturer import (
     LecturerPatch,
     LecturerPhotos,
     LecturerEvents,
-    CommentLecturer,
     GetListLecturer,
     Photo,
+    LecturerCommentPost,
+    LecturerCommentPatch,
+    LecturerComments
 )
 from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom
 from .event import (
@@ -16,5 +18,6 @@ from .event import (
     Event,
     GetListEvent,
     CommentEventGet,
+    EventComments
 )
 from .group import GroupPost, GroupPatch, GroupEvents, GetListGroup

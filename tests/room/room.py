@@ -73,14 +73,14 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     assert response_obj["direction"] == request_obj["direction"]
 
     # Delete
-    response = client_auth.delete(RESOURCE + f"{id_}/")
+    response = client_auth.delete(RESOURCE + f"{id_}")
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == 404, response.json()
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
+    response = client_auth.get(RESOURCE, params={"limit": 0})
     assert response.ok
     for item in response.json()["items"]:
         assert item["id"] != id_
