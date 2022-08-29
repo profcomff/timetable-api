@@ -18,5 +18,6 @@ from .event import (
     Event,
     GetListEvent,
     CommentEventGet,
+    EventComments
 )
 from .group import GroupPost, GroupPatch, GroupEvents, GetListGroup

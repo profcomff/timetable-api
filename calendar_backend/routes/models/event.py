@@ -63,3 +63,8 @@ class EventCommentPatch(Base):
     author_name: str
 
 
+class EventComments(Base):
+    items: list[CommentEventGet]
+    limit: int
+    offset: int
+    total: int

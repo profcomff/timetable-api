@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 import logging
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import NotEnoughCriteria
@@ -15,7 +15,7 @@ from calendar_backend.routes.models.event import (
     EventGet,
     EventPatch,
     EventPost,
-    GetListEvent, EventCommentPost, EventCommentPatch,
+    GetListEvent, EventCommentPost, EventCommentPatch, EventComments,
 )
 from calendar_backend.settings import get_settings
 
@@ -113,18 +113,38 @@ async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEvent
     return CommentEventGet.from_orm(DbCommentEvent.create(event_id = id, session=db.session, **comment.dict()))
 
 
-@event_router.patch("/{id}/comment", response_model=CommentEventGet)
-async def http_udpate_comment(id: int, comment: EventCommentPatch) -> CommentEventGet:
-    return CommentEventGet.from_orm(DbCommentEvent.update(id=id, session=db.session, **comment.dict()))
+@event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
+async def http_udpate_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
+    comment = DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    if comment.event_id != event_id:
+        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in event:{event_id} comments list")
+    return CommentEventGet.from_orm(comment)
 
 
-@event_router.get("/(id}/comment", response_model=CommentEventGet)
-async def http_get_comment(id: int) -> CommentEventGet:
-    return CommentEventGet.from_orm(DbCommentEvent.get(id=id, session=db.session))
+@event_router.get("/{event_id}/comment/{id}", response_model=CommentEventGet)
+async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
+    comment = DbCommentEvent.get(id, session=db.session)
+    if not comment.event_id == event_id:
+        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in event:{event_id} comments list")
+    return CommentEventGet.from_orm(comment)
 
 
 @event_router.delete("/{id}/comment", response_model=None)
-async def http_delete_comment(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+    comment = DbCommentEvent.get(id, session=db.session)
+    if comment.event_id != event_id:
+        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in event:{event_id} comments list")
     return DbCommentEvent.delete(id=id, session=db.session)
+
+
+@event_router.get("/{event_id}/comment", response_model=EventComments)
+async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
+    event = Event.get(event_id, session=db.session)
+    return EventComments(**{
+        "items": event.comments,
+        "limit": limit,
+        "offset": offset,
+        "total": len(event.comments)
+    })
 
 
