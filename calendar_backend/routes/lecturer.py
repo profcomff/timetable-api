@@ -20,6 +20,7 @@ from calendar_backend.routes.models import (
     LecturerPhotos,
     CommentLecturer, LecturerCommentPost, LecturerCommentPatch, LecturerComments
 )
+from calendar_backend.exceptions import ObjectNotFound
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
@@ -78,15 +79,15 @@ async def http_delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_
     Lecturer.delete(id, session=db.session)
 
 
-@lecturer_router.post("/{id}/photo", response_model=Photo)
-async def http_upload_photo(id: int, photo: UploadFile = File(...)) -> Photo:
-    return Photo.from_orm(await utils.upload_lecturer_photo(id, db.session, file=photo))
+@lecturer_router.post("/{lecturer_id}/photo", response_model=Photo)
+async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
+    return Photo.from_orm(await utils.upload_lecturer_photo(lecturer_id, db.session, file=photo))
 
 
-@lecturer_router.get("/{id}/photo", response_model=LecturerPhotos)
-async def http_get_lecturer_photos(id: int, limit: int = 10,
-    offset: int = 0) -> LecturerPhotos:
-    lecturer = Lecturer.get(id, session=db.session)
+@lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
+async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10,
+                                   offset: int = 0) -> LecturerPhotos:
+    lecturer = Lecturer.get(lecturer_id, session=db.session)
     return LecturerPhotos(**{
         "items": [row.link for row in lecturer.photos],
         "limit": limit,
@@ -102,10 +103,10 @@ async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) 
 
 @lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
 async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
-    comment = DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    comment = DbCommentLecturer.get(id=id, session=db.session)
     if comment.lecturer_id != lecturer_id:
-        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in lecturer:{lecturer_id} comments list")
-    return CommentLecturer.from_orm(comment)
+        raise ObjectNotFound(DbCommentLecturer, id)
+    return CommentLecturer.from_orm(DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True)))
 
 
 @lecturer_router.post("/{id}/avatar", response_model=LecturerGet)
@@ -117,7 +118,7 @@ async def http_set_lecturer_avatar(id: int, photo_id: int) -> LecturerGet:
 async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentLecturer.get(id, session=db.session)
     if comment.lecturer_id != lecturer_id:
-        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in lecturer:{lecturer_id} comments list")
+        raise ObjectNotFound(DbCommentLecturer, id)
     return DbCommentLecturer.delete(id=id, session=db.session)
 
 
@@ -125,12 +126,15 @@ async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(
 async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
     comment = DbCommentLecturer.get(id, session=db.session)
     if not comment.lecturer_id == lecturer_id:
-        raise HTTPException(status_code=404, detail=f"Comment id:{id} not found in lecturer:{lecturer_id} comments list")
+        raise ObjectNotFound(DbCommentLecturer, id)
     return CommentLecturer.from_orm(comment)
 
 
-@lecturer_router.delete("/{id}/photo", response_model=None)
-async def http_delete_photo(id: int) -> None:
+@lecturer_router.delete("/{lecturer_id}/photo/{id}", response_model=None)
+async def http_delete_photo(id: int, lecturer_id: int) -> None:
+    photo = DbPhoto.get(id, session=db.session)
+    if photo.lecturer_id != lecturer_id:
+        raise ObjectNotFound(DbPhoto, id)
     return DbPhoto.delete(id=id, session=db.session)
 
 
@@ -147,4 +151,12 @@ async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offs
         "offset": offset,
         "total": cnt
     })
+
+
+@lecturer_router.get("/{lecturer_id}/photo/{id}", response_model=Photo)
+async def get_photo(id: int, lecturer_id: int) -> Photo:
+    photo = DbPhoto.get(id, session=db.session)
+    if photo.lecturer_id != lecturer_id:
+        raise ObjectNotFound(DbPhoto, id)
+    return Photo.from_orm(photo)
 

@@ -129,20 +129,6 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
 
 
 @pytest.fixture()
-def photo_path_for_delete(client_auth: TestClient, dbsession: Session, lecturer_path: str):
-    RESOURCE = f"{lecturer_path}/photo"
-    with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
-        response = client_auth.post(RESOURCE, files={"photo": f})
-    assert response.ok, response.json()
-    id_ = response.json()["id"]
-    RESOURCE_2 = f"timetable/lecturer/{id_}/photo"
-    yield RESOURCE_2
-    response_model: CommentLecturer = dbsession.query(Photo).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
-
-
-@pytest.fixture()
 def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_path, group_path):
     RESOURCE = f"/timetable/event/"
     room_id = int(room_path.split("/")[-1])
