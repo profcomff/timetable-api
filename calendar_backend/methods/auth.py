@@ -17,9 +17,12 @@ class UserInDB(User):
     password: str
 
 
-def get_user(db, username: str):
-    if username in db:
-        password = db[username]
+def get_user(db, token: str):
+    if token in db.values():
+        password = token
+        for k, v in db.items():
+            if v == token:
+                username = k
         return UserInDB(username=username, password=password)
 
 
