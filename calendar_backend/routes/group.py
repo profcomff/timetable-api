@@ -8,7 +8,7 @@ from fastapi_sqlalchemy import db
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
 from calendar_backend.routes.models import GroupEvents, GroupGet, GroupPost, GroupPatch, GetListGroup
-from calendar_backend.models import Group
+from calendar_backend.models import Group, Event
 
 group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
 settings = get_settings()
@@ -20,11 +20,12 @@ async def http_get_group_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> GroupEvents:
     group = Group.get(id, session=db.session)
-    result = GroupEvents.from_orm(group)
     if start and end:
-        result.events = await utils.get_group_lessons_in_daterange(group, start, end, db.session)
-        return GroupEvents.from_orm(result)
-    return GroupGet.from_orm(result)
+        result = GroupGet.from_orm(group).dict()
+        result["events"] = Event.get_all(session=db.session).filter(Event.start_ts >= start, Event.end_ts < end, Event.group_id == id).all()
+    else:
+        result = GroupGet.from_orm(group)
+    return result
 
 
 @group_router.get("/", response_model=GetListGroup)
