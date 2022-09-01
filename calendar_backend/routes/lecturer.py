@@ -1,15 +1,15 @@
 import datetime
 import logging
-from typing import Any, Literal
+from typing import Any, Union
 
-from fastapi import APIRouter, Depends, UploadFile, File, Query, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
-from calendar_backend.models.db import Lecturer
-from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
-from calendar_backend.models.db import Photo as DbPhoto
 
-from calendar_backend.settings import get_settings
+from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import utils, auth
+from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
+from calendar_backend.models.db import Lecturer
+from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import (
     LecturerEvents,
     GetListLecturer,
@@ -20,23 +20,24 @@ from calendar_backend.routes.models import (
     LecturerPhotos,
     CommentLecturer, LecturerCommentPost, LecturerCommentPatch, LecturerComments
 )
-from calendar_backend.exceptions import ObjectNotFound
+from calendar_backend.settings import get_settings
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@lecturer_router.get("/{id}", response_model=LecturerEvents)
+@lecturer_router.get("/{id}", response_model=Union[LecturerEvents, LecturerGet])
 async def http_get_lecturer_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> LecturerEvents:
+) -> LecturerEvents | LecturerGet:
     lecturer = Lecturer.get(id, session=db.session)
     lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
-        result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
-    return result
+        result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end, db.session)
+        return LecturerEvents.from_orm(result)
+    return LecturerGet.from_orm(result)
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
