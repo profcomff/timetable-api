@@ -5,10 +5,11 @@ from typing import Any, Union
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
 
+from calendar_backend.methods.utils import get_room_lessons_in_daterange
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
 from calendar_backend.routes.models import RoomEvents, GetListRoom, RoomPost, RoomPatch, RoomGet
-from calendar_backend.models import Room
+from calendar_backend.models import Room, EventsRooms, Event
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
@@ -20,11 +21,13 @@ async def http_get_room_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> RoomEvents | RoomGet:
     room = Room.get(id, session=db.session)
-    result = RoomEvents.from_orm(room)
     if start and end:
-        result.events = await utils.get_room_lessons_in_daterange(room, start, end, db.session)
-        return RoomEvents.from_orm(result)
-    return RoomGet.from_orm(result)
+        result = RoomGet.from_orm(room).dict()
+        events = await get_room_lessons_in_daterange(room, start, end)
+        result["events"] = events
+    else:
+        result = RoomGet.from_orm(room)
+    return result
 
 
 @room_router.get("/", response_model=GetListRoom)

@@ -7,6 +7,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import utils, auth
+from calendar_backend.methods.utils import get_lecturer_lessons_in_daterange
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.models.db import Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
@@ -36,11 +37,13 @@ async def http_get_lecturer_by_id(
 ) -> LecturerEvents | LecturerGet:
     lecturer = Lecturer.get(id, session=db.session)
     lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
-    result = LecturerEvents.from_orm(lecturer)
     if start and end:
-        result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end, db.session)
-        return LecturerEvents.from_orm(result)
-    return LecturerGet.from_orm(result)
+        result = LecturerGet.from_orm(lecturer).dict()
+        events = await get_lecturer_lessons_in_daterange(lecturer, start, end)
+        result["events"] = events
+    else:
+        result = LecturerGet.from_orm(lecturer)
+    return result
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)

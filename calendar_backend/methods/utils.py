@@ -35,35 +35,30 @@ async def get_lessons_by_group_from_date(group: Group, date: datetime.date) -> l
 
 
 async def get_group_lessons_in_daterange(
-    group: Group, date_start: datetime.date, date_end: datetime.date, session: Session
+    group: Group, date_start: datetime.date, date_end: datetime.date
 ) -> list[Event]:
     events_list = []
-    events = Event.get_all(session=session).filter(Event.group_id == group.id).all()
-    for lesson in events:
+    for lesson in group.events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             events_list.append(lesson)
     return events_list
 
 
 async def get_room_lessons_in_daterange(
-    room: Room, date_start: datetime.date, date_end: datetime.date, session: Session
+    room: Room, date_start: datetime.date, date_end: datetime.date
 ) -> list[Event]:
     events_list = []
-    events_ids = EventsRooms.get_all(session=session).filter(EventsRooms.room_id == room.id).all()
-    events = [Event.get(row, session=session) for row in events_ids]
-    for lesson in events:
+    for lesson in room.events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             events_list.append(lesson)
     return events_list
 
 
 async def get_lecturer_lessons_in_daterange(
-    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date, session: Session
+    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
 ) -> list[Event]:
     events_list = []
-    events_ids = EventsLecturers.get_all(session=session).filter(EventsRooms.room_id == lecturer.id).all()
-    events = [Event.get(row, session=session) for row in events_ids]
-    for lesson in events:
+    for lesson in lecturer.events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             events_list.append(lesson)
     return events_list
