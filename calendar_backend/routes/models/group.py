@@ -50,4 +50,4 @@ class GetListGroup(Base):
 
 
 class GroupEvents(GroupGet):
-    events: list[EventGet] = []
+    events: list[EventGet]

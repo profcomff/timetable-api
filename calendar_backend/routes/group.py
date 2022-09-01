@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Any
+from typing import Any, Union
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
@@ -15,15 +15,16 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@group_router.get("/{id}", response_model=GroupEvents)
+@group_router.get("/{id}", response_model=Union[GroupEvents, GroupGet])
 async def http_get_group_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
 ) -> GroupEvents:
     group = Group.get(id, session=db.session)
     result = GroupEvents.from_orm(group)
     if start and end:
-        result.events = await utils.get_group_lessons_in_daterange(group, start, end)
-    return result
+        result.events = await utils.get_group_lessons_in_daterange(group, start, end, db.session)
+        return GroupEvents.from_orm(result)
+    return GroupGet.from_orm(result)
 
 
 @group_router.get("/", response_model=GetListGroup)
@@ -33,12 +34,14 @@ async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> 
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return GetListGroup(**{
-        "items": res,
-        "limit": limit,
-        "offset": offset,
-        "total": cnt,
-    })
+    return GetListGroup(
+        **{
+            "items": res,
+            "limit": limit,
+            "offset": offset,
+            "total": cnt,
+        }
+    )
 
 
 @group_router.post("/", response_model=GroupGet)

@@ -43,7 +43,7 @@ class Photo(Base):
 
 
 class LecturerEvents(LecturerGet):
-    events: list[EventGet] = []
+    events: list[EventGet]
 
 
 class LecturerCommentPost(Base):

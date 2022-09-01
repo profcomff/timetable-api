@@ -78,7 +78,6 @@ def test_read(client_auth: TestClient, dbsession: Session):
         "avatar_link",
         "description",
         "comments",
-        "events",
     } == set(response_obj.keys())
 
     # Ok db
@@ -133,7 +132,6 @@ def test_delete(client_auth: TestClient, dbsession: Session):
         "avatar_link",
         "description",
         "comments",
-        "events",
     } == set(response_obj.keys())
 
     # Delete

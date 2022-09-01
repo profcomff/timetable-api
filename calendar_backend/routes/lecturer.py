@@ -1,15 +1,15 @@
 import datetime
 import logging
-from typing import Any, Literal
+from typing import Any, Union
 
-from fastapi import APIRouter, Depends, UploadFile, File, Query, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
-from calendar_backend.models.db import Lecturer
-from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
-from calendar_backend.models.db import Photo as DbPhoto
 
-from calendar_backend.settings import get_settings
+from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import utils, auth
+from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
+from calendar_backend.models.db import Lecturer
+from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import (
     LecturerEvents,
     GetListLecturer,
@@ -18,25 +18,29 @@ from calendar_backend.routes.models import (
     LecturerPatch,
     Photo,
     LecturerPhotos,
-    CommentLecturer, LecturerCommentPost, LecturerCommentPatch, LecturerComments
+    CommentLecturer,
+    LecturerCommentPost,
+    LecturerCommentPatch,
+    LecturerComments,
 )
-from calendar_backend.exceptions import ObjectNotFound
+from calendar_backend.settings import get_settings
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@lecturer_router.get("/{id}", response_model=LecturerEvents)
+@lecturer_router.get("/{id}", response_model=Union[LecturerEvents, LecturerGet])
 async def http_get_lecturer_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> LecturerEvents:
+) -> LecturerEvents | LecturerGet:
     lecturer = Lecturer.get(id, session=db.session)
     lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
     result = LecturerEvents.from_orm(lecturer)
     if start and end:
-        result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end)
-    return result
+        result.events = await utils.get_lecturer_lessons_in_daterange(lecturer, start, end, db.session)
+        return LecturerEvents.from_orm(result)
+    return LecturerGet.from_orm(result)
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
@@ -85,24 +89,20 @@ async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> 
 
 
 @lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
-async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10,
-                                   offset: int = 0) -> LecturerPhotos:
+async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
     res = DbPhoto.get_all(session=db.session).filter(DbPhoto.lecturer_id == lecturer_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return LecturerPhotos(**{
-        "items": [row.link for row in res],
-        "limit": limit,
-        "offset": offset,
-        "total": cnt
-    })
+    return LecturerPhotos(**{"items": [row.link for row in res], "limit": limit, "offset": offset, "total": cnt})
 
 
 @lecturer_router.post("/{lecturer_id}/comment/", response_model=CommentLecturer)
 async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
-    return CommentLecturer.from_orm(DbCommentLecturer.create(lecturer_id=lecturer_id, session=db.session, **comment.dict()))
+    return CommentLecturer.from_orm(
+        DbCommentLecturer.create(lecturer_id=lecturer_id, session=db.session, **comment.dict())
+    )
 
 
 @lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
@@ -110,7 +110,9 @@ async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: L
     comment = DbCommentLecturer.get(id=id, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
-    return CommentLecturer.from_orm(DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True)))
+    return CommentLecturer.from_orm(
+        DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    )
 
 
 @lecturer_router.post("/{id}/avatar", response_model=LecturerGet)
@@ -149,12 +151,7 @@ async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offs
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return LecturerComments(**{
-        "items": res,
-        "limit": limit,
-        "offset": offset,
-        "total": cnt
-    })
+    return LecturerComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})
 
 
 @lecturer_router.get("/{lecturer_id}/photo/{id}", response_model=Photo)
@@ -163,4 +160,3 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
     if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
     return Photo.from_orm(photo)
-

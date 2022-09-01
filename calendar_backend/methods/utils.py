@@ -7,9 +7,8 @@ import aiofiles
 from fastapi import File, UploadFile
 from sqlalchemy.orm import Session
 
-from calendar_backend.models.db import Event, Group, Lecturer, Photo, Room
+from calendar_backend.models.db import Event, Group, Lecturer, Photo, Room, EventsRooms, EventsLecturers
 from calendar_backend.settings import get_settings
-
 
 settings = get_settings()
 
@@ -36,19 +35,22 @@ async def get_lessons_by_group_from_date(group: Group, date: datetime.date) -> l
 
 
 async def get_group_lessons_in_daterange(
-    group: Group, date_start: datetime.date, date_end: datetime.date
+    group: Group, date_start: datetime.date, date_end: datetime.date, session: Session
 ) -> list[Event]:
     events_list = []
-    events = group.events
+    events = Event.get_all(session=session).filter(Event.group_id == group.id).all()
     for lesson in events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             events_list.append(lesson)
     return events_list
 
 
-async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, date_end: datetime.date) -> list[Event]:
+async def get_room_lessons_in_daterange(
+    room: Room, date_start: datetime.date, date_end: datetime.date, session: Session
+) -> list[Event]:
     events_list = []
-    events = room.events
+    events_ids = EventsRooms.get_all(session=session).filter(EventsRooms.room_id == room.id).all()
+    events = [Event.get(row, session=session) for row in events_ids]
     for lesson in events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             events_list.append(lesson)
@@ -56,10 +58,11 @@ async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, d
 
 
 async def get_lecturer_lessons_in_daterange(
-    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date
+    lecturer: Lecturer, date_start: datetime.date, date_end: datetime.date, session: Session
 ) -> list[Event]:
     events_list = []
-    events = lecturer.events
+    events_ids = EventsLecturers.get_all(session=session).filter(EventsRooms.room_id == lecturer.id).all()
+    events = [Event.get(row, session=session) for row in events_ids]
     for lesson in events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
             events_list.append(lesson)

@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Any
+from typing import Any, Union
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
@@ -15,15 +15,16 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@room_router.get("/{id}", response_model=RoomEvents)
+@room_router.get("/{id}", response_model=Union[RoomEvents, RoomGet])
 async def http_get_room_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> RoomEvents:
+) -> RoomEvents | RoomGet:
     room = Room.get(id, session=db.session)
     result = RoomEvents.from_orm(room)
     if start and end:
-        result.events = await utils.get_room_lessons_in_daterange(room, start, end)
-    return result
+        result.events = await utils.get_room_lessons_in_daterange(room, start, end, db.session)
+        return RoomEvents.from_orm(result)
+    return RoomGet.from_orm(result)
 
 
 @room_router.get("/", response_model=GetListRoom)
@@ -33,12 +34,14 @@ async def http_get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> G
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return GetListRoom(**{
-        "items": res,
-        "limit": limit,
-        "offset": offset,
-        "total": cnt,
-    })
+    return GetListRoom(
+        **{
+            "items": res,
+            "limit": limit,
+            "offset": offset,
+            "total": cnt,
+        }
+    )
 
 
 @room_router.post("/", response_model=RoomGet)
@@ -54,7 +57,7 @@ async def http_patch_room(
 ) -> RoomGet:
     if bool(Room.get_all(session=db.session).filter(Room.name == room.name).one_or_none()):
         raise HTTPException(status_code=423, detail="Already exists")
-    return Room.update(id, **room.dict(exclude_unset=True), session=db.session)
+    return RoomGet.from_orm(Room.update(id, **room.dict(exclude_unset=True), session=db.session))
 
 
 @room_router.delete("/{id}", response_model=None)
