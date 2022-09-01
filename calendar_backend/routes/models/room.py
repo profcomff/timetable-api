@@ -17,7 +17,7 @@ class RoomPost(Base):
 
 
 class RoomEvents(RoomGet):
-    events: list[EventGet] = []
+    events: list[EventGet]
 
 
 class GetListRoom(Base):

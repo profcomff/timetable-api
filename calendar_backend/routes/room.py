@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @room_router.get("/{id}", response_model=Union[RoomEvents, RoomGet])
 async def http_get_room_by_id(
     id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> RoomEvents:
+) -> RoomEvents | RoomGet:
     room = Room.get(id, session=db.session)
     result = RoomEvents.from_orm(room)
     if start and end:
