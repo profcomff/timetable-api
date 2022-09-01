@@ -2,15 +2,13 @@ import datetime
 import os
 import random
 import string
-from typing import Coroutine
-import logging
+
 import aiofiles
 from fastapi import File, UploadFile
 from sqlalchemy.orm import Session
 
 from calendar_backend.models.db import Event, Group, Lecturer, Photo, Room, EventsRooms, EventsLecturers
 from calendar_backend.settings import get_settings
-
 
 settings = get_settings()
 
