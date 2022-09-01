@@ -36,6 +36,7 @@ class EventPost(Base):
             f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})"
         )
 
+
 class Event(Base):
     id: int
     name: str

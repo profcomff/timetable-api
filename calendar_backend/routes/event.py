@@ -15,7 +15,10 @@ from calendar_backend.routes.models.event import (
     EventGet,
     EventPatch,
     EventPost,
-    GetListEvent, EventCommentPost, EventCommentPatch, EventComments,
+    GetListEvent,
+    EventCommentPost,
+    EventCommentPatch,
+    EventComments,
 )
 from calendar_backend.settings import get_settings
 
@@ -55,11 +58,13 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
     if detail and "comment" not in detail:
         fmt["comments"] = ...
     if detail and "description" not in detail:
-        fmt["lecturer"] = [{
-            "avatar_id": ...,
-            "description": ...,
-            "is_deleted": ...,
-        }]
+        fmt["lecturer"] = [
+            {
+                "avatar_id": ...,
+                "description": ...,
+                "is_deleted": ...,
+            }
+        ]
 
     return GetListEvent(items=events, limit=limit, offset=offset, total=cnt).dict(exclude=fmt)
 
@@ -112,7 +117,7 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
 
 @event_router.post("/{id}/comment", response_model=CommentEventGet)
 async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
-    return CommentEventGet.from_orm(DbCommentEvent.create(event_id = id, session=db.session, **comment.dict()))
+    return CommentEventGet.from_orm(DbCommentEvent.create(event_id=id, session=db.session, **comment.dict()))
 
 
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
@@ -120,7 +125,9 @@ async def http_udpate_comment(id: int, event_id: int, comment_inp: EventCommentP
     comment = DbCommentEvent.get(id, session=db.session)
     if comment.event_id != event_id:
         raise ObjectNotFound(DbCommentEvent, id)
-    return CommentEventGet.from_orm(DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True)))
+    return CommentEventGet.from_orm(
+        DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    )
 
 
 @event_router.get("/{event_id}/comment/{id}", response_model=CommentEventGet)
@@ -146,11 +153,4 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return EventComments(**{
-        "items": res,
-        "limit": limit,
-        "offset": offset,
-        "total": cnt
-    })
-
-
+    return EventComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})

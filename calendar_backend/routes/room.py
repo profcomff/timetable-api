@@ -34,12 +34,14 @@ async def http_get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> G
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return GetListRoom(**{
-        "items": res,
-        "limit": limit,
-        "offset": offset,
-        "total": cnt,
-    })
+    return GetListRoom(
+        **{
+            "items": res,
+            "limit": limit,
+            "offset": offset,
+            "total": cnt,
+        }
+    )
 
 
 @room_router.post("/", response_model=RoomGet)

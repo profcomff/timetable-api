@@ -34,12 +34,14 @@ async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> 
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
         cnt, res = res.count(), res.offset(offset).all()
-    return GetListGroup(**{
-        "items": res,
-        "limit": limit,
-        "offset": offset,
-        "total": cnt,
-    })
+    return GetListGroup(
+        **{
+            "items": res,
+            "limit": limit,
+            "offset": offset,
+            "total": cnt,
+        }
+    )
 
 
 @group_router.post("/", response_model=GroupGet)
