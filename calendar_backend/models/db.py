@@ -32,6 +32,11 @@ class Direction(str, Enum):
     SOUTH: str = "South"
 
 
+class ApproveStatuses(str, Enum):
+    APPROVED: str = "Approved"
+    DECLINED: str = "Declined"
+
+
 class Room(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
@@ -151,6 +156,7 @@ class EventsRooms(BaseDbModel):
 class Photo(BaseDbModel):
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(sqlalchemy.String, unique=True)
+    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=True)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     lecturer: Lecturer = relationship(
