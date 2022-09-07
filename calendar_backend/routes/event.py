@@ -120,7 +120,7 @@ async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEvent
 
 
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
-async def http_udpate_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
+async def http_update_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
     if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
