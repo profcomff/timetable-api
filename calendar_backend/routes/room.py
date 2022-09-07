@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @room_router.get("/{id}", response_model=RoomGet)
-async def http_get_room_by_id(
-    id: int) -> RoomGet:
+async def http_get_room_by_id(id: int) -> RoomGet:
     return RoomGet.from_orm(Room.get(id, session=db.session))
 
 

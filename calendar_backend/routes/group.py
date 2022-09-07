@@ -14,9 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @group_router.get("/{id}", response_model=GroupGet)
-async def http_get_group_by_id(
-    id: int
-) -> GroupGet:
+async def http_get_group_by_id(id: int) -> GroupGet:
     return GroupGet.from_orm(Group.get(id, session=db.session))
 
 

@@ -44,9 +44,7 @@ async def get_group_lessons_in_daterange(
     return events_list
 
 
-async def get_room_lessons_in_daterange(
-    room: Room, date_start: datetime.date, date_end: datetime.date
-) -> list[Event]:
+async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, date_end: datetime.date) -> list[Event]:
     events_list = []
     for lesson in room.events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:

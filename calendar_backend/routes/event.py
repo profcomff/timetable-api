@@ -1,15 +1,15 @@
-from datetime import date, timedelta
-from fastapi.responses import FileResponse
 import logging
+from datetime import date, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import NotEnoughCriteria, ObjectNotFound
 from calendar_backend.methods import auth, list_calendar
-from calendar_backend.models import Group, Room, Lecturer, Event, EventsLecturers, EventsRooms
 from calendar_backend.models import CommentEvent as DbCommentEvent
+from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, ApproveStatuses
 from calendar_backend.routes.models.event import (
     CommentEventGet,
     EventGet,
@@ -21,7 +21,6 @@ from calendar_backend.routes.models.event import (
     EventComments,
 )
 from calendar_backend.settings import get_settings
-
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
@@ -123,7 +122,7 @@ async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEvent
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
 async def http_udpate_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
-    if comment.event_id != event_id:
+    if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
     return CommentEventGet.from_orm(
         DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
@@ -133,7 +132,7 @@ async def http_udpate_comment(id: int, event_id: int, comment_inp: EventCommentP
 @event_router.get("/{event_id}/comment/{id}", response_model=CommentEventGet)
 async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
-    if not comment.event_id == event_id:
+    if not comment.event_id == event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
     return CommentEventGet.from_orm(comment)
 
@@ -141,14 +140,16 @@ async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
 @event_router.delete("/{id}/comment", response_model=None)
 async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentEvent.get(id, session=db.session)
-    if comment.event_id != event_id:
+    if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
     return DbCommentEvent.delete(id=id, session=db.session)
 
 
 @event_router.get("/{event_id}/comment", response_model=EventComments)
 async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
-    res = DbCommentEvent.get_all(session=db.session).filter(DbCommentEvent.event_id == event_id)
+    res = DbCommentEvent.get_all(session=db.session).filter(
+        DbCommentEvent.event_id == event_id, DbCommentEvent.approve_status == ApproveStatuses.APPROVED
+    )
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
