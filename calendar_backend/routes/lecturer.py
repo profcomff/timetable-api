@@ -167,8 +167,8 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
     return Photo.from_orm(photo)
 
 
-@lecturer_router.get("/{lecturer_id}/comment/review", response_model=list[LecturerComments])
-async def http_get_unreviewed_comments(lecturer_id: int) -> list[LecturerComments]:
+@lecturer_router.get("/{lecturer_id}/comment/review", response_model=list[LecturerComments], tags=["Review"])
+async def http_get_unreviewed_comments(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[LecturerComments]:
     comments = (
         DbCommentLecturer.get_all(session=db.session)
         .filter(DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == None)
@@ -177,11 +177,11 @@ async def http_get_unreviewed_comments(lecturer_id: int) -> list[LecturerComment
     return parse_obj_as(list[LecturerComments], comments)
 
 
-@lecturer_router.post("/{lecturer_id}/comment/{id}/review", response_model=CommentLecturer)
+@lecturer_router.post("/{lecturer_id}/comment/{id}/review", response_model=CommentLecturer, tags=["Review"])
 async def http_review_comment(
     id: int,
     lecturer_id: int,
-    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED, _: auth.User = Depends(auth.get_current_user)
 ) -> CommentLecturer:
     comment = DbCommentLecturer.get(id, session=db.session)
     if comment.lecturer_id != lecturer_id or comment.approve_status is not None:
@@ -193,8 +193,8 @@ async def http_review_comment(
     return CommentLecturer.from_orm(comment)
 
 
-@lecturer_router.get("/{lecturer_id}/photo/review", response_model=list[Photo])
-async def http_get_unreviewed_photos(lecturer_id: int) -> list[Photo]:
+@lecturer_router.get("/{lecturer_id}/photo/review", response_model=list[Photo], tags=["Review"])
+async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[Photo]:
     photos = (
         DbPhoto.get_all(session=db.session)
         .filter(DbPhoto.lecturer_id == lecturer_id, DbPhoto.approve_status == None)
@@ -203,11 +203,11 @@ async def http_get_unreviewed_photos(lecturer_id: int) -> list[Photo]:
     return parse_obj_as(list[Photo], photos)
 
 
-@lecturer_router.post("/{lecturer_id}/photo/{id}/review", response_model=Photo)
+@lecturer_router.post("/{lecturer_id}/photo/{id}/review", response_model=Photo, tags=["Review"])
 async def http_review_comment(
     id: int,
     lecturer_id: int,
-    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED, _: auth.User = Depends(auth.get_current_user)
 ) -> Photo:
     photo = DbPhoto.get(id, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status is not None:
