@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     ICS_PATH: DirectoryPath = "static/cache"
     PHOTO_LECTURER_PATH: DirectoryPath = 'static/photo/lecturer'
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
+    REQUIRE_REVIEW_PHOTOS: bool = True
+    REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
+    REQUIRE_REVIEW_LESSON_COMMENT: bool = True
     GOOGLE_CLIENT_SECRET: Json | None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
     CORS_ALLOW_CREDENTIALS: bool = True
