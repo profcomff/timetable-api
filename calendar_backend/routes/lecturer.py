@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
-from calendar_backend.exceptions import ObjectNotFound
+from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction
 from calendar_backend.methods import utils, auth
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.models.db import Lecturer, ApproveStatuses
@@ -106,7 +106,7 @@ async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) 
 @lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
 async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
     comment = DbCommentLecturer.get(id=id, session=db.session)
-    if comment.lecturer_id != lecturer_id or comment.approve_status != ApproveStatuses.APPROVED:
+    if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
     return CommentLecturer.from_orm(
         DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
@@ -124,7 +124,7 @@ async def http_set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerG
 @lecturer_router.delete("/{lecturer_id}/comment/{id}", response_model=None)
 async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentLecturer.get(id, session=db.session)
-    if comment.lecturer_id != lecturer_id or comment.approve_status != ApproveStatuses.APPROVED:
+    if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
     return DbCommentLecturer.delete(id=id, session=db.session)
 
@@ -132,15 +132,17 @@ async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(
 @lecturer_router.get("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
 async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
     comment = DbCommentLecturer.get(id, session=db.session)
-    if not comment.lecturer_id == lecturer_id or comment.approve_status != ApproveStatuses.APPROVED:
+    if not comment.lecturer_id == lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
+    if comment.approve_status is not None:
+        raise ForbiddenAction(DbCommentLecturer, id)
     return CommentLecturer.from_orm(comment)
 
 
 @lecturer_router.delete("/{lecturer_id}/photo/{id}", response_model=None)
 async def http_delete_photo(id: int, lecturer_id: int) -> None:
     photo = DbPhoto.get(id, session=db.session)
-    if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
+    if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
     return DbPhoto.delete(id=id, session=db.session)
 
@@ -214,3 +216,4 @@ async def http_review_comment(
     if action == ApproveStatuses.DECLINED:
         DbPhoto.delete(photo.id, session=db.session)
     db.session.flush()
+    return Photo.from_orm(photo)

@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
-from calendar_backend.exceptions import NotEnoughCriteria, ObjectNotFound
+from calendar_backend.exceptions import NotEnoughCriteria, ObjectNotFound, ForbiddenAction
 from calendar_backend.methods import auth, list_calendar
 from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, ApproveStatuses
@@ -130,8 +130,10 @@ async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEvent
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
 async def http_update_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
-    if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
+    if comment.event_id != event_id:
         raise ObjectNotFound(DbCommentEvent, id)
+    if comment.approve_status is not None:
+        raise ForbiddenAction(DbCommentEvent, id)
     return CommentEventGet.from_orm(
         DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
     )
@@ -165,8 +167,8 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
     return EventComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})
 
 
-@event_router.get("/{lecturer_id}/comment/review", response_model=list[EventComments])
-async def http_get_unreviewed_comments(lecturer_id: int) -> list[EventComments]:
+@event_router.get("/{lecturer_id}/comment/review", response_model=list[CommentEventGet])
+async def http_get_unreviewed_comments(lecturer_id: int) -> list[CommentEventGet]:
     comments = (
         DbCommentEvent.get_all(session=db.session)
         .filter(DbCommentEvent.lecturer_id == lecturer_id, DbCommentEvent.approve_status == None)
@@ -175,12 +177,12 @@ async def http_get_unreviewed_comments(lecturer_id: int) -> list[EventComments]:
     return parse_obj_as(list[EventComments], comments)
 
 
-@event_router.post("/{lecturer_id}/comment/{id}/review", response_model=EventComments)
+@event_router.post("/{lecturer_id}/comment/{id}/review", response_model=CommentEventGet)
 async def http_review_comment(
     id: int,
     lecturer_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
-) -> EventComments:
+) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
     if comment.lecturer_id != lecturer_id or comment.approve_status is not None:
         raise ObjectNotFound(DbCommentEvent, id)
