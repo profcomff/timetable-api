@@ -5,6 +5,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
+from pydantic import parse_obj_as
 
 from calendar_backend.exceptions import NotEnoughCriteria, ObjectNotFound
 from calendar_backend.methods import auth, list_calendar
@@ -116,7 +117,14 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
 
 @event_router.post("/{id}/comment", response_model=CommentEventGet)
 async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
-    return CommentEventGet.from_orm(DbCommentEvent.create(event_id=id, session=db.session, **comment.dict(), approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else None))
+    return CommentEventGet.from_orm(
+        DbCommentEvent.create(
+            event_id=id,
+            session=db.session,
+            **comment.dict(),
+            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else None,
+        )
+    )
 
 
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
@@ -155,3 +163,29 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
     else:
         cnt, res = res.count(), res.offset(offset).all()
     return EventComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})
+
+
+@event_router.get("/{lecturer_id}/comment/review", response_model=list[EventComments])
+async def http_get_unreviewed_comments(lecturer_id: int) -> list[EventComments]:
+    comments = (
+        DbCommentEvent.get_all(session=db.session)
+        .filter(DbCommentEvent.lecturer_id == lecturer_id, DbCommentEvent.approve_status == None)
+        .all()
+    )
+    return parse_obj_as(list[EventComments], comments)
+
+
+@event_router.post("/{lecturer_id}/comment/{id}/review", response_model=EventComments)
+async def http_review_comment(
+    id: int,
+    lecturer_id: int,
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+) -> EventComments:
+    comment = DbCommentEvent.get(id, session=db.session)
+    if comment.lecturer_id != lecturer_id or comment.approve_status is not None:
+        raise ObjectNotFound(DbCommentEvent, id)
+    DbCommentEvent.update(comment.id, approve_status=action, session=db.session)
+    if action == ApproveStatuses.DECLINED:
+        DbCommentEvent.delete(comment.id, session=db.session)
+    db.session.flush()
+    return CommentEventGet.from_orm(comment)

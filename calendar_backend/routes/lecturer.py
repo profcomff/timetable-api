@@ -1,8 +1,9 @@
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
+from pydantic import parse_obj_as
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import utils, auth
@@ -93,7 +94,12 @@ async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: in
 @lecturer_router.post("/{lecturer_id}/comment/", response_model=CommentLecturer)
 async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
     return CommentLecturer.from_orm(
-        DbCommentLecturer.create(lecturer_id=lecturer_id, session=db.session, **comment.dict(), approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else None)
+        DbCommentLecturer.create(
+            lecturer_id=lecturer_id,
+            session=db.session,
+            **comment.dict(),
+            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else None,
+        )
     )
 
 
@@ -157,3 +163,54 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
     if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbPhoto, id)
     return Photo.from_orm(photo)
+
+
+@lecturer_router.get("/{lecturer_id}/comment/review", response_model=list[LecturerComments])
+async def http_get_unreviewed_comments(lecturer_id: int) -> list[LecturerComments]:
+    comments = (
+        DbCommentLecturer.get_all(session=db.session)
+        .filter(DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == None)
+        .all()
+    )
+    return parse_obj_as(list[LecturerComments], comments)
+
+
+@lecturer_router.post("/{lecturer_id}/comment/{id}/review", response_model=CommentLecturer)
+async def http_review_comment(
+    id: int,
+    lecturer_id: int,
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+) -> CommentLecturer:
+    comment = DbCommentLecturer.get(id, session=db.session)
+    if comment.lecturer_id != lecturer_id or comment.approve_status is not None:
+        raise ObjectNotFound(DbCommentLecturer, id)
+    DbCommentLecturer.update(comment.id, approve_status=action, session=db.session)
+    if action == ApproveStatuses.DECLINED:
+        DbCommentLecturer.delete(comment.id, session=db.session)
+    db.session.flush()
+    return CommentLecturer.from_orm(comment)
+
+
+@lecturer_router.get("/{lecturer_id}/photo/review", response_model=list[Photo])
+async def http_get_unreviewed_photos(lecturer_id: int) -> list[Photo]:
+    photos = (
+        DbPhoto.get_all(session=db.session)
+        .filter(DbPhoto.lecturer_id == lecturer_id, DbPhoto.approve_status == None)
+        .all()
+    )
+    return parse_obj_as(list[Photo], photos)
+
+
+@lecturer_router.post("/{lecturer_id}/photo/{id}/review", response_model=Photo)
+async def http_review_comment(
+    id: int,
+    lecturer_id: int,
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+) -> Photo:
+    photo = DbPhoto.get(id, session=db.session)
+    if photo.lecturer_id != lecturer_id or photo.approve_status is not None:
+        raise ObjectNotFound(DbCommentLecturer, id)
+    DbPhoto.update(photo.id, approve_status=action, session=db.session)
+    if action == ApproveStatuses.DECLINED:
+        DbPhoto.delete(photo.id, session=db.session)
+    db.session.flush()
