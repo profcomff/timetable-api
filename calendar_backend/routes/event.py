@@ -167,24 +167,24 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
     return EventComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})
 
 
-@event_router.get("/{lecturer_id}/comment/review", response_model=list[CommentEventGet])
-async def http_get_unreviewed_comments(lecturer_id: int) -> list[CommentEventGet]:
+@event_router.get("/{event_id}/comment/review", response_model=list[CommentEventGet])
+async def http_get_unreviewed_comments(event_id: int) -> list[CommentEventGet]:
     comments = (
         DbCommentEvent.get_all(session=db.session)
-        .filter(DbCommentEvent.lecturer_id == lecturer_id, DbCommentEvent.approve_status == None)
+        .filter(DbCommentEvent.lecturer_id == event_id, DbCommentEvent.approve_status == None)
         .all()
     )
-    return parse_obj_as(list[EventComments], comments)
+    return parse_obj_as(list[CommentEventGet], comments)
 
 
-@event_router.post("/{lecturer_id}/comment/{id}/review", response_model=CommentEventGet)
+@event_router.post("/{event_id}/comment/{id}/review", response_model=CommentEventGet)
 async def http_review_comment(
     id: int,
-    lecturer_id: int,
+    event_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
 ) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
-    if comment.lecturer_id != lecturer_id or comment.approve_status is not None:
+    if comment.event_id != event_id or comment.approve_status is not None:
         raise ObjectNotFound(DbCommentEvent, id)
     DbCommentEvent.update(comment.id, approve_status=action, session=db.session)
     if action == ApproveStatuses.DECLINED:
