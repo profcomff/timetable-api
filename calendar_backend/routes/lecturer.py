@@ -1,18 +1,15 @@
-import datetime
 import logging
-from typing import Any, Union
+from typing import Any
 
 from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import utils, auth
-from calendar_backend.methods.utils import get_lecturer_lessons_in_daterange
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.models.db import Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import (
-    LecturerEvents,
     GetListLecturer,
     LecturerGet,
     LecturerPost,
@@ -31,19 +28,11 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@lecturer_router.get("/{id}", response_model=Union[LecturerEvents, LecturerGet])
+@lecturer_router.get("/{id}", response_model=LecturerGet)
 async def http_get_lecturer_by_id(
-    id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> LecturerEvents | LecturerGet:
-    lecturer = Lecturer.get(id, session=db.session)
-    lecturer.avatar_link = lecturer.avatar.link if lecturer.avatar else None
-    if start and end:
-        result = LecturerGet.from_orm(lecturer).dict()
-        events = await get_lecturer_lessons_in_daterange(lecturer, start, end)
-        result["events"] = events
-    else:
-        result = LecturerGet.from_orm(lecturer)
-    return result
+    id: int
+) -> LecturerGet:
+    return LecturerGet.from_orm(Lecturer.get(id, session=db.session))
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)

@@ -1,33 +1,22 @@
-import datetime
 import logging
-from typing import Any, Union
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend.methods.utils import get_room_lessons_in_daterange
+from calendar_backend.methods import auth
+from calendar_backend.models import Room
+from calendar_backend.routes.models import GetListRoom, RoomPost, RoomPatch, RoomGet
 from calendar_backend.settings import get_settings
-from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import RoomEvents, GetListRoom, RoomPost, RoomPatch, RoomGet
-from calendar_backend.models import Room, EventsRooms, Event
 
 room_router = APIRouter(prefix="/timetable/room", tags=["Room"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@room_router.get("/{id}", response_model=Union[RoomEvents, RoomGet])
+@room_router.get("/{id}", response_model=RoomGet)
 async def http_get_room_by_id(
-    id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> RoomEvents | RoomGet:
-    room = Room.get(id, session=db.session)
-    if start and end:
-        result = RoomGet.from_orm(room).dict()
-        events = await get_room_lessons_in_daterange(room, start, end)
-        result["events"] = events
-    else:
-        result = RoomGet.from_orm(room)
-    return result
+    id: int) -> RoomGet:
+    return RoomGet.from_orm(Room.get(id, session=db.session))
 
 
 @room_router.get("/", response_model=GetListRoom)

@@ -1,31 +1,23 @@
-import datetime
 import logging
-from typing import Any, Union
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend.settings import get_settings
 from calendar_backend.methods import utils, auth
-from calendar_backend.routes.models import GroupEvents, GroupGet, GroupPost, GroupPatch, GetListGroup
-from calendar_backend.models import Group, Event
+from calendar_backend.models import Group
+from calendar_backend.routes.models import GroupGet, GroupPost, GroupPatch, GetListGroup
+from calendar_backend.settings import get_settings
 
 group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-@group_router.get("/{id}", response_model=Union[GroupEvents, GroupGet])
+@group_router.get("/{id}", response_model=GroupGet)
 async def http_get_group_by_id(
-    id: int, start: datetime.date | None = None, end: datetime.date | None = None
-) -> GroupEvents:
-    group = Group.get(id, session=db.session)
-    if start and end:
-        result = GroupGet.from_orm(group).dict()
-        result["events"] = Event.get_all(session=db.session).filter(Event.start_ts >= start, Event.end_ts < end, Event.group_id == id).all()
-    else:
-        result = GroupGet.from_orm(group)
-    return result
+    id: int
+) -> GroupGet:
+    return GroupGet.from_orm(Group.get(id, session=db.session))
 
 
 @group_router.get("/", response_model=GetListGroup)
