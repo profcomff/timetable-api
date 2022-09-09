@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Literal
+from typing import Any, Literal, List
 
 from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
@@ -168,17 +168,18 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
     return Photo.from_orm(photo)
 
 
-@review_lecturer_router.get("/comment/review", response_model=list[LecturerComments])
-async def http_get_unreviewed_comments(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[LecturerComments]:
+@review_lecturer_router.get("/comment/review/", response_model=list[CommentLecturer])
+async def http_get_unreviewed_comments(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[
+    CommentLecturer]:
     comments = (
         DbCommentLecturer.get_all(session=db.session)
         .filter(DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == None)
         .all()
     )
-    return parse_obj_as(list[LecturerComments], comments)
+    return parse_obj_as(list[CommentLecturer], comments)
 
 
-@review_lecturer_router.post("/comment/{id}/review", response_model=CommentLecturer)
+@review_lecturer_router.post("/comment/{id}/review/", response_model=CommentLecturer)
 async def http_review_comment(
     id: int,
     lecturer_id: int,
@@ -194,7 +195,7 @@ async def http_review_comment(
     return CommentLecturer.from_orm(comment)
 
 
-@review_lecturer_router.get("/photo/review", response_model=list[Photo])
+@review_lecturer_router.get("/photo/review/", response_model=list[Photo])
 async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[Photo]:
     photos = (
         DbPhoto.get_all(session=db.session)
@@ -204,7 +205,7 @@ async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(au
     return parse_obj_as(list[Photo], photos)
 
 
-@review_lecturer_router.post("/photo/{id}/review", response_model=Photo)
+@review_lecturer_router.post("/photo/{id}/review/", response_model=Photo)
 async def http_review_photo(
     id: int,
     lecturer_id: int,
