@@ -169,7 +169,9 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
 
 
 @review_event_router.get("/comment/review", response_model=list[CommentEventGet])
-async def http_get_unreviewed_comments(event_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[CommentEventGet]:
+async def http_get_unreviewed_comments(
+    event_id: int, _: auth.User = Depends(auth.get_current_user)
+) -> list[CommentEventGet]:
     comments = (
         DbCommentEvent.get_all(session=db.session)
         .filter(DbCommentEvent.lecturer_id == event_id, DbCommentEvent.approve_status == None)
@@ -182,7 +184,8 @@ async def http_get_unreviewed_comments(event_id: int, _: auth.User = Depends(aut
 async def http_review_comment(
     id: int,
     event_id: int,
-    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED, _: auth.User = Depends(auth.get_current_user)
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+    _: auth.User = Depends(auth.get_current_user),
 ) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
     if comment.event_id != event_id or comment.approve_status is not None:
