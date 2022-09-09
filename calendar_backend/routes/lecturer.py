@@ -25,6 +25,7 @@ from calendar_backend.routes.models import (
 from calendar_backend.settings import get_settings
 
 lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
+review_lecturer_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Review"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,7 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
     return Photo.from_orm(photo)
 
 
-@lecturer_router.get("/{lecturer_id}/comment/review", response_model=list[LecturerComments], tags=["Review"])
+@review_lecturer_router.get("/comment/review", response_model=list[LecturerComments])
 async def http_get_unreviewed_comments(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[LecturerComments]:
     comments = (
         DbCommentLecturer.get_all(session=db.session)
@@ -177,7 +178,7 @@ async def http_get_unreviewed_comments(lecturer_id: int, _: auth.User = Depends(
     return parse_obj_as(list[LecturerComments], comments)
 
 
-@lecturer_router.post("/{lecturer_id}/comment/{id}/review", response_model=CommentLecturer, tags=["Review"])
+@review_lecturer_router.post("/comment/{id}/review", response_model=CommentLecturer)
 async def http_review_comment(
     id: int,
     lecturer_id: int,
@@ -193,7 +194,7 @@ async def http_review_comment(
     return CommentLecturer.from_orm(comment)
 
 
-@lecturer_router.get("/{lecturer_id}/photo/review", response_model=list[Photo], tags=["Review"])
+@review_lecturer_router.get("/photo/review", response_model=list[Photo])
 async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[Photo]:
     photos = (
         DbPhoto.get_all(session=db.session)
@@ -203,7 +204,7 @@ async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(au
     return parse_obj_as(list[Photo], photos)
 
 
-@lecturer_router.post("/{lecturer_id}/photo/{id}/review", response_model=Photo, tags=["Review"])
+@review_lecturer_router.post("/photo/{id}/review", response_model=Photo)
 async def http_review_photo(
     id: int,
     lecturer_id: int,

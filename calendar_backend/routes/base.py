@@ -15,10 +15,10 @@ from starlette.types import ASGIApp
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.settings import get_settings
 from .auth import auth_router
-from .event import event_router
+from .event import event_router, review_event_router
 from .gcal import gcal
 from .group import group_router
-from .lecturer import lecturer_router
+from .lecturer import lecturer_router, review_lecturer_router
 from .room import room_router
 
 settings = get_settings()
@@ -102,3 +102,5 @@ app.include_router(event_router)
 app.include_router(lecturer_router)
 app.include_router(group_router)
 app.include_router(auth_router)
+app.include_router(review_lecturer_router)
+app.include_router(review_event_router)

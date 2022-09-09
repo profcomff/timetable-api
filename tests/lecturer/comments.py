@@ -21,3 +21,10 @@ def test_patch(client_auth: TestClient, comment_path: str):
     response = client_auth.patch(comment_path, json=request)
     assert response.ok, response.json()
     assert response.json()["text"] == request["text"]
+
+
+def test_review(client_auth: TestClient, comment_path_no_review: str):
+    response = client_auth.get(comment_path_no_review)
+    assert response.status_code == 404
+
+

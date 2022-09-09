@@ -24,6 +24,7 @@ from calendar_backend.routes.models.event import (
 from calendar_backend.settings import get_settings
 
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
+review_event_router = APIRouter(prefix="/timetable/event/{event_id}", tags=["Review"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
@@ -167,7 +168,7 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
     return EventComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})
 
 
-@event_router.get("/{event_id}/comment/review", response_model=list[CommentEventGet], tags=["Review"])
+@review_event_router.get("/comment/review", response_model=list[CommentEventGet])
 async def http_get_unreviewed_comments(event_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[CommentEventGet]:
     comments = (
         DbCommentEvent.get_all(session=db.session)
@@ -177,7 +178,7 @@ async def http_get_unreviewed_comments(event_id: int, _: auth.User = Depends(aut
     return parse_obj_as(list[CommentEventGet], comments)
 
 
-@event_router.post("/{event_id}/comment/{id}/review", response_model=CommentEventGet, tags=["Review"])
+@review_event_router.post("/comment/{id}/review", response_model=CommentEventGet)
 async def http_review_comment(
     id: int,
     event_id: int,
