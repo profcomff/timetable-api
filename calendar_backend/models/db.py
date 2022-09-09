@@ -70,7 +70,7 @@ class Lecturer(BaseDbModel):
         back_populates="lecturer",
         foreign_keys="Photo.lecturer_id",
         order_by="Photo.id",
-        primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Photo.is_deleted))",
+        primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Photo.is_deleted), Photo.approve_status=='APPROVED')",
     )
     events: list[Event] = relationship(
         "Event",
@@ -83,7 +83,7 @@ class Lecturer(BaseDbModel):
         "CommentLecturer",
         back_populates="lecturer",
         foreign_keys="CommentLecturer.lecturer_id",
-        primaryjoin="and_(Lecturer.id==CommentLecturer.lecturer_id, not_(CommentLecturer.is_deleted))",
+        primaryjoin="and_(Lecturer.id==CommentLecturer.lecturer_id, not_(CommentLecturer.is_deleted), CommentLecturer.approve_status=='APPROVED')",
     )
 
     @hybrid_method
@@ -139,7 +139,7 @@ class Event(BaseDbModel):
         "CommentEvent",
         foreign_keys="CommentEvent.event_id",
         back_populates="event",
-        primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted))",
+        primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted), CommentEvent.approve_status=='APPROVED')",
     )
 
 

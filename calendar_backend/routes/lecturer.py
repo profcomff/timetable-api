@@ -204,7 +204,7 @@ async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(au
 
 
 @lecturer_router.post("/{lecturer_id}/photo/{id}/review", response_model=Photo, tags=["Review"])
-async def http_review_comment(
+async def http_review_photo(
     id: int,
     lecturer_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED, _: auth.User = Depends(auth.get_current_user)

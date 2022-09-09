@@ -94,6 +94,7 @@ def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: str
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
+    client_auth.post(f"{RESOURCE}/{id_}/review")
     yield RESOURCE + str(id_)
     response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
@@ -109,6 +110,7 @@ def comment_path_for_read_all(client_auth: TestClient, dbsession: Session, lectu
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
+    client_auth.post(f"{RESOURCE}/{id_}/review")
     yield RESOURCE
     response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
@@ -122,6 +124,8 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
+    response = client_auth.post(f"{RESOURCE}/{id_}/review")
+    assert response.ok
     yield RESOURCE + "/" + str(id_)
     response_model: CommentLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
