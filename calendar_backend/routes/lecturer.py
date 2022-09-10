@@ -109,6 +109,8 @@ async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: L
     comment = DbCommentLecturer.get(id=id, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
+    if comment.approve_status is not None:
+        raise ForbiddenAction(DbCommentLecturer, id)
     return CommentLecturer.from_orm(
         DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
     )

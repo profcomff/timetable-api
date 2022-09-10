@@ -1,4 +1,7 @@
+import pytest
 from fastapi.testclient import TestClient
+
+from calendar_backend.exceptions import ForbiddenAction
 
 
 def test_read_all(client_auth: TestClient, comment_event_path_for_read_all: str):
@@ -14,17 +17,21 @@ def test_delete(client_auth: TestClient, comment_event_path: str):
     assert response.ok, response.json()
 
 
-def test_patch(client_auth: TestClient, comment_event_path: str):
+def test_patch(client_auth: TestClient, comment_event_path: str, comment_path_no_review: str):
     request = {
         "text": "Не очень умный коммент",
     }
-    response = client_auth.patch(comment_event_path, json=request)
+    with pytest.raises(ForbiddenAction):
+        client_auth.patch(comment_event_path, json=request)
+
+    response = client_auth.patch(comment_path_no_review, json=request)
     assert response.ok, response.json()
     assert response.json()["text"] == request["text"]
 
 
-def test_review(client_auth: TestClient, comment_event_path_no_review: str):
-    response = client_auth.get(comment_event_path_no_review)
+
+def test_review(client_auth: TestClient, comment_event_path_declined_review):
+    response = client_auth.get(comment_event_path_declined_review)
     assert response.status_code == 404
 
 

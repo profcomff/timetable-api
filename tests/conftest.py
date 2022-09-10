@@ -94,11 +94,27 @@ def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: str
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
-    response = client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Approved"})
+    client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Approved"})
     yield RESOURCE + str(id_)
     response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
+
+@pytest.fixture()
+def comment_path_declined_review(client_auth: TestClient, dbsession: Session, lecturer_path: str):
+    RESOURCE = f"{lecturer_path}/comment/"
+    request_obj = {
+        "author_name": "Аноним",
+        "text": "Очень умный коммент",
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    id_ = response.json()["id"]
+    client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Declined"})
+    yield RESOURCE + str(id_)
+    response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
 
 @pytest.fixture()
 def comment_path_no_review(client_auth: TestClient, dbsession: Session, lecturer_path: str):
@@ -109,7 +125,6 @@ def comment_path_no_review(client_auth: TestClient, dbsession: Session, lecturer
     }
     response = client_auth.post(RESOURCE, json=request_obj)
     id_ = response.json()["id"]
-    client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Declined"})
     yield RESOURCE + str(id_)
     response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
     dbsession.delete(response_model)
@@ -139,8 +154,7 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    response = client_auth.post(f"{RESOURCE}/{id_}/review/", params={"action": "Approved"})
-    assert response.ok
+    client_auth.post(f"{RESOURCE}/{id_}/review/", params={"action": "Approved"})
     yield RESOURCE + "/" + str(id_)
     response_model: CommentLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
@@ -166,7 +180,6 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
         "end_ts": "2022-08-26T22:32:38.575Z"
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
     id_ = response.json()["id"]
     yield RESOURCE + str(id_)
     response_model = dbsession.query(Event).get(id_)
@@ -191,6 +204,21 @@ def comment_event_path(client_auth: TestClient, dbsession: Session, event_path: 
 
 @pytest.fixture()
 def comment_event_path_no_review(client_auth: TestClient, dbsession: Session, event_path: str):
+    RESOURCE = f"{event_path}/comment/"
+    request_obj = {
+        "author_name": "Аноним",
+        "text": "Очень умный коммент",
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    id_ = response.json()["id"]
+    yield RESOURCE + str(id_)
+    response_model: CommentEvent = dbsession.query(CommentEvent).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
+
+@pytest.fixture()
+def comment_event_path_declined_review(client_auth: TestClient, dbsession: Session, event_path: str):
     RESOURCE = f"{event_path}/comment/"
     request_obj = {
         "author_name": "Аноним",
