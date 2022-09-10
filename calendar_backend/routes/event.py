@@ -116,7 +116,7 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
     Event.delete(id, session=db.session)
 
 
-@event_router.post("/{id}/comment", response_model=CommentEventGet)
+@event_router.post("/{id}/comment/", response_model=CommentEventGet)
 async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
     return CommentEventGet.from_orm(
         DbCommentEvent.create(
@@ -148,7 +148,7 @@ async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
     return CommentEventGet.from_orm(comment)
 
 
-@event_router.delete("/{id}/comment", response_model=None)
+@event_router.delete("/{event_id}/comment/{id}", response_model=None)
 async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentEvent.get(id, session=db.session)
     if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
@@ -156,7 +156,7 @@ async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(aut
     return DbCommentEvent.delete(id=id, session=db.session)
 
 
-@event_router.get("/{event_id}/comment", response_model=EventComments)
+@event_router.get("/{event_id}/comment/", response_model=EventComments)
 async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
     res = DbCommentEvent.get_all(session=db.session).filter(
         DbCommentEvent.event_id == event_id, DbCommentEvent.approve_status == ApproveStatuses.APPROVED
@@ -168,7 +168,7 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
     return EventComments(**{"items": res, "limit": limit, "offset": offset, "total": cnt})
 
 
-@review_event_router.get("/comment/review", response_model=list[CommentEventGet])
+@review_event_router.get("/comment/review/", response_model=list[CommentEventGet])
 async def http_get_unreviewed_comments(
     event_id: int, _: auth.User = Depends(auth.get_current_user)
 ) -> list[CommentEventGet]:
@@ -180,7 +180,7 @@ async def http_get_unreviewed_comments(
     return parse_obj_as(list[CommentEventGet], comments)
 
 
-@review_event_router.post("/comment/{id}/review", response_model=CommentEventGet)
+@review_event_router.post("/comment/{id}/review/", response_model=CommentEventGet)
 async def http_review_comment(
     id: int,
     event_id: int,

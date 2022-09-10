@@ -60,8 +60,8 @@ class EventCommentPost(Base):
 
 
 class EventCommentPatch(Base):
-    text: str
-    author_name: str
+    text: str | None
+    author_name: str | None
 
 
 class EventComments(Base):

@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from calendar_backend.models.base import DeclarativeBase
-from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room
+from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room, CommentEvent
 from calendar_backend.routes import app
 from calendar_backend.settings import get_settings
 
@@ -168,7 +168,55 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield RESOURCE + "/" + str(id_)
+    yield RESOURCE + str(id_)
     response_model = dbsession.query(Event).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
+
+@pytest.fixture()
+def comment_event_path(client_auth: TestClient, dbsession: Session, event_path: str):
+    RESOURCE = f"{event_path}/comment/"
+    request_obj = {
+        "author_name": "Аноним",
+        "text": "Очень умный коммент",
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    id_ = response.json()["id"]
+    client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Approved"})
+    yield RESOURCE + str(id_)
+    response_model: CommentEvent = dbsession.query(CommentEvent).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
+@pytest.fixture()
+def comment_event_path_no_review(client_auth: TestClient, dbsession: Session, event_path: str):
+    RESOURCE = f"{event_path}/comment/"
+    request_obj = {
+        "author_name": "Аноним",
+        "text": "Очень умный коммент",
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    id_ = response.json()["id"]
+    client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Declined"})
+    yield RESOURCE + str(id_)
+    response_model: CommentEvent = dbsession.query(CommentEvent).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
+
+
+
+@pytest.fixture()
+def comment_event_path_for_read_all(client_auth: TestClient, dbsession: Session, event_path: str):
+    RESOURCE = f"{event_path}/comment/"
+    request_obj = {
+        "author_name": "Аноним",
+        "text": "Очень умный коммент",
+    }
+    response = client_auth.post(RESOURCE, json=request_obj)
+    id_ = response.json()["id"]
+    client_auth.post(f"{RESOURCE}{id_}/review/", params={"action": "Approved"})
+    yield RESOURCE
+    response_model: CommentEvent = dbsession.query(CommentEvent).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
