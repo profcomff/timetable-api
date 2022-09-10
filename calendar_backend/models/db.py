@@ -12,7 +12,8 @@ from sqlalchemy import and_, or_
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 
-from .base import BaseDbModel
+
+from .base import BaseDbModel, ApproveStatuses
 
 
 class Credentials(BaseDbModel):
@@ -32,9 +33,6 @@ class Direction(str, Enum):
     SOUTH: str = "South"
 
 
-class ApproveStatuses(str, Enum):
-    APPROVED: str = "Approved"
-    DECLINED: str = "Declined"
 
 
 class Room(BaseDbModel):

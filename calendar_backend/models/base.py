@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from enum import Enum
 
 from sqlalchemy import Column, Integer, and_, not_
 from sqlalchemy.exc import NoResultFound
@@ -9,6 +10,10 @@ from sqlalchemy.orm import Query, RelationshipProperty, Session
 
 from calendar_backend.exceptions import ObjectNotFound
 
+
+class ApproveStatuses(str, Enum):
+    APPROVED: str = "Approved"
+    DECLINED: str = "Declined"
 
 @as_declarative()
 class DeclarativeBase:
@@ -40,19 +45,27 @@ class BaseDbModel(DeclarativeBase):
         return obj
 
     @classmethod
-    def get_all(cls, *, with_deleted: bool = False, session: Session) -> Query:
+    def get_all(cls, *, with_deleted: bool = False, with_pending: bool, with_declined: bool, session: Session) -> Query:
         """Get all objects with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
             objs = objs.filter(not_(cls.is_deleted))
+        if not with_pending and hasattr(cls, "approve_status"):
+            objs = objs.filter(cls.approve_status != None)
+        if not with_declined and hasattr(cls, "approve_status"):
+            objs = objs.filter(cls.approve_status != ApproveStatuses.DECLINED)
         return objs
 
     @classmethod
-    def get(cls, id: int, *, with_deleted=False, session: Session) -> BaseDbModel:
+    def get(cls, id: int, *, with_deleted=False, with_pending: bool, with_declined: bool, session: Session) -> BaseDbModel:
         """Get object with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
             objs = objs.filter(not_(cls.is_deleted))
+        if not with_pending and hasattr(cls, "approve_status"):
+            objs = objs.filter(cls.approve_status != None)
+        if not with_declined and hasattr(cls, "approve_status"):
+            objs = objs.filter(cls.approve_status != ApproveStatuses.DECLINED)
         try:
             return objs.filter(cls.id == id).one()
         except NoResultFound:
