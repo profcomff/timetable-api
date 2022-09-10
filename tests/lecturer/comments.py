@@ -29,9 +29,6 @@ def test_patch(client_auth: TestClient, comment_path: str, comment_path_no_revie
     assert response.json()["text"] == request["text"]
 
 
-
 def test_review(client_auth: TestClient, comment_path_declined_review):
     response = client_auth.get(comment_path_declined_review)
     assert response.status_code == 404
-
-
