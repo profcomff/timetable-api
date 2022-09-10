@@ -12,7 +12,7 @@ from starlette.responses import Response
 from fastapi.staticfiles import StaticFiles
 from starlette.types import ASGIApp
 
-from calendar_backend.exceptions import ObjectNotFound
+from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction
 from calendar_backend.settings import get_settings
 from .auth import auth_router
 from .event import event_router, review_event_router
@@ -51,6 +51,11 @@ create_room = requests.post(
 @app.exception_handler(ObjectNotFound)
 async def not_found_error(request: starlette.requests.Request, exc: ObjectNotFound):
     return JSONResponse({"error": exc.args[0], "request": request.path_params}, status_code=404)
+
+
+@app.exception_handler(ForbiddenAction)
+async def not_found_error(request: starlette.requests.Request, exc: ForbiddenAction):
+    return JSONResponse({"error": exc.args[0], "request": request.path_params}, status_code=403)
 
 
 @app.exception_handler(ValueError)
