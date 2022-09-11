@@ -120,7 +120,7 @@ async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: L
 async def http_set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerGet:
     photo = DbPhoto.get(lecturer_id, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
-        raise ObjectNotFound(DbPhoto, id)
+        raise ObjectNotFound(DbPhoto, lecturer_id)
     return LecturerGet.from_orm(await utils.set_lecturer_avatar(lecturer_id, photo_id, db.session))
 
 
