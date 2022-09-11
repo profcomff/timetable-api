@@ -45,7 +45,7 @@ class BaseDbModel(DeclarativeBase):
         return obj
 
     @classmethod
-    def get_all(cls, *, with_deleted: bool = False, with_pending: bool, with_declined: bool, session: Session) -> Query:
+    def get_all(cls, *, with_deleted: bool = False, with_pending: bool = False, with_declined: bool = False, session: Session) -> Query:
         """Get all objects with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
@@ -57,7 +57,7 @@ class BaseDbModel(DeclarativeBase):
         return objs
 
     @classmethod
-    def get(cls, id: int, *, with_deleted=False, with_pending: bool, with_declined: bool, session: Session) -> BaseDbModel:
+    def get(cls, id: int, *, with_deleted=False, with_pending: bool = False, with_declined: bool = False, session: Session) -> BaseDbModel:
         """Get object with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
