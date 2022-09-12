@@ -123,17 +123,17 @@ async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEvent
             event_id=id,
             session=db.session,
             **comment.dict(),
-            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else None,
+            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING,
         )
     )
 
 
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
 async def http_update_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
-    comment = DbCommentEvent.get(id, session=db.session)
+    comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id:
         raise ObjectNotFound(DbCommentEvent, id)
-    if comment.approve_status is not None:
+    if comment.approve_status is not ApproveStatuses.PENDING:
         raise ForbiddenAction(DbCommentEvent, id)
     return CommentEventGet.from_orm(
         DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
@@ -150,7 +150,7 @@ async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
 
 @event_router.delete("/{event_id}/comment/{id}", response_model=None)
 async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
-    comment = DbCommentEvent.get(id, session=db.session)
+    comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
     return DbCommentEvent.delete(id=id, session=db.session)
@@ -159,7 +159,7 @@ async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(aut
 @event_router.get("/{event_id}/comment/", response_model=EventComments)
 async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
     res = DbCommentEvent.get_all(session=db.session).filter(
-        DbCommentEvent.event_id == event_id, DbCommentEvent.approve_status == ApproveStatuses.APPROVED
+        DbCommentEvent.event_id == event_id
     )
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -173,8 +173,8 @@ async def http_get_unreviewed_comments(
     event_id: int, _: auth.User = Depends(auth.get_current_user)
 ) -> list[CommentEventGet]:
     comments = (
-        DbCommentEvent.get_all(session=db.session)
-        .filter(DbCommentEvent.lecturer_id == event_id, DbCommentEvent.approve_status == None)
+        DbCommentEvent.get_all(session=db.session, only_approved=False)
+        .filter(DbCommentEvent.lecturer_id == event_id, DbCommentEvent.approve_status == ApproveStatuses.PENDING)
         .all()
     )
     return parse_obj_as(list[CommentEventGet], comments)
@@ -187,8 +187,8 @@ async def http_review_comment(
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
     _: auth.User = Depends(auth.get_current_user),
 ) -> CommentEventGet:
-    comment = DbCommentEvent.get(id, session=db.session)
-    if comment.event_id != event_id or comment.approve_status is not None:
+    comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
+    if comment.event_id != event_id or comment.approve_status is not ApproveStatuses.PENDING:
         raise ObjectNotFound(DbCommentEvent, id)
     DbCommentEvent.update(comment.id, approve_status=action, session=db.session)
     if action == ApproveStatuses.DECLINED:

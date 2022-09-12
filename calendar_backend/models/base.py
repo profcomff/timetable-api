@@ -14,6 +14,7 @@ from calendar_backend.exceptions import ObjectNotFound
 class ApproveStatuses(str, Enum):
     APPROVED: str = "Approved"
     DECLINED: str = "Declined"
+    PENDING: str = "Pending"
 
 @as_declarative()
 class DeclarativeBase:
@@ -45,27 +46,23 @@ class BaseDbModel(DeclarativeBase):
         return obj
 
     @classmethod
-    def get_all(cls, *, with_deleted: bool = False, with_pending: bool = False, with_declined: bool = False, session: Session) -> Query:
+    def get_all(cls, *, with_deleted: bool = False, only_approved: bool = True, session: Session) -> Query:
         """Get all objects with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
             objs = objs.filter(not_(cls.is_deleted))
-        if not with_pending and hasattr(cls, "approve_status"):
-            objs = objs.filter(cls.approve_status != None)
-        if not with_declined and hasattr(cls, "approve_status"):
-            objs = objs.filter(cls.approve_status != ApproveStatuses.DECLINED)
+        if only_approved and hasattr(cls, "approve_status"):
+            objs = objs.filter(cls.approve_status == ApproveStatuses.APPROVED)
         return objs
 
     @classmethod
-    def get(cls, id: int, *, with_deleted=False, with_pending: bool = False, with_declined: bool = False, session: Session) -> BaseDbModel:
+    def get(cls, id: int, *, with_deleted=False, only_approved: bool = True, session: Session) -> BaseDbModel:
         """Get object with soft deletes"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
             objs = objs.filter(not_(cls.is_deleted))
-        if not with_pending and hasattr(cls, "approve_status"):
-            objs = objs.filter(cls.approve_status != None)
-        if not with_declined and hasattr(cls, "approve_status"):
-            objs = objs.filter(cls.approve_status != ApproveStatuses.DECLINED)
+        if only_approved and hasattr(cls, "approve_status"):
+            objs = objs.filter(cls.approve_status == ApproveStatuses.APPROVED)
         try:
             return objs.filter(cls.id == id).one()
         except NoResultFound:
@@ -73,7 +70,7 @@ class BaseDbModel(DeclarativeBase):
 
     @classmethod
     def update(cls, id: int, *, session: Session, **kwargs) -> BaseDbModel:
-        obj: cls = cls.get(id, session=session)
+        obj: cls = cls.get(id, only_approved=False, session=session)
         for k, v in kwargs.items():
             setattr(obj, k, v)
         session.flush()
@@ -82,7 +79,7 @@ class BaseDbModel(DeclarativeBase):
     @classmethod
     def delete(cls, id: int, *, session: Session) -> None:
         """Soft delete object if possible, else hard delete"""
-        obj = cls.get(id, session=session)
+        obj = cls.get(id, only_approved=False, session=session)
         if hasattr(obj, "is_deleted"):
             obj.is_deleted = True
         else:

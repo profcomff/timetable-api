@@ -83,7 +83,7 @@ async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> 
 @lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
 async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
     res = DbPhoto.get_all(session=db.session).filter(
-        DbPhoto.lecturer_id == lecturer_id, DbPhoto.approve_status == ApproveStatuses.APPROVED
+        DbPhoto.lecturer_id == lecturer_id
     )
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -99,17 +99,17 @@ async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) 
             lecturer_id=lecturer_id,
             session=db.session,
             **comment.dict(),
-            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else None,
+            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else ApproveStatuses.PENDING,
         )
     )
 
 
 @lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
 async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
-    comment = DbCommentLecturer.get(id=id, session=db.session)
+    comment = DbCommentLecturer.get(id=id, only_approved=False, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
-    if comment.approve_status is not None:
+    if comment.approve_status is not ApproveStatuses.PENDING:
         raise ForbiddenAction(DbCommentLecturer, id)
     return CommentLecturer.from_orm(
         DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
@@ -126,7 +126,7 @@ async def http_set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerG
 
 @lecturer_router.delete("/{lecturer_id}/comment/{id}", response_model=None)
 async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
-    comment = DbCommentLecturer.get(id, session=db.session)
+    comment = DbCommentLecturer.get(id, only_approved=False, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
     return DbCommentLecturer.delete(id=id, session=db.session)
@@ -144,7 +144,7 @@ async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
 
 @lecturer_router.delete("/{lecturer_id}/photo/{id}", response_model=None)
 async def http_delete_photo(id: int, lecturer_id: int) -> None:
-    photo = DbPhoto.get(id, session=db.session)
+    photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
     return DbPhoto.delete(id=id, session=db.session)
@@ -153,7 +153,7 @@ async def http_delete_photo(id: int, lecturer_id: int) -> None:
 @lecturer_router.get("/{lecturer_id}/comment/", response_model=LecturerComments)
 async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
     res = DbCommentLecturer.get_all(session=db.session).filter(
-        DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == ApproveStatuses.APPROVED
+        DbCommentLecturer.lecturer_id == lecturer_id
     )
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -175,8 +175,8 @@ async def http_get_unreviewed_comments(
     lecturer_id: int, _: auth.User = Depends(auth.get_current_user)
 ) -> list[CommentLecturer]:
     comments = (
-        DbCommentLecturer.get_all(session=db.session)
-        .filter(DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == None)
+        DbCommentLecturer.get_all(session=db.session, only_approved=False)
+        .filter(DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == ApproveStatuses.PENDING)
         .all()
     )
     return parse_obj_as(list[CommentLecturer], comments)
@@ -189,8 +189,8 @@ async def http_review_comment(
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
     _: auth.User = Depends(auth.get_current_user),
 ) -> CommentLecturer:
-    comment = DbCommentLecturer.get(id, session=db.session)
-    if comment.lecturer_id != lecturer_id or comment.approve_status is not None:
+    comment = DbCommentLecturer.get(id, only_approved=False, session=db.session)
+    if comment.lecturer_id != lecturer_id or comment.approve_status is not ApproveStatuses.PENDING:
         raise ObjectNotFound(DbCommentLecturer, id)
     DbCommentLecturer.update(comment.id, approve_status=action, session=db.session)
     if action == ApproveStatuses.DECLINED:
@@ -202,8 +202,8 @@ async def http_review_comment(
 @review_lecturer_router.get("/photo/review/", response_model=list[Photo])
 async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[Photo]:
     photos = (
-        DbPhoto.get_all(session=db.session)
-        .filter(DbPhoto.lecturer_id == lecturer_id, DbPhoto.approve_status == None)
+        DbPhoto.get_all(session=db.session, only_approved=False)
+        .filter(DbPhoto.lecturer_id == lecturer_id, DbPhoto.approve_status == ApproveStatuses.PENDING)
         .all()
     )
     return parse_obj_as(list[Photo], photos)
@@ -216,9 +216,9 @@ async def http_review_photo(
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
     _: auth.User = Depends(auth.get_current_user),
 ) -> Photo:
-    photo = DbPhoto.get(id, session=db.session)
-    if photo.lecturer_id != lecturer_id or photo.approve_status is not None:
-        raise ObjectNotFound(DbCommentLecturer, id)
+    photo = DbPhoto.get(id, only_approved=False, session=db.session)
+    if photo.lecturer_id != lecturer_id or photo.approve_status is not ApproveStatuses.PENDING:
+        raise ObjectNotFound(DbPhoto, id)
     DbPhoto.update(photo.id, approve_status=action, session=db.session)
     if action == ApproveStatuses.DECLINED:
         DbPhoto.delete(photo.id, session=db.session)

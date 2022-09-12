@@ -94,7 +94,8 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
-    client_auth.post(f"{RESOURCE}/{id_}/review/", params={"action": "Approved"})
+    responfffse = client_auth.post(f"{RESOURCE}/{id_}/review/", params={"action": "Approved"})
+    assert responfffse.ok
     yield RESOURCE + "/" + str(id_)
     response_model: CommentLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)

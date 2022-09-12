@@ -92,7 +92,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         photo = Photo(
             lecturer_id=lecturer_id,
             link=path,
-            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_PHOTOS else None,
+            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_PHOTOS else ApproveStatuses.PENDING,
         )
         session.add(photo)
         session.flush()
