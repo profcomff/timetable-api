@@ -86,7 +86,6 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
     dbsession.commit()
 
 
-
 @pytest.fixture()
 def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
     RESOURCE = f"{lecturer_path}/photo"
@@ -122,5 +121,3 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
     response_model = dbsession.query(Event).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
-
-

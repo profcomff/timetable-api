@@ -123,7 +123,9 @@ async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEvent
             event_id=id,
             session=db.session,
             **comment.dict(),
-            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING,
+            approve_status=ApproveStatuses.APPROVED
+            if not settings.REQUIRE_REVIEW_EVENT_COMMENT
+            else ApproveStatuses.PENDING,
         )
     )
 
@@ -158,9 +160,7 @@ async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(aut
 
 @event_router.get("/{event_id}/comment/", response_model=EventComments)
 async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
-    res = DbCommentEvent.get_all(session=db.session).filter(
-        DbCommentEvent.event_id == event_id
-    )
+    res = DbCommentEvent.get_all(session=db.session).filter(DbCommentEvent.event_id == event_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:

@@ -82,9 +82,7 @@ async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> 
 
 @lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
 async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
-    res = DbPhoto.get_all(session=db.session).filter(
-        DbPhoto.lecturer_id == lecturer_id
-    )
+    res = DbPhoto.get_all(session=db.session).filter(DbPhoto.lecturer_id == lecturer_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
@@ -99,7 +97,9 @@ async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) 
             lecturer_id=lecturer_id,
             session=db.session,
             **comment.dict(),
-            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else ApproveStatuses.PENDING,
+            approve_status=ApproveStatuses.APPROVED
+            if not settings.REQUIRE_REVIEW_LECTURER_COMMENT
+            else ApproveStatuses.PENDING,
         )
     )
 
@@ -152,9 +152,7 @@ async def http_delete_photo(id: int, lecturer_id: int) -> None:
 
 @lecturer_router.get("/{lecturer_id}/comment/", response_model=LecturerComments)
 async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
-    res = DbCommentLecturer.get_all(session=db.session).filter(
-        DbCommentLecturer.lecturer_id == lecturer_id
-    )
+    res = DbCommentLecturer.get_all(session=db.session).filter(DbCommentLecturer.lecturer_id == lecturer_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
     else:
@@ -176,7 +174,9 @@ async def http_get_unreviewed_comments(
 ) -> list[CommentLecturer]:
     comments = (
         DbCommentLecturer.get_all(session=db.session, only_approved=False)
-        .filter(DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == ApproveStatuses.PENDING)
+        .filter(
+            DbCommentLecturer.lecturer_id == lecturer_id, DbCommentLecturer.approve_status == ApproveStatuses.PENDING
+        )
         .all()
     )
     return parse_obj_as(list[CommentLecturer], comments)

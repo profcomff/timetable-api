@@ -33,8 +33,6 @@ class Direction(str, Enum):
     SOUTH: str = "South"
 
 
-
-
 class Room(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)

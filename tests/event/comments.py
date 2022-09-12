@@ -20,7 +20,6 @@ def comment_event_path_no_review(client_auth: TestClient, dbsession: Session, ev
     dbsession.commit()
 
 
-
 @pytest.fixture()
 def comment_event_path_for_read_all(client_auth: TestClient, dbsession: Session, event_path: str):
     RESOURCE = f"{event_path}/comment/"

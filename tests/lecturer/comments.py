@@ -35,6 +35,7 @@ def comment_path_for_read_all(client_auth: TestClient, dbsession: Session, lectu
     dbsession.delete(response_model)
     dbsession.commit()
 
+
 def test_read_all(client_auth: TestClient, comment_path_for_read_all: str):
     response = client_auth.get(comment_path_for_read_all, params={"limit": 10})
     assert response.ok, response.json()

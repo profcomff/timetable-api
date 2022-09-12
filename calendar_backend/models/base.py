@@ -16,6 +16,7 @@ class ApproveStatuses(str, Enum):
     DECLINED: str = "Declined"
     PENDING: str = "Pending"
 
+
 @as_declarative()
 class DeclarativeBase:
     """Base class for all database entities"""
