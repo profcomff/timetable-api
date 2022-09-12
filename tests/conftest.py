@@ -1,5 +1,5 @@
-from datetime import datetime
 import os.path
+from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from calendar_backend.models.base import DeclarativeBase
-from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room, CommentEvent
+from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room
 from calendar_backend.routes import app
 from calendar_backend.settings import get_settings
 

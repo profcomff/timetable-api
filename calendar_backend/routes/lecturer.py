@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Literal, List
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, UploadFile, File
 from fastapi_sqlalchemy import db
