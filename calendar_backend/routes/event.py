@@ -120,12 +120,7 @@ async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_use
 async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
     approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING
     return CommentEventGet.from_orm(
-        DbCommentEvent.create(
-            event_id=id,
-            session=db.session,
-            **comment.dict(),
-            approve_status=approve_status
-        )
+        DbCommentEvent.create(event_id=id, session=db.session, **comment.dict(), approve_status=approve_status)
     )
 
 

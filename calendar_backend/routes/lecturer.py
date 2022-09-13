@@ -92,7 +92,9 @@ async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: in
 
 @lecturer_router.post("/{lecturer_id}/comment/", response_model=CommentLecturer)
 async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
-    approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else ApproveStatuses.PENDING
+    approve_status = (
+        ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else ApproveStatuses.PENDING
+    )
     return CommentLecturer.from_orm(
         DbCommentLecturer.create(
             lecturer_id=lecturer_id,
