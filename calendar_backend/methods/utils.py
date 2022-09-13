@@ -89,10 +89,11 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
+        approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_PHOTOS else ApproveStatuses.PENDING
         photo = Photo(
             lecturer_id=lecturer_id,
             link=path,
-            approve_status=ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_PHOTOS else ApproveStatuses.PENDING,
+            approve_status=approve_status,
         )
         session.add(photo)
         session.flush()
