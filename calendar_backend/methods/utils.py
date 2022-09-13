@@ -7,7 +7,16 @@ import aiofiles
 from fastapi import File, UploadFile
 from sqlalchemy.orm import Session
 
-from calendar_backend.models.db import Event, Group, Lecturer, Photo, Room, EventsRooms, EventsLecturers
+from calendar_backend.models.db import (
+    Event,
+    Group,
+    Lecturer,
+    Photo,
+    Room,
+    EventsRooms,
+    EventsLecturers,
+    ApproveStatuses,
+)
 from calendar_backend.settings import get_settings
 
 settings = get_settings()
@@ -44,9 +53,7 @@ async def get_group_lessons_in_daterange(
     return events_list
 
 
-async def get_room_lessons_in_daterange(
-    room: Room, date_start: datetime.date, date_end: datetime.date
-) -> list[Event]:
+async def get_room_lessons_in_daterange(room: Room, date_start: datetime.date, date_end: datetime.date) -> list[Event]:
     events_list = []
     for lesson in room.events:
         if lesson.start_ts.date() >= date_start and lesson.end_ts.date() < date_end:
@@ -82,7 +89,12 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
-        photo = Photo(lecturer_id=lecturer_id, link=path)
+        approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_PHOTOS else ApproveStatuses.PENDING
+        photo = Photo(
+            lecturer_id=lecturer_id,
+            link=path,
+            approve_status=approve_status,
+        )
         session.add(photo)
         session.flush()
     return photo

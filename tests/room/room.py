@@ -8,10 +8,7 @@ RESOURCE = "/timetable/room/"
 
 
 def test_create(client_auth: TestClient, dbsession: Session):
-    request_obj = {
-        "name": "5-02" + datetime.datetime.utcnow().isoformat(),
-        "direction": "North"
-    }
+    request_obj = {"name": "5-02" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     response_obj = response.json()
@@ -24,10 +21,7 @@ def test_create(client_auth: TestClient, dbsession: Session):
 
 def test_read(client_auth: TestClient, dbsession: Session):
     # Create
-    request_obj = {
-        "name": "5-02" + datetime.datetime.utcnow().isoformat(),
-        "direction": "North"
-    }
+    request_obj = {"name": "5-02" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     response_obj = response.json()
@@ -54,10 +48,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
 
 def test_delete(client_auth: TestClient, dbsession: Session):
     # Create
-    request_obj = {
-        "name": "5-02" + datetime.datetime.utcnow().isoformat(),
-        "direction": "North"
-    }
+    request_obj = {"name": "5-02" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     response_obj = response.json()
@@ -97,10 +88,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
 def test_update_all(client_auth: TestClient, dbsession: Session):
     # Create
-    request_obj = {
-        "name": "" + datetime.datetime.utcnow().isoformat(),
-        "direction": "North"
-    }
+    request_obj = {"name": "" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.ok, response.json()
     response_obj = response.json()
@@ -109,19 +97,16 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE+f"{id_}/")
+    response = client_auth.get(RESOURCE + f"{id_}/")
     assert response.ok, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
 
     # Update
-    request_obj_2 = {
-        "name": "" + datetime.datetime.utcnow().isoformat(),
-        "direction": "North"
-    }
-    client_auth.patch(RESOURCE+f"{id_}", json=request_obj_2)
-    response = client_auth.get(RESOURCE+f"{id_}")
+    request_obj_2 = {"name": "" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
+    client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
+    response = client_auth.get(RESOURCE + f"{id_}")
     assert response.ok, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj_2["name"]

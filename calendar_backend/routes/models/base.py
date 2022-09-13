@@ -19,7 +19,7 @@ class CommentLecturer(Base):
 
 class CommentEventGet(Base):
     id: int
-    lesson_id: int
+    event_id: int
     text: str
     author_name: str
     create_ts: datetime.datetime

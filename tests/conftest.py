@@ -1,5 +1,5 @@
-from datetime import datetime
 import os.path
+from datetime import datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -85,35 +85,6 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
     dbsession.delete(response_model)
     dbsession.commit()
 
-@pytest.fixture()
-def comment_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
-    RESOURCE = f"{lecturer_path}/comment/"
-    request_obj = {
-        "author_name": "Аноним",
-        "text": "Очень умный коммент",
-    }
-    response = client_auth.post(RESOURCE, json=request_obj)
-    id_ = response.json()["id"]
-    yield RESOURCE + str(id_)
-    response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
-
-
-@pytest.fixture()
-def comment_path_for_read_all(client_auth: TestClient, dbsession: Session, lecturer_path: str):
-    RESOURCE = f"{lecturer_path}/comment/"
-    request_obj = {
-        "author_name": "Аноним",
-        "text": "Очень умный коммент",
-    }
-    response = client_auth.post(RESOURCE, json=request_obj)
-    id_ = response.json()["id"]
-    yield RESOURCE
-    response_model: CommentLecturer = dbsession.query(CommentLecturer).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
-
 
 @pytest.fixture()
 def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
@@ -122,6 +93,8 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.ok, response.json()
     id_ = response.json()["id"]
+    responfffse = client_auth.post(f"{RESOURCE}/{id_}/review/", params={"action": "Approved"})
+    assert responfffse.ok
     yield RESOURCE + "/" + str(id_)
     response_model: CommentLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
@@ -136,20 +109,15 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
     lecturer_id = int(lecturer_path.split("/")[-1])
     request_obj = {
         "name": "string",
-        "room_id": [
-            room_id
-        ],
+        "room_id": [room_id],
         "group_id": group_id,
-        "lecturer_id": [
-            lecturer_id
-        ],
+        "lecturer_id": [lecturer_id],
         "start_ts": "2022-08-26T22:32:38.575Z",
-        "end_ts": "2022-08-26T22:32:38.575Z"
+        "end_ts": "2022-08-26T22:32:38.575Z",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
     id_ = response.json()["id"]
-    yield RESOURCE + "/" + str(id_)
+    yield RESOURCE + str(id_)
     response_model = dbsession.query(Event).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()

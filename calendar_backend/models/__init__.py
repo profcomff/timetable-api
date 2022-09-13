@@ -9,6 +9,7 @@ from .db import (
     CommentLecturer,
     EventsLecturers,
     EventsRooms,
+    ApproveStatuses,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "CommentLecturer",
     "EventsLecturers",
     "EventsRooms",
+    "ApproveStatuses",
 ]

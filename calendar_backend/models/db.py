@@ -12,7 +12,8 @@ from sqlalchemy import and_, or_
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
 
-from .base import BaseDbModel
+
+from .base import BaseDbModel, ApproveStatuses
 
 
 class Credentials(BaseDbModel):
@@ -65,7 +66,7 @@ class Lecturer(BaseDbModel):
         back_populates="lecturer",
         foreign_keys="Photo.lecturer_id",
         order_by="Photo.id",
-        primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Photo.is_deleted))",
+        primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Photo.is_deleted), Photo.approve_status=='APPROVED')",
     )
     events: list[Event] = relationship(
         "Event",
@@ -78,7 +79,7 @@ class Lecturer(BaseDbModel):
         "CommentLecturer",
         back_populates="lecturer",
         foreign_keys="CommentLecturer.lecturer_id",
-        primaryjoin="and_(Lecturer.id==CommentLecturer.lecturer_id, not_(CommentLecturer.is_deleted))",
+        primaryjoin="and_(Lecturer.id==CommentLecturer.lecturer_id, not_(CommentLecturer.is_deleted), CommentLecturer.approve_status=='APPROVED')",
     )
 
     @hybrid_method
@@ -134,7 +135,7 @@ class Event(BaseDbModel):
         "CommentEvent",
         foreign_keys="CommentEvent.event_id",
         back_populates="event",
-        primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted))",
+        primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted), CommentEvent.approve_status=='APPROVED')",
     )
 
 
@@ -151,6 +152,7 @@ class EventsRooms(BaseDbModel):
 class Photo(BaseDbModel):
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     link = sqlalchemy.Column(sqlalchemy.String, unique=True)
+    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     lecturer: Lecturer = relationship(
@@ -166,6 +168,7 @@ class CommentLecturer(BaseDbModel):
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
     create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
@@ -182,6 +185,7 @@ class CommentEvent(BaseDbModel):
     event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
     text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
+    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
     create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
     update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
