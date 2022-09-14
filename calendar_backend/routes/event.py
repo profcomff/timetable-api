@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 @event_router.get("/{id}", response_model=EventGet)
-async def http_get_event_by_id(id: int) -> EventGet:
+async def get_event_by_id(id: int) -> EventGet:
     return EventGet.from_orm(Event.get(id, session=db.session))
 
 
@@ -71,7 +71,7 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
 
 
 @event_router.get("/", response_model=GetListEvent | None)
-async def http_get_events(
+async def get_events(
     start: date | None = Query(default=None, description="Default: Today"),
     end: date | None = Query(default=None, description="Default: Tomorrow"),
     group_id: int | None = None,
@@ -92,7 +92,7 @@ async def http_get_events(
 
 
 @event_router.post("/", response_model=EventGet)
-async def http_create_event(event: EventPost, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
+async def create_event(event: EventPost, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
     event_dict = event.dict()
     rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
     lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
@@ -107,25 +107,25 @@ async def http_create_event(event: EventPost, _: auth.User = Depends(auth.get_cu
 
 
 @event_router.patch("/{id}", response_model=EventGet)
-async def http_patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
+async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
     return EventGet.from_orm(Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True)))
 
 
 @event_router.delete("/{id}", response_model=None)
-async def http_delete_event(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_event(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Event.delete(id, session=db.session)
 
 
-@event_router.post("/{id}/comment/", response_model=CommentEventGet)
-async def http_comment_event(id: int, comment: EventCommentPost) -> CommentEventGet:
+@event_router.post("/{event_id}/comment/", response_model=CommentEventGet)
+async def comment_event(event_id: int, comment: EventCommentPost) -> CommentEventGet:
     approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING
     return CommentEventGet.from_orm(
-        DbCommentEvent.create(event_id=id, session=db.session, **comment.dict(), approve_status=approve_status)
+        DbCommentEvent.create(event_id=event_id, session=db.session, **comment.dict(), approve_status=approve_status)
     )
 
 
 @event_router.patch("/{event_id}/comment/{id}", response_model=CommentEventGet)
-async def http_update_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
+async def update_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
     comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id:
         raise ObjectNotFound(DbCommentEvent, id)
@@ -137,7 +137,7 @@ async def http_update_comment(id: int, event_id: int, comment_inp: EventCommentP
 
 
 @event_router.get("/{event_id}/comment/{id}", response_model=CommentEventGet)
-async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
+async def get_comment(id: int, event_id: int) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
     if not comment.event_id == event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
@@ -145,7 +145,7 @@ async def http_get_comment(id: int, event_id: int) -> CommentEventGet:
 
 
 @event_router.delete("/{event_id}/comment/{id}", response_model=None)
-async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
@@ -153,7 +153,7 @@ async def http_delete_comment(id: int, event_id: int, _: auth.User = Depends(aut
 
 
 @event_router.get("/{event_id}/comment/", response_model=EventComments)
-async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
+async def get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
     res = DbCommentEvent.get_all(session=db.session).filter(DbCommentEvent.event_id == event_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -163,7 +163,7 @@ async def http_get_event_comments(event_id: int, limit: int = 10, offset: int = 
 
 
 @review_event_router.get("/comment/review/", response_model=list[CommentEventGet])
-async def http_get_unreviewed_comments(
+async def get_unreviewed_comments(
     event_id: int, _: auth.User = Depends(auth.get_current_user)
 ) -> list[CommentEventGet]:
     comments = (
@@ -175,7 +175,7 @@ async def http_get_unreviewed_comments(
 
 
 @review_event_router.post("/comment/{id}/review/", response_model=CommentEventGet)
-async def http_review_comment(
+async def review_comment(
     id: int,
     event_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,

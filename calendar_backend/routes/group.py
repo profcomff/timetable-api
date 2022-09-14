@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 @group_router.get("/{id}", response_model=GroupGet)
-async def http_get_group_by_id(id: int) -> GroupGet:
+async def get_group_by_id(id: int) -> GroupGet:
     return GroupGet.from_orm(Group.get(id, session=db.session))
 
 
 @group_router.get("/", response_model=GetListGroup)
-async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetListGroup:
+async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetListGroup:
     res = Group.get_all(session=db.session).filter(Group.number.contains(query))
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -36,14 +36,14 @@ async def http_get_groups(query: str = "", limit: int = 10, offset: int = 0) -> 
 
 
 @group_router.post("/", response_model=GroupGet)
-async def http_create_group(group: GroupPost, _: auth.User = Depends(auth.get_current_user)) -> GroupGet:
+async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current_user)) -> GroupGet:
     if await utils.check_group_existing(db.session, group.number):
         raise HTTPException(status_code=423, detail="Already exists")
     return GroupGet.from_orm(Group.create(**group.dict(), session=db.session))
 
 
 @group_router.patch("/{id}", response_model=GroupGet)
-async def http_patch_group(
+async def patch_group(
     id: int,
     group_inp: GroupPatch,
     _: auth.User = Depends(auth.get_current_user),
@@ -52,5 +52,5 @@ async def http_patch_group(
 
 
 @group_router.delete("/{id}", response_model=None)
-async def http_delete_group(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_group(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Group.delete(id, session=db.session)

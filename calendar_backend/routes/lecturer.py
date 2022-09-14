@@ -31,12 +31,12 @@ logger = logging.getLogger(__name__)
 
 
 @lecturer_router.get("/{id}", response_model=LecturerGet)
-async def http_get_lecturer_by_id(id: int) -> LecturerGet:
+async def get_lecturer_by_id(id: int) -> LecturerGet:
     return LecturerGet.from_orm(Lecturer.get(id, session=db.session))
 
 
 @lecturer_router.get("/", response_model=GetListLecturer)
-async def http_get_lecturers(
+async def get_lecturers(
     query: str = "",
     limit: int = 10,
     offset: int = 0,
@@ -58,12 +58,12 @@ async def http_get_lecturers(
 
 
 @lecturer_router.post("/", response_model=LecturerGet)
-async def http_create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
+async def create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
     return LecturerGet.from_orm(Lecturer.create(session=db.session, **lecturer.dict()))
 
 
 @lecturer_router.patch("/{id}", response_model=LecturerGet)
-async def http_patch_lecturer(
+async def patch_lecturer(
     id: int, lecturer_inp: LecturerPatch, _: auth.User = Depends(auth.get_current_user)
 ) -> LecturerGet:
     lecturer = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True))
@@ -71,17 +71,17 @@ async def http_patch_lecturer(
 
 
 @lecturer_router.delete("/{id}", response_model=None)
-async def http_delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Lecturer.delete(id, session=db.session)
 
 
 @lecturer_router.post("/{lecturer_id}/photo", response_model=Photo)
-async def http_upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
+async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
     return Photo.from_orm(await utils.upload_lecturer_photo(lecturer_id, db.session, file=photo))
 
 
 @lecturer_router.get("/{lecturer_id}/photo", response_model=LecturerPhotos)
-async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
+async def get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
     res = DbPhoto.get_all(session=db.session).filter(DbPhoto.lecturer_id == lecturer_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -91,7 +91,7 @@ async def http_get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: in
 
 
 @lecturer_router.post("/{lecturer_id}/comment/", response_model=CommentLecturer)
-async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
+async def comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:
     approve_status = (
         ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else ApproveStatuses.PENDING
     )
@@ -106,7 +106,7 @@ async def http_comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) 
 
 
 @lecturer_router.patch("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
-async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
+async def update_comment_lecturer(id: int, lecturer_id: int, comment_inp: LecturerCommentPatch) -> CommentLecturer:
     comment = DbCommentLecturer.get(id=id, only_approved=False, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
@@ -118,7 +118,7 @@ async def http_update_comment_lecturer(id: int, lecturer_id: int, comment_inp: L
 
 
 @lecturer_router.post("/{lecturer_id}/avatar/{photo_id}", response_model=LecturerGet)
-async def http_set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerGet:
+async def set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerGet:
     photo = DbPhoto.get(lecturer_id, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbPhoto, lecturer_id)
@@ -126,7 +126,7 @@ async def http_set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerG
 
 
 @lecturer_router.delete("/{lecturer_id}/comment/{id}", response_model=None)
-async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentLecturer.get(id, only_approved=False, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
@@ -134,7 +134,7 @@ async def http_delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(
 
 
 @lecturer_router.get("/{lecturer_id}/comment/{id}", response_model=CommentLecturer)
-async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
+async def get_comment(id: int, lecturer_id: int) -> CommentLecturer:
     comment = DbCommentLecturer.get(id, session=db.session)
     if not comment.lecturer_id == lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
@@ -144,7 +144,7 @@ async def http_get_comment(id: int, lecturer_id: int) -> CommentLecturer:
 
 
 @lecturer_router.delete("/{lecturer_id}/photo/{id}", response_model=None)
-async def http_delete_photo(id: int, lecturer_id: int) -> None:
+async def delete_photo(id: int, lecturer_id: int) -> None:
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
@@ -152,7 +152,7 @@ async def http_delete_photo(id: int, lecturer_id: int) -> None:
 
 
 @lecturer_router.get("/{lecturer_id}/comment/", response_model=LecturerComments)
-async def http_get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
+async def get_all_lecturer_comments(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerComments:
     res = DbCommentLecturer.get_all(session=db.session).filter(DbCommentLecturer.lecturer_id == lecturer_id)
     if limit:
         cnt, res = res.count(), res.offset(offset).limit(limit).all()
@@ -170,7 +170,7 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
 
 
 @review_lecturer_router.get("/comment/review/", response_model=list[CommentLecturer])
-async def http_get_unreviewed_comments(
+async def get_unreviewed_comments(
     lecturer_id: int, _: auth.User = Depends(auth.get_current_user)
 ) -> list[CommentLecturer]:
     comments = (
@@ -184,7 +184,7 @@ async def http_get_unreviewed_comments(
 
 
 @review_lecturer_router.post("/comment/{id}/review/", response_model=CommentLecturer)
-async def http_review_comment(
+async def review_comment(
     id: int,
     lecturer_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
@@ -201,7 +201,7 @@ async def http_review_comment(
 
 
 @review_lecturer_router.get("/photo/review/", response_model=list[Photo])
-async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[Photo]:
+async def get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> list[Photo]:
     photos = (
         DbPhoto.get_all(session=db.session, only_approved=False)
         .filter(DbPhoto.lecturer_id == lecturer_id, DbPhoto.approve_status == ApproveStatuses.PENDING)
@@ -211,7 +211,7 @@ async def http_get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(au
 
 
 @review_lecturer_router.post("/photo/{id}/review/", response_model=Photo)
-async def http_review_photo(
+async def review_photo(
     id: int,
     lecturer_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
