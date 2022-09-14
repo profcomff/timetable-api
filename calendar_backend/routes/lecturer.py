@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 
 @lecturer_router.get("/{id}", response_model=LecturerGet)
 async def get_lecturer_by_id(id: int) -> LecturerGet:
+    lecturer = Lecturer.get(id, session=db.session)
+    if lecturer.avatar_id:
+        lecturer.avatar_link = lecturer.avatar.link
     return LecturerGet.from_orm(Lecturer.get(id, session=db.session))
 
 
@@ -66,8 +69,15 @@ async def create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.ge
 async def patch_lecturer(
     id: int, lecturer_inp: LecturerPatch, _: auth.User = Depends(auth.get_current_user)
 ) -> LecturerGet:
-    lecturer = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True))
-    return LecturerGet.from_orm(lecturer)
+    if lecturer_inp.avatar_id:
+        photo = DbPhoto.get(lecturer_inp.avatar_id, session=db.session)
+        if photo.lecturer_id != id or photo.approve_status != ApproveStatuses.APPROVED:
+            raise ObjectNotFound(DbPhoto, lecturer_inp.avatar_id)
+        lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True),
+                                       avatar_link=photo.link)
+    else:
+        lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True))
+    return LecturerGet.from_orm(lecturer_upd)
 
 
 @lecturer_router.delete("/{id}", response_model=None)
@@ -119,7 +129,7 @@ async def update_comment_lecturer(id: int, lecturer_id: int, comment_inp: Lectur
 
 @lecturer_router.post("/{lecturer_id}/avatar/{photo_id}", response_model=LecturerGet)
 async def set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerGet:
-    photo = DbPhoto.get(lecturer_id, session=db.session)
+    photo = DbPhoto.get(photo_id, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbPhoto, lecturer_id)
     return LecturerGet.from_orm(await utils.set_lecturer_avatar(lecturer_id, photo_id, db.session))

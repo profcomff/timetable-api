@@ -10,7 +10,6 @@ class EventPatch(Base):
     lecturer_id: list[int] | None
     start_ts: datetime.datetime | None
     end_ts: datetime.datetime | None
-    is_deleted: bool | None
 
     def __repr__(self):
         return (
