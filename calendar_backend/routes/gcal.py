@@ -21,7 +21,7 @@ from calendar_backend.google_engine import create_calendar_with_timetable
 from calendar_backend.google_engine import get_calendar_service_from_token
 from calendar_backend.models import Credentials
 
-gcal = APIRouter(tags=["Google calendar"])
+gcal = APIRouter(tags=["Utils: Google"])
 settings = get_settings()
 templates = Jinja2Templates(directory="calendar_backend/templates")
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"

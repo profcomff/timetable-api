@@ -15,11 +15,11 @@ from starlette.types import ASGIApp
 from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction
 from calendar_backend.settings import get_settings
 from .auth import auth_router
-from .event import event_router, review_event_router
 from .gcal import gcal
+from .lecturer import lecturer_router, lecturer_comment_router, lecturer_comment_review_router, lecturer_photo_review_router, lecturer_photo_router
 from .group import group_router
-from .lecturer import lecturer_router, review_lecturer_router
 from .room import room_router
+from .event import event_router, event_comment_router, event_comment_review_router
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -102,10 +102,14 @@ app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
 app.mount('/static', StaticFiles(directory='static'), 'static')
 
 app.include_router(gcal)
+app.include_router(auth_router)
+app.include_router(lecturer_router)
+app.include_router(lecturer_comment_router)
+app.include_router(lecturer_comment_review_router)
+app.include_router(lecturer_photo_router)
+app.include_router(lecturer_photo_review_router)
+app.include_router(group_router)
 app.include_router(room_router)
 app.include_router(event_router)
-app.include_router(lecturer_router)
-app.include_router(group_router)
-app.include_router(auth_router)
-app.include_router(review_lecturer_router)
-app.include_router(review_event_router)
+app.include_router(event_comment_router)
+app.include_router(event_comment_review_router)

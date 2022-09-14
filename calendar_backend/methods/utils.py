@@ -98,12 +98,3 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         session.add(photo)
         session.flush()
     return photo
-
-
-async def set_lecturer_avatar(lecturer_id: int, photo_id: int, session: Session) -> Lecturer:
-    lecturer = Lecturer.get(lecturer_id, session=session)
-    if photo_id in [row.id for row in lecturer.photos]:
-        photo = Photo.get(photo_id, session=session)
-        lecturer.avatar_id = photo.id
-        lecturer.avatar_link = photo.link
-        return lecturer

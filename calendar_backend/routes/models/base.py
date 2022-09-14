@@ -52,7 +52,6 @@ class LecturerGet(Base):
     avatar_id: int | None
     avatar_link: str | None
     description: str | None
-    comments: list[CommentLecturer] | None
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -75,7 +74,6 @@ class EventGet(Base):
     lecturer: list[LecturerGet]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
-    comments: list[CommentEventGet] | None
 
     def __repr__(self):
         return (

@@ -6,7 +6,6 @@ from .base import Base, GroupGet, EventGet
 class GroupPatch(Base):
     name: str | None
     number: str | None
-    is_deleted: bool | None
 
     @classmethod
     @validator("number")
