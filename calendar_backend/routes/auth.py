@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import auth
 
-auth_router = APIRouter(prefix="", tags=["Auth"])
+auth_router = APIRouter(prefix="", tags=["Utils: Auth"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
