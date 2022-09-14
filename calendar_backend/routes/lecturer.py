@@ -127,14 +127,6 @@ async def update_comment_lecturer(id: int, lecturer_id: int, comment_inp: Lectur
     )
 
 
-@lecturer_router.post("/{lecturer_id}/avatar/{photo_id}", response_model=LecturerGet)
-async def set_lecturer_avatar(lecturer_id: int, photo_id: int) -> LecturerGet:
-    photo = DbPhoto.get(photo_id, session=db.session)
-    if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
-        raise ObjectNotFound(DbPhoto, lecturer_id)
-    return LecturerGet.from_orm(await utils.set_lecturer_avatar(lecturer_id, photo_id, db.session))
-
-
 @lecturer_router.delete("/{lecturer_id}/comment/{id}", response_model=None)
 async def delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     comment = DbCommentLecturer.get(id, only_approved=False, session=db.session)
