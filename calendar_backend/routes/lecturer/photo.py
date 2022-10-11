@@ -15,6 +15,18 @@ lecturer_photo_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", ta
 
 @lecturer_photo_router.post("/photo", response_model=Photo)
 async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
+    """Загрузить фотографию преподавателя из локального файла
+    
+    Пример загрузки файла на питоне
+    ```python
+    lecturer_id = 123
+    root = 'https://timetable.api.test.profcomff.com'
+    
+    with open('./x.png', 'rb') as f:
+        data = f.read()
+    requests.post(url=f'{root}/timetable/lecturer/{lecturer_id}/photo', files={"photo": data})
+    ```
+    """
     return Photo.from_orm(await utils.upload_lecturer_photo(lecturer_id, db.session, file=photo))
 
 
