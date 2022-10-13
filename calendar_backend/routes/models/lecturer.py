@@ -1,7 +1,7 @@
 from typing import Literal
 
 from .base import Base, LecturerGet, EventGet, CommentLecturer
-from ...models import ApproveStatuses
+from calendar_backend.models import ApproveStatuses
 
 
 class LecturerPhotos(Base):
