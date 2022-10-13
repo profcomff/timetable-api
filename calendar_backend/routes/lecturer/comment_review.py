@@ -12,7 +12,10 @@ from calendar_backend.routes.models import (
     CommentLecturer,
 )
 
-lecturer_comment_review_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"])
+lecturer_comment_review_router = APIRouter(
+    prefix="/timetable/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"]
+)
+
 
 @lecturer_comment_review_router.get("/review/", response_model=list[CommentLecturer])
 async def get_unreviewed_comments(

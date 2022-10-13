@@ -6,11 +6,11 @@ from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses
 from calendar_backend.models.db import Photo as DbPhoto
-from calendar_backend.routes.models import (
-    Photo, Action
-)
+from calendar_backend.routes.models import Photo, Action
 
-lecturer_photo_review_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}/photo", tags=["Lecturer: Photo Review"])
+lecturer_photo_review_router = APIRouter(
+    prefix="/timetable/lecturer/{lecturer_id}/photo", tags=["Lecturer: Photo Review"]
+)
 
 
 @lecturer_photo_review_router.get("/review/", response_model=list[Photo])

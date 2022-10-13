@@ -8,13 +8,15 @@ from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.routes.models import (
     CommentLecturer,
     LecturerCommentPost,
-    LecturerCommentPatch, LecturerComments,
+    LecturerCommentPatch,
+    LecturerComments,
 )
 from calendar_backend.settings import get_settings
 
 settings = get_settings()
 
 lecturer_comment_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Comment"])
+
 
 @lecturer_comment_router.post("/comment/", response_model=CommentLecturer)
 async def comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> CommentLecturer:

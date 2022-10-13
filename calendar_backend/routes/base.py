@@ -16,7 +16,13 @@ from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction
 from calendar_backend.settings import get_settings
 from .auth import auth_router
 from .gcal import gcal
-from .lecturer import lecturer_router, lecturer_comment_router, lecturer_comment_review_router, lecturer_photo_review_router, lecturer_photo_router
+from .lecturer import (
+    lecturer_router,
+    lecturer_comment_router,
+    lecturer_comment_review_router,
+    lecturer_photo_review_router,
+    lecturer_photo_router,
+)
 from .group import group_router
 from .room import room_router
 from .event import event_router, event_comment_router, event_comment_review_router

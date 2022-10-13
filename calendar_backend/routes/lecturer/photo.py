@@ -16,12 +16,12 @@ lecturer_photo_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", ta
 @lecturer_photo_router.post("/photo", response_model=Photo)
 async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
     """Загрузить фотографию преподавателя из локального файла
-    
+
     Пример загрузки файла на питоне
     ```python
     lecturer_id = 123
     root = 'https://timetable.api.test.profcomff.com'
-    
+
     with open('./x.png', 'rb') as f:
         data = f.read()
     requests.post(url=f'{root}/timetable/lecturer/{lecturer_id}/photo', files={"photo": data})
@@ -46,6 +46,7 @@ async def delete_photo(id: int, lecturer_id: int) -> None:
     if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
     return DbPhoto.delete(id=id, session=db.session)
+
 
 @lecturer_photo_router.get("/photo/{id}", response_model=Photo)
 async def get_photo(id: int, lecturer_id: int) -> Photo:

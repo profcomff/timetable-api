@@ -18,6 +18,7 @@ settings = get_settings()
 
 event_comment_router = APIRouter(prefix="/timetable/event/{event_id}", tags=["Event: Comment"])
 
+
 @event_comment_router.post("/comment/", response_model=CommentEventGet)
 async def comment_event(event_id: int, comment: EventCommentPost) -> CommentEventGet:
     approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING
