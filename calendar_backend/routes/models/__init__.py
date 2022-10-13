@@ -10,6 +10,7 @@ from .lecturer import (
     LecturerCommentPost,
     LecturerCommentPatch,
     LecturerComments,
+    Action,
 )
 from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom
 from .event import EventPost, EventPatch, Event, GetListEvent, CommentEventGet, EventComments

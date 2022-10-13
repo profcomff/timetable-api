@@ -65,8 +65,9 @@ async def patch_lecturer(
         photo = DbPhoto.get(lecturer_inp.avatar_id, session=db.session)
         if photo.lecturer_id != id or photo.approve_status != ApproveStatuses.APPROVED:
             raise ObjectNotFound(DbPhoto, lecturer_inp.avatar_id)
-        lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True),
-                                       avatar_link=photo.link)
+        lecturer_upd = Lecturer.update(
+            id, session=db.session, **lecturer_inp.dict(exclude_unset=True), avatar_link=photo.link
+        )
     else:
         lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True))
     return LecturerGet.from_orm(lecturer_upd)

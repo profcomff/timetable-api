@@ -48,6 +48,11 @@ async def patch_group(
     group_inp: GroupPatch,
     _: auth.User = Depends(auth.get_current_user),
 ) -> GroupGet:
+    if (
+        bool(query := Group.get_all(session=db.session).filter(Group.number == group_inp.number).one_or_none())
+        and query.id != id
+    ):
+        raise HTTPException(status_code=423, detail="Already exists")
     return GroupGet.from_orm(Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session))
 
 
