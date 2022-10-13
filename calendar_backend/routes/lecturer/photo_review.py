@@ -1,5 +1,3 @@
-from typing import Literal
-
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
