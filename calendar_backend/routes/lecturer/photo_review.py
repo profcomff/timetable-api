@@ -9,7 +9,7 @@ from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses
 from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import (
-    Photo,
+    Photo, Action
 )
 
 lecturer_photo_review_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}/photo", tags=["Lecturer: Photo Review"])
@@ -29,13 +29,13 @@ async def get_unreviewed_photos(lecturer_id: int, _: auth.User = Depends(auth.ge
 async def review_photo(
     id: int,
     lecturer_id: int,
-    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
+    action: Action,
     _: auth.User = Depends(auth.get_current_user),
 ) -> Photo:
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status is not ApproveStatuses.PENDING:
         raise ObjectNotFound(DbPhoto, id)
-    DbPhoto.update(photo.id, approve_status=action, session=db.session)
+    DbPhoto.update(photo.id, approve_status=action.action, session=db.session)
     if action == ApproveStatuses.DECLINED:
         DbPhoto.delete(photo.id, session=db.session)
     db.session.flush()

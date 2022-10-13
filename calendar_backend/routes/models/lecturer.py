@@ -1,4 +1,7 @@
+from typing import Literal
+
 from .base import Base, LecturerGet, EventGet, CommentLecturer
+from ...models import ApproveStatuses
 
 
 class LecturerPhotos(Base):
@@ -61,3 +64,7 @@ class LecturerComments(Base):
     limit: int
     offset: int
     total: int
+
+
+class Action(Base):
+    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED]
