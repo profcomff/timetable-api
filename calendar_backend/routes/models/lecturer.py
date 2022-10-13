@@ -67,4 +67,4 @@ class LecturerComments(Base):
 
 
 class Action(Base):
-    action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED]
+    action: ApproveStatuses

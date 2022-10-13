@@ -47,7 +47,7 @@ async def patch_room(
     id: int, room: RoomPatch, _: auth.User = Depends(auth.get_current_user)
 ) -> RoomGet:
     if bool(query := Room.get_all(session=db.session).filter(Room.name == room.name).one_or_none()):
-        if query.id != Room.get(id=id, session=db.session).id:
+        if query.id != id:
             raise HTTPException(status_code=423, detail="Already exists")
     return RoomGet.from_orm(Room.update(id, **room.dict(exclude_unset=True), session=db.session))
 
