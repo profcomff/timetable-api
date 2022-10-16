@@ -65,8 +65,8 @@ async def not_found_error(request: starlette.requests.Request, exc: ForbiddenAct
 
 
 @app.exception_handler(NotEnoughCriteria)
-async def not_found_error(request: starlette.requests.Request, exc: NotEnoughCriteria):
-    return JSONResponse({"error": exc.args[0], "request": request.path_params}, status_code=400)
+async def not_enough_criteria(request: starlette.requests.Request, exc: NotEnoughCriteria):
+    return JSONResponse({"error": exc.args[0], "request": request.path_params}, status_code=422)
 
 
 @app.exception_handler(ValueError)
