@@ -9,9 +9,8 @@ import sqlalchemy
 from sqlalchemy import Column
 from sqlalchemy import Enum as DbEnum
 from sqlalchemy import and_, or_
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm import relationship
-
 
 from .base import BaseDbModel, ApproveStatuses
 
@@ -92,6 +91,10 @@ class Lecturer(BaseDbModel):
             )
         return response
 
+    @hybrid_property
+    def last_photo(self) -> Photo | None:
+        return self.photos[-1] if len(self.photos) else None
+
 
 class Group(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
@@ -162,6 +165,8 @@ class Photo(BaseDbModel):
         order_by="Lecturer.id",
         primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Lecturer.is_deleted))",
     )
+
+
 
 
 class CommentLecturer(BaseDbModel):

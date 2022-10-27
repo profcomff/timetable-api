@@ -4,7 +4,7 @@ from pydantic import parse_obj_as
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import auth
-from calendar_backend.models.db import ApproveStatuses
+from calendar_backend.models.db import ApproveStatuses, Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import Photo, Action
 
@@ -30,11 +30,14 @@ async def review_photo(
     action: Action,
     _: auth.User = Depends(auth.get_current_user),
 ) -> Photo:
+    lecturer = Lecturer.get(lecturer_id, session=db.session)
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status is not ApproveStatuses.PENDING:
         raise ObjectNotFound(DbPhoto, id)
     DbPhoto.update(photo.id, approve_status=action.action, session=db.session)
     if action == ApproveStatuses.DECLINED:
         DbPhoto.delete(photo.id, session=db.session)
+    db.session.flush()
+    lecturer.avatar_id = lecturer.last_photo.id if lecturer.last_photo else lecturer.avatar_id
     db.session.flush()
     return Photo.from_orm(photo)
