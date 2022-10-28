@@ -13,8 +13,6 @@ from calendar_backend.models.db import (
     Lecturer,
     Photo,
     Room,
-    EventsRooms,
-    EventsLecturers,
     ApproveStatuses,
 )
 from calendar_backend.settings import get_settings
@@ -83,7 +81,8 @@ async def check_group_existing(session: Session, group_num: str) -> bool:
 
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
-    random_string = ''.join(random.choice(string.ascii_letters) for i in range(32))
+    lecturer = Lecturer.get(lecturer_id, session=session)
+    random_string = ''.join(random.choice(string.ascii_letters) for _ in range(32))
     ext = file.filename.split('.')[-1]
     path = os.path.join(settings.PHOTO_LECTURER_PATH, f"{random_string}.{ext}")
     async with aiofiles.open(path, 'wb') as out_file:
@@ -96,5 +95,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
             approve_status=approve_status,
         )
         session.add(photo)
+        session.flush()
+        lecturer.avatar_id = lecturer.last_photo.id if lecturer.last_photo else lecturer.avatar_id
         session.flush()
     return photo

@@ -45,6 +45,8 @@ async def delete_photo(id: int, lecturer_id: int) -> None:
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
+    if photo.lecturer.avatar_id == photo.id:
+        photo.lecturer.avatar_id = None
     return DbPhoto.delete(id=id, session=db.session)
 
 
