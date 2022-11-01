@@ -82,6 +82,7 @@ jobs:
             --detach \
             --restart on-failure:3 \
             --network=web \
+            --volume com_profcomff_api_timetable_test_static:/app/static \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
             --name ${{ env.CONTAITER_NAME }} \
@@ -122,6 +123,7 @@ jobs:
             --detach \
             --restart always \
             --network=web \
+            --volume com_profcomff_api_timetable_static:/app/static \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env ADMIN_SECRET='${{ secrets.ADMIN_SECRET }}' \
             --env REDIRECT_URL='https://www.profcomff.com/timetable/google' \
