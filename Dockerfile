@@ -9,4 +9,6 @@ ADD gunicorn_conf.py alembic.ini /app/
 ADD migrations /app/migrations
 ADD calendar_backend /app/calendar_backend
 
+VOLUME ["/app/static"]
+
 CMD [ "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "/app/gunicorn_conf.py", "calendar_backend.routes.base:app" ]
