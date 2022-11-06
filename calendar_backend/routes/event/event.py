@@ -8,7 +8,7 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
-from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms
+from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, Group
 from calendar_backend.routes.models.event import (
     EventGet,
     EventPatch,
@@ -89,11 +89,13 @@ async def create_event(event: EventPost, _: auth.User = Depends(auth.get_current
     event_dict = event.dict()
     rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
     lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
+    group = Group.get(event.group_id, session=db.session)
     return EventGet.from_orm(
         Event.create(
             **event_dict,
             room=rooms,
             lecturer=lecturers,
+            group=group,
             session=db.session,
         )
     )
