@@ -1,0 +1,42 @@
+name: Python package
+
+on:
+  push:
+  pull_request:
+    branches: ['main']
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.10" ]
+    steps:
+      - name: Set up server
+      - uses: docker-practice/actions-setup-docker@master
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Create postgresql
+        run: |
+          docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-{{cookiecutter.module_name}} postgres:15
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v4
+          with:
+            python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+      - name: Migrate DB
+        run: |
+          --env DB_DSN='postgresql://postgres@localhost:5432/postgres' \
+          alembic upgrade head
+      - name: Test code
+        run: |
+          pip install pytest
+          pip install pytest-cov
+          pytest tests.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
