@@ -30,6 +30,7 @@ jobs:
           alembic upgrade head
       - name: Build coverage file
         run: |
+          export DB_DSN='postgresql://postgres@localhost:5432/postgres' \
           pytest --cache-clear --cov=app test/ > pytest-coverage.txt
       - name: Comment coverage
         uses: coroo/pytest-coverage-commentator@v1.0.2
