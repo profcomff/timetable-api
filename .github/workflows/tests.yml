@@ -10,9 +10,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up server
+      - name: Set up docker
         uses: docker-practice/actions-setup-docker@master
-      - name: Run server
+      - name: Run postgres
         run: |
           docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-test postgres:15-alpine
       - uses: actions/setup-python@v4
