@@ -15,7 +15,7 @@ jobs:
       - name: Set up server
       - uses: docker-practice/actions-setup-docker@master
       - run: |
-          docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-{{cookiecutter.module_name}} postgres:15
+          docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-test postgres:15
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
