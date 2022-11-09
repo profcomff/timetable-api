@@ -1,0 +1,33 @@
+name: Python package
+
+on:
+  pull_request:
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up server
+        uses: docker-practice/actions-setup-docker@master
+        run: |
+          docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-test postgres:15-alpine
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m ensurepip
+          python -m pip install --upgrade pip
+          pip install -r requirements.dev.txt
+      - name: Migrate DB
+        run: |
+          export DB_DSN='postgresql://postgres@localhost:5432/postgres' \
+          alembic upgrade head
+      - name: Build coverage file
+        run: |
+          pytest --cache-clear --cov=app test/ > pytest-coverage.txt
+      - name: Comment coverage
+        uses: coroo/pytest-coverage-commentator@v1.0.2
