@@ -13,4 +13,8 @@
 * Внести в `.env` корректные переменные окружения
 
 ## Запуск
-* `python3 -m calendar_backend`
+```console
+foo@bar:~$ python3 -m venv venv
+foo@bar:~$ pip install -r requirements.txt
+foo@bar:~$ uvicorn --reload --log-level debug calendar_backend.routes.base:app
+```

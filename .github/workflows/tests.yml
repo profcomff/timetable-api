@@ -6,6 +6,7 @@ on:
 
 jobs:
   test:
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,13 +23,12 @@ jobs:
         run: |
           python -m ensurepip
           python -m pip install --upgrade pip
-          pip install -r requirements.dev.txt
+          pip install -r requirements.txt -r requirements.dev.txt
       - name: Migrate DB
         run: |
-          export DB_DSN='postgresql://postgres@localhost:5432/postgres' \
-          alembic upgrade head
+          DB_DSN=postgresql://postgres@localhost:5432/postgres alembic upgrade head
       - name: Build coverage file
         run: |
-          pytest --cache-clear --cov=app test/ > pytest-coverage.txt
+          DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --cov=calendar_backend tests > pytest-coverage.txt
       - name: Comment coverage
         uses: coroo/pytest-coverage-commentator@v1.0.2
