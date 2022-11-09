@@ -29,6 +29,6 @@ jobs:
           DB_DSN=postgresql://postgres@localhost:5432/postgres alembic upgrade head
       - name: Build coverage file
         run: |
-          DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --cov=app tests > pytest-coverage.txt
+          DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --cov=calendar_backend tests > pytest-coverage.txt
       - name: Comment coverage
         uses: coroo/pytest-coverage-commentator@v1.0.2
