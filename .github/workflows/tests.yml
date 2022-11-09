@@ -23,6 +23,7 @@ jobs:
           python -m ensurepip
           python -m pip install --upgrade pip
           pip install -r requirements.dev.txt
+          pip install -r requirements.txt
       - name: Migrate DB
         run: |
           export DB_DSN='postgresql://postgres@localhost:5432/postgres' \
