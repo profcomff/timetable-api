@@ -30,7 +30,7 @@ jobs:
             pip install -r requirements.dev.txt
       - name: Migrate DB
         run: |
-          --env DB_DSN='postgresql://postgres@localhost:5432/postgres' \
+          export DB_DSN='postgresql://postgres@localhost:5432/postgres' \
           alembic upgrade head
       - name: Test code
         run: |
