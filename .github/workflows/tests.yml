@@ -30,5 +30,9 @@ jobs:
       - name: Build coverage file
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --cov=calendar_backend tests > pytest-coverage.txt
+      - name: If failed
+          if: ${{ failure() }}
+          run: |
+            cat pytest-coverage.txt
       - name: Comment coverage
         uses: coroo/pytest-coverage-commentator@v1.0.2
