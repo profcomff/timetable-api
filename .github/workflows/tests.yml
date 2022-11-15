@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m ensurepip
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements.dev.txt
+          python -m pip install --upgrade --no-cache-dir pip
+          python -m pip install --upgrade --no-cache-dir -r requirements.txt -r requirements.dev.txt
       - name: Migrate DB
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres alembic upgrade head
