@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from starlette import status
 
 from calendar_backend.models.db import Lecturer
 
@@ -16,7 +17,7 @@ def test_create(client_auth: TestClient, dbsession: Session):
         "description": "Очень умный",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     id_ = response_obj.pop("id")
     assert {
@@ -49,7 +50,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
         "description": "Очень умный",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -61,7 +62,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj: dict = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -102,7 +103,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
         "description": "Очень умный",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -114,7 +115,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj: dict = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -134,15 +135,15 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Delete
     response = client_auth.delete(RESOURCE + f"{id_}")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
     assert response.status_code == 404, response.json()
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
-    assert response.ok, response.json()
+    response = client_auth.get(RESOURCE, params={"limit": 0})
+    assert response.status_code == status.HTTP_200_OK, response.json()
     for item in response.json()["items"]:
         assert item["id"] != id_
 
@@ -170,7 +171,7 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
         "description": "Очень умный",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -182,7 +183,7 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -198,13 +199,13 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
     request_obj.update(request_obj_2)
     response = client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
     response = client_auth.get(RESOURCE + f"{id_}")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["first_name"] == request_obj_2["first_name"]
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
-    assert response.ok
+    response = client_auth.get(RESOURCE, params={"limit": 0})
+    assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         if item["id"] == id_:
             assert {
@@ -237,7 +238,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "description": "Очень умный",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -249,7 +250,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -267,9 +268,9 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     }
     request_obj.update(request_obj_2)
     client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
         "first_name": response_obj["first_name"],
@@ -279,8 +280,8 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     } == request_obj
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
-    assert response.ok
+    response = client_auth.get(RESOURCE, params={"limit": 0})
+    assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         if item["id"] == id_:
             assert {

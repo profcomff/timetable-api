@@ -22,13 +22,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m ensurepip
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements.dev.txt
+          python -m pip install --upgrade --no-cache-dir pip
+          python -m pip install --upgrade --no-cache-dir -r requirements.txt -r requirements.dev.txt
       - name: Migrate DB
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres alembic upgrade head
       - name: Build coverage file
         run: |
-          DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --cov=calendar_backend tests > pytest-coverage.txt
+          DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --showlocals --cov=calendar_backend tests > pytest-coverage.txt
+      - name: Print report
+        if: always()
+        run: |
+          cat pytest-coverage.txt
       - name: Comment coverage
         uses: coroo/pytest-coverage-commentator@v1.0.2
