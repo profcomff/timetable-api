@@ -37,14 +37,18 @@ async def get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> GetLis
 
 @room_router.post("/", response_model=RoomGet)
 async def create_room(room: RoomPost, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
-    if bool(Room.get_all(session=db.session).filter(Room.name == room.name).one_or_none()):
+    if bool(Room.get_all(session=db.session).filter(
+        Room.name == room.name, Room.building == room.building
+    ).one_or_none()):
         raise HTTPException(status_code=423, detail="Already exists")
-    return RoomGet.from_orm(Room.create(name=room.name, direction=room.direction, session=db.session))
+    return RoomGet.from_orm(Room.create(**room.dict(exclude_unset=True), session=db.session))
 
 
 @room_router.patch("/{id}", response_model=RoomGet)
 async def patch_room(id: int, room: RoomPatch, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
-    if bool(query := Room.get_all(session=db.session).filter(Room.name == room.name).one_or_none()) and query.id != id:
+    if bool(query := Room.get_all(session=db.session).filter(
+        Room.name == room.name, Room.building == room.building
+    ).one_or_none()) and query.id != id:
         raise HTTPException(status_code=423, detail="Already exists")
     return RoomGet.from_orm(Room.update(id, **room.dict(exclude_unset=True), session=db.session))
 
