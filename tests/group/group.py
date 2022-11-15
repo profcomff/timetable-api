@@ -78,7 +78,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.status_code == 404, response.json()
+    assert response.status_code == status.HTTP_404_NOT_FOUND, response.json()
 
     # Read all
     response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
@@ -126,7 +126,7 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
     assert response_obj["number"] == request_obj["number"]
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
+    response = client_auth.get(RESOURCE, params={"limit": 0})
     assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         if item["id"] == id_:
@@ -171,7 +171,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     assert response_obj["number"] == request_obj_2["number"]
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
+    response = client_auth.get(RESOURCE, params={"limit": 0})
     assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         if item["id"] == id_:

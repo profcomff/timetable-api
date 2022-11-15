@@ -63,10 +63,10 @@ def test_patch(client_auth: TestClient, comment_path_no_review: str):
     client_auth.post(f"{comment_path_no_review}/review/", params={"action": "Approved"})
 
     response = client_auth.patch(comment_path_no_review, json=request)
-    assert response.status_code == 403
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_review(client_auth: TestClient, comment_path_no_review: str):
     client_auth.post(f"{comment_path_no_review}/review/", params={"action": "Declined"})
     response = client_auth.get(comment_path_no_review)
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND

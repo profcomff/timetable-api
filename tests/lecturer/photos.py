@@ -19,4 +19,4 @@ def test_delete(client_auth: TestClient, photo_path: str):
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     response = client_auth.get(photo_path)
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND

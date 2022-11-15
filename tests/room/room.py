@@ -2,6 +2,8 @@ import datetime
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from starlette import status
+
 from calendar_backend.models import Room
 
 RESOURCE = "/timetable/room/"
@@ -68,7 +70,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.status_code == 404, response.json()
+    assert response.status_code == status.HTTP_404_NOT_FOUND, response.json()
 
     # Read all
     response = client_auth.get(RESOURCE, params={"limit": 0})
