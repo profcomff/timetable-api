@@ -22,7 +22,7 @@ def client():
 @pytest.fixture()
 def client_auth(mocker: MockerFixture):
     client = TestClient(app)
-    access_token = client.post(f"/token", {"username": "admin", "password": "42"}).json()["access_token"]
+    access_token = client.post(f"/token", json={"username": "admin", "password": "42"}).json()["access_token"]
     client.headers = {"Authorization": f"Bearer {access_token}"}
     return client
 
