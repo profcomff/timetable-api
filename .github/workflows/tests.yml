@@ -31,7 +31,7 @@ jobs:
       - name: Build coverage file
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --showlocals --cov=calendar_backend tests > pytest-coverage.txt
-      - name: If failed
+      - name: Print report
         if: always()
         run: |
           cat pytest-coverage.txt
