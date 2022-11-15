@@ -162,12 +162,12 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Ok db
     response_model: Event = dbsession.query(Event).get(response_obj["id"])
-    assert response_model.name == request_obj["name"]
-    assert [row.id for row in response_model.room] == request_obj["room_id"]
-    assert [row.id for row in response_model.lecturer] == request_obj["lecturer_id"]
-    assert response_model.group_id == request_obj["group_id"]
-    assert str(response_model.start_ts.isoformat())[:20] == request_obj["start_ts"][:20]
-    assert str(response_model.end_ts.isoformat())[:20] == request_obj["end_ts"][:20]
+    assert response_model.name == request_obj_2["name"]
+    assert [row.id for row in response_model.room] == request_obj_2["room_id"]
+    assert [row.id for row in response_model.lecturer] == request_obj_2["lecturer_id"]
+    assert response_model.group_id == request_obj_2["group_id"]
+    assert str(response_model.start_ts.isoformat())[:20] == request_obj_2["start_ts"][:20]
+    assert str(response_model.end_ts.isoformat())[:20] == request_obj_2["end_ts"][:20]
 
     # Clear db
     dbsession.delete(response_model)
