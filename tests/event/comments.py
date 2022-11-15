@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from starlette import status
 
 from calendar_backend.models import CommentEvent
 
@@ -38,7 +39,7 @@ def comment_event_path_for_read_all(client_auth: TestClient, dbsession: Session,
 
 def test_read_all(client_auth: TestClient, comment_event_path_for_read_all: str):
     response = client_auth.get(comment_event_path_for_read_all, params={"limit": 10})
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["limit"] == 10
     assert len(response_obj["items"]) <= 10
@@ -47,7 +48,7 @@ def test_read_all(client_auth: TestClient, comment_event_path_for_read_all: str)
 def test_delete(client_auth: TestClient, comment_event_path_no_review: str):
     client_auth.post(f"{comment_event_path_no_review}/review/", params={"action": "Approved"})
     response = client_auth.delete(comment_event_path_no_review)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
 
 
 def test_patch(client_auth: TestClient, comment_event_path_no_review: str):
@@ -56,16 +57,16 @@ def test_patch(client_auth: TestClient, comment_event_path_no_review: str):
     }
 
     response = client_auth.patch(comment_event_path_no_review, json=request)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json()["text"] == request["text"]
 
     client_auth.post(f"{comment_event_path_no_review}/review/", params={"action": "Approved"})
 
     response = client_auth.patch(comment_event_path_no_review, json=request)
-    assert response.status_code == 403
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_review(client_auth: TestClient, comment_event_path_no_review):
     client_auth.post(f"{comment_event_path_no_review}/review/", params={"action": "Declined"})
     response = client_auth.get(comment_event_path_no_review)
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND

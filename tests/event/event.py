@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 import datetime
 from sqlalchemy.orm import Session
+from starlette import status
 
 from calendar_backend.models import Event, Room, Lecturer, Group
 
@@ -20,7 +21,7 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == room_id
@@ -48,7 +49,7 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
@@ -60,11 +61,11 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
 
     # Delete
     response = client_auth.delete(RESOURCE + f"{id_}")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.status_code == 404, response.json()
+    assert response.status_code == status.HTTP_404_NOT_FOUND, response.json()
 
     # Read all
     response = client_auth.get(
@@ -75,7 +76,7 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
             "end": "2022-08-27",
         },
     )
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     for item in response.json()["items"]:
         assert item["id"] != id_
 
@@ -106,7 +107,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
@@ -118,7 +119,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
@@ -138,7 +139,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     }
     client_auth.patch(RESOURCE + f"{id_}/", json=request_obj_2)
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
@@ -149,7 +150,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Read all
     response = client_auth.get(RESOURCE, params={"group_id": group.id, "detail": ""})
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     for item in response.json()["items"]:
         if item["id"] == id_:
             assert item[0]["name"] == request_obj["name"]

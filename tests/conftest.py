@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from starlette import status
 
 from calendar_backend.models.base import DeclarativeBase
 from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room
@@ -44,7 +45,7 @@ def room_path(client_auth: TestClient, dbsession: Session):
         "direction": "North",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     id_ = response.json()["id"]
     yield RESOURCE + str(id_)
     response_model: Room = dbsession.query(Room).get(id_)
@@ -60,7 +61,7 @@ def group_path(client_auth: TestClient, dbsession: Session):
         "number": datetime.now().isoformat(),
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     id_ = response.json()["id"]
     yield RESOURCE + str(id_)
     response_model: Group = dbsession.query(Group).get(id_)
@@ -78,7 +79,7 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
         "description": "Очень умный",
     }
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     id_ = response.json()["id"]
     yield RESOURCE + str(id_)
     response_model: Lecturer = dbsession.query(Lecturer).get(id_)
@@ -91,7 +92,7 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
     RESOURCE = f"{lecturer_path}/photo"
     with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
         response = client_auth.post(RESOURCE, files={"photo": f})
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     id_ = response.json()["id"]
     client_auth.post(f"{RESOURCE}/{id_}/review/", json={"action": "Approved"})
     yield RESOURCE + "/" + str(id_)
