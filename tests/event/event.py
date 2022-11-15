@@ -141,10 +141,10 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     response = client_auth.get(RESOURCE + f"{id_}/")
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
-    assert response_obj["name"] == request_obj["name"]
-    assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
-    assert response_obj["group"]["id"] == request_obj["group_id"]
-    assert response_obj["lecturer"][0]["id"] == request_obj["lecturer_id"][0]
+    assert response_obj["name"] == request_obj_2["name"]
+    assert response_obj["room"][0]["id"] == request_obj_2["room_id"][0]
+    assert response_obj["group"]["id"] == request_obj_2["group_id"]
+    assert response_obj["lecturer"][0]["id"] == request_obj_2["lecturer_id"][0]
     assert response_obj["start_ts"][:20] == request_obj_2["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj_2["end_ts"][:20]
 
