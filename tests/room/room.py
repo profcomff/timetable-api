@@ -12,7 +12,7 @@ RESOURCE = "/timetable/room/"
 def test_create(client_auth: TestClient, dbsession: Session):
     request_obj = {"name": "5-02" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -25,7 +25,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
     # Create
     request_obj = {"name": "5-02" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -33,7 +33,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -52,7 +52,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     # Create
     request_obj = {"name": "5-02" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -60,7 +60,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -74,7 +74,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
 
     # Read all
     response = client_auth.get(RESOURCE, params={"limit": 0})
-    assert response.ok
+    assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         assert item["id"] != id_
 
@@ -92,7 +92,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     # Create
     request_obj = {"name": "" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -100,7 +100,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
 
     # Read
     response = client_auth.get(RESOURCE + f"{id_}/")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["direction"] == request_obj["direction"]
@@ -109,14 +109,14 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     request_obj_2 = {"name": "" + datetime.datetime.utcnow().isoformat(), "direction": "North"}
     client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
     response = client_auth.get(RESOURCE + f"{id_}")
-    assert response.ok, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj_2["name"]
     assert response_obj["direction"] == request_obj_2["direction"]
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
-    assert response.ok
+    response = client_auth.get(RESOURCE, params={"limit": 0})
+    assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         if item["id"] == id_:
             assert item["name"] == request_obj_2["name"]

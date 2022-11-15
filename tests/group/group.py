@@ -81,7 +81,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.json()
 
     # Read all
-    response = client_auth.get(RESOURCE, params={"limit": 0}, json=request_obj)
+    response = client_auth.get(RESOURCE, params={"limit": 0})
     assert response.status_code == status.HTTP_200_OK
     for item in response.json()["items"]:
         assert item["id"] != id_
