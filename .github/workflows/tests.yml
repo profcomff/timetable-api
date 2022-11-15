@@ -32,7 +32,7 @@ jobs:
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --cache-clear --showlocals --cov=calendar_backend tests > pytest-coverage.txt
       - name: If failed
-        if: ${{ failure() }}
+        if: always()
         run: |
           cat pytest-coverage.txt
       - name: Comment coverage
