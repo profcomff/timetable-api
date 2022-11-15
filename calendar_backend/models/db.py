@@ -35,6 +35,7 @@ class Direction(str, Enum):
 class Room(BaseDbModel):
     name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
     direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
+    building = sqlalchemy.Column(sqlalchemy.String)
     is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     events: list[Event] = relationship(
