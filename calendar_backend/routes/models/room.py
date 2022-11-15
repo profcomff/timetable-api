@@ -4,6 +4,7 @@ from calendar_backend.models import Direction
 
 class RoomPatch(Base):
     name: str | None
+    building: str | None
     direction: Direction | None
 
     def __repr__(self):
@@ -12,6 +13,7 @@ class RoomPatch(Base):
 
 class RoomPost(Base):
     name: str
+    building: str | None
     direction: Direction | None
 
 

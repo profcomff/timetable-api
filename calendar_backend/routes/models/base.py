@@ -60,10 +60,11 @@ class LecturerGet(Base):
 class RoomGet(Base):
     id: int
     name: str
+    building: str | None
     direction: str | None
 
     def __repr__(self):
-        return f"Room(id={self.id}, name={self.name}, direction={self.direction})"
+        return f"Room(id={self.id}, name={self.name}, direction={self.direction}, building={self.building})"
 
 
 class EventGet(Base):
