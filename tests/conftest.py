@@ -126,6 +126,7 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
 @pytest.fixture()
 def room_factory(dbsession: Session):
     ids_ = []
+
     def _room_factory(client_auth: TestClient):
         RESOURCE = "/timetable/room/"
         request_obj = {
@@ -137,6 +138,7 @@ def room_factory(dbsession: Session):
         nonlocal ids_
         ids_.append(yielding := response.json()["id"])
         return RESOURCE + str(yielding)
+
     yield _room_factory
     for id in ids_:
         response_model: Room = dbsession.query(Room).get(id)
@@ -144,10 +146,10 @@ def room_factory(dbsession: Session):
         dbsession.commit()
 
 
-
 @pytest.fixture()
 def lecturer_factory(dbsession: Session):
     ids_ = []
+
     def _lecturer_factory(client_auth: TestClient):
         RESOURCE = "/timetable/lecturer/"
         request_obj = {
@@ -161,6 +163,7 @@ def lecturer_factory(dbsession: Session):
         nonlocal ids_
         ids_.append(yielding := response.json()["id"])
         return RESOURCE + str(yielding)
+
     yield _lecturer_factory
     for id in ids_:
         response_model: Lecturer = dbsession.query(Lecturer).get(id)
@@ -171,6 +174,7 @@ def lecturer_factory(dbsession: Session):
 @pytest.fixture()
 def group_factory(dbsession: Session):
     ids_ = []
+
     def _group_factory(client_auth: TestClient):
         RESOURCE = "/timetable/group/"
         request_obj = {
@@ -182,6 +186,7 @@ def group_factory(dbsession: Session):
         nonlocal ids_
         ids_.append(yielding := response.json()["id"])
         return RESOURCE + str(yielding)
+
     yield _group_factory
     for id in ids_:
         response_model: Group = dbsession.query(Group).get(id)

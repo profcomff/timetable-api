@@ -74,15 +74,15 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
 
 @event_router.get("/", response_model=GetListEvent | None)
 async def get_events(
-        start: date | None = Query(default=None, description="Default: Today"),
-        end: date | None = Query(default=None, description="Default: Tomorrow"),
-        group_id: int | None = None,
-        lecturer_id: int | None = None,
-        room_id: int | None = None,
-        detail: list[Literal["comment", "description", ""]] | None = Query(None),
-        format: Literal["json", "ics"] = "json",
-        limit: int = 100,
-        offset: int = 0,
+    start: date | None = Query(default=None, description="Default: Today"),
+    end: date | None = Query(default=None, description="Default: Tomorrow"),
+    group_id: int | None = None,
+    lecturer_id: int | None = None,
+    room_id: int | None = None,
+    detail: list[Literal["comment", "description", ""]] | None = Query(None),
+    format: Literal["json", "ics"] = "json",
+    limit: int = 100,
+    offset: int = 0,
 ) -> GetListEvent | FileResponse:
     start = start or date.today()
     end = end or date.today() + timedelta(days=1)
@@ -118,13 +118,15 @@ async def create_events(events: list[EventPost], _: auth.User = Depends(auth.get
         rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
         lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
         group = Group.get(event.group_id, session=db.session)
-        result.append(Event.create(
-            **event_dict,
-            room=rooms,
-            lecturer=lecturers,
-            group=group,
-            session=db.session,
-        ))
+        result.append(
+            Event.create(
+                **event_dict,
+                room=rooms,
+                lecturer=lecturers,
+                group=group,
+                session=db.session,
+            )
+        )
     return parse_obj_as(list[EventGet], result)
 
 
@@ -135,8 +137,9 @@ async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(aut
 
 @event_router.delete("/bulk", response_model=None)
 async def delete_events(dates: BulkDeleteScheme, _: auth.User = Depends(auth.get_current_user)) -> None:
-    db.session.query(Event).filter(Event.start_ts >= dates.start,
-        Event.end_ts < dates.end).update(values={"is_deleted": True})
+    db.session.query(Event).filter(Event.start_ts >= dates.start, Event.end_ts < dates.end).update(
+        values={"is_deleted": True}
+    )
     # for event in events:
     #     Event.delete(event.id, session=db.session)
 

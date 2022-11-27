@@ -57,7 +57,7 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
             "lecturer_id": [lecturer_id1],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",
-    },
+        },
         {
             "name": "string",
             "room_id": [room_id2],
@@ -65,7 +65,7 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
             "lecturer_id": [lecturer_id2],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",
-        }
+        },
     ]
     response = client_auth.post(f"{RESOURCE}bulk", json=request_obj)
     assert response.status_code == status.HTTP_200_OK, response.json()
@@ -265,7 +265,7 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
             "lecturer_id": [lecturer_id2],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",
-        }
+        },
     ]
     response = client_auth.post(f"{RESOURCE}bulk", json=request_obj)
     created = response.json()
