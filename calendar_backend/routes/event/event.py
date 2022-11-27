@@ -2,13 +2,11 @@ import logging
 from datetime import date, timedelta
 from typing import Literal
 
-import sqlalchemy
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
-import calendar_backend.methods.utils
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
 from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, Group
@@ -140,8 +138,6 @@ async def delete_events(dates: BulkDeleteScheme, _: auth.User = Depends(auth.get
     db.session.query(Event).filter(Event.start_ts >= dates.start, Event.end_ts < dates.end).update(
         values={"is_deleted": True}
     )
-    # for event in events:
-    #     Event.delete(event.id, session=db.session)
 
 
 @event_router.delete("/{id}", response_model=None)

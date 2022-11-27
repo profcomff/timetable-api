@@ -270,7 +270,7 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
     response = client_auth.post(f"{RESOURCE}bulk", json=request_obj)
     created = response.json()
     assert response.status_code == status.HTTP_200_OK, response.json()
-    response = client_auth.delete(f"{RESOURCE}bulk", json={"start": "2022-08-26", "end": "2022-08-27"})
+    response = client_auth.delete(f"{RESOURCE}bulk", data={"start": "2022-08-26", "end": "2022-08-27"})
     assert response.status_code == 200
     response = client_auth.get(f"{RESOURCE}{created[0]['id']}")
     assert response.status_code == 404
