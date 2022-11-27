@@ -18,6 +18,7 @@ depends_on = None
 directions_native = sa.Enum('North', 'South', name="Directions")
 directions = sa.Enum('North', 'South', native_enum=False)
 
+
 def upgrade():
     # FIXME: Не надо бы с прода удалять столбцы не скопировав данные
     op.drop_column("room", "direction")

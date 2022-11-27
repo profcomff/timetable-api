@@ -9,9 +9,30 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('comment_event', sa.Column('approve_status', sa.Enum('APPROVED', 'DECLINED', 'PENDING', name='approvestatuses', native_enum=False), nullable=False))
-    op.add_column('comment_lecturer', sa.Column('approve_status', sa.Enum('APPROVED', 'DECLINED', 'PENDING', name='approvestatuses', native_enum=False), nullable=False))
-    op.add_column('photo', sa.Column('approve_status', sa.Enum('APPROVED', 'DECLINED', 'PENDING', name='approvestatuses', native_enum=False), nullable=False))
+    op.add_column(
+        'comment_event',
+        sa.Column(
+            'approve_status',
+            sa.Enum('APPROVED', 'DECLINED', 'PENDING', name='approvestatuses', native_enum=False),
+            nullable=False,
+        ),
+    )
+    op.add_column(
+        'comment_lecturer',
+        sa.Column(
+            'approve_status',
+            sa.Enum('APPROVED', 'DECLINED', 'PENDING', name='approvestatuses', native_enum=False),
+            nullable=False,
+        ),
+    )
+    op.add_column(
+        'photo',
+        sa.Column(
+            'approve_status',
+            sa.Enum('APPROVED', 'DECLINED', 'PENDING', name='approvestatuses', native_enum=False),
+            nullable=False,
+        ),
+    )
 
 
 def downgrade():
