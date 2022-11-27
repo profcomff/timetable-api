@@ -5,7 +5,9 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
+from pydantic import parse_obj_as
 
+import calendar_backend.methods.utils
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
 from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, Group
@@ -101,6 +103,24 @@ async def create_event(event: EventPost, _: auth.User = Depends(auth.get_current
     )
 
 
+@event_router.post("/bulk", response_model=list[EventGet])
+async def create_events(events: list[EventPost], _: auth.User = Depends(auth.get_current_user)) -> list[EventGet]:
+    result = []
+    for event in events:
+        event_dict = event.dict()
+        rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
+        lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
+        group = Group.get(event.group_id, session=db.session)
+        result.append(Event.create(
+            **event_dict,
+            room=rooms,
+            lecturer=lecturers,
+            group=group,
+            session=db.session,
+        ))
+        return parse_obj_as(list[EventGet], result)
+
+
 @event_router.patch("/{id}", response_model=EventGet)
 async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(auth.get_current_user)) -> EventGet:
     return EventGet.from_orm(Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True)))
@@ -109,3 +129,13 @@ async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(aut
 @event_router.delete("/{id}", response_model=None)
 async def delete_event(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Event.delete(id, session=db.session)
+
+
+@event_router.delete("/bulk", response_model=None)
+async def delete_events(start: date, end: date, _: auth.User = Depends(auth.get_current_user)) -> None:
+    events = Event.get_all(session=db.session).filter(
+        Event.start_ts >= start,
+        Event.end_ts < end,
+    ).all()
+    for event in events:
+        Event.delete(event.id, session=db.session)
