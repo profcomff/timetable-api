@@ -2,6 +2,7 @@ import logging
 from datetime import date, timedelta
 from typing import Literal
 
+import sqlalchemy
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
@@ -11,6 +12,7 @@ import calendar_backend.methods.utils
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
 from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, Group
+from calendar_backend.routes.models.base import Base
 from calendar_backend.routes.models.event import (
     EventGet,
     EventPatch,
@@ -22,6 +24,11 @@ from calendar_backend.settings import get_settings
 event_router = APIRouter(prefix="/timetable/event", tags=["Event"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
+
+
+class BulkDeleteScheme(Base):
+    start: date
+    end: date
 
 
 @event_router.get("/{id}", response_model=EventGet)
@@ -67,15 +74,15 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
 
 @event_router.get("/", response_model=GetListEvent | None)
 async def get_events(
-    start: date | None = Query(default=None, description="Default: Today"),
-    end: date | None = Query(default=None, description="Default: Tomorrow"),
-    group_id: int | None = None,
-    lecturer_id: int | None = None,
-    room_id: int | None = None,
-    detail: list[Literal["comment", "description", ""]] | None = Query(None),
-    format: Literal["json", "ics"] = "json",
-    limit: int = 100,
-    offset: int = 0,
+        start: date | None = Query(default=None, description="Default: Today"),
+        end: date | None = Query(default=None, description="Default: Tomorrow"),
+        group_id: int | None = None,
+        lecturer_id: int | None = None,
+        room_id: int | None = None,
+        detail: list[Literal["comment", "description", ""]] | None = Query(None),
+        format: Literal["json", "ics"] = "json",
+        limit: int = 100,
+        offset: int = 0,
 ) -> GetListEvent | FileResponse:
     start = start or date.today()
     end = end or date.today() + timedelta(days=1)
@@ -118,7 +125,7 @@ async def create_events(events: list[EventPost], _: auth.User = Depends(auth.get
             group=group,
             session=db.session,
         ))
-        return parse_obj_as(list[EventGet], result)
+    return parse_obj_as(list[EventGet], result)
 
 
 @event_router.patch("/{id}", response_model=EventGet)
@@ -126,16 +133,16 @@ async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(aut
     return EventGet.from_orm(Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True)))
 
 
+@event_router.delete("/bulk", response_model=None)
+async def delete_events(dates: BulkDeleteScheme, _: auth.User = Depends(auth.get_current_user)) -> None:
+    events = Event.get_all(session=db.session).filter(
+        Event.start_ts >= dates.start,
+        Event.end_ts < dates.end,
+    ).update({Event.is_deleted: False}, synchronize_session="fetch").all()
+    # for event in events:
+    #     Event.delete(event.id, session=db.session)
+
+
 @event_router.delete("/{id}", response_model=None)
 async def delete_event(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Event.delete(id, session=db.session)
-
-
-@event_router.delete("/bulk", response_model=None)
-async def delete_events(start: date, end: date, _: auth.User = Depends(auth.get_current_user)) -> None:
-    events = Event.get_all(session=db.session).filter(
-        Event.start_ts >= start,
-        Event.end_ts < end,
-    ).all()
-    for event in events:
-        Event.delete(event.id, session=db.session)

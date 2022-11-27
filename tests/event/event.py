@@ -36,6 +36,65 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
     assert response_model.group_id == request_obj["group_id"]
 
 
+def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, group_factory, lecturer_factory):
+    room_path1 = room_factory(client_auth)
+    group_path1 = group_factory(client_auth)
+    lecturer_path1 = lecturer_factory(client_auth)
+    room_path2 = room_factory(client_auth)
+    group_path2 = group_factory(client_auth)
+    lecturer_path2 = lecturer_factory(client_auth)
+    room_id1 = int(room_path1.split("/")[-1])
+    group_id1 = int(group_path1.split("/")[-1])
+    lecturer_id1 = int(lecturer_path1.split("/")[-1])
+    room_id2 = int(room_path2.split("/")[-1])
+    group_id2 = int(group_path2.split("/")[-1])
+    lecturer_id2 = int(lecturer_path2.split("/")[-1])
+    request_obj = [
+        {
+            "name": "string",
+            "room_id": [room_id1],
+            "group_id": group_id1,
+            "lecturer_id": [lecturer_id1],
+            "start_ts": "2022-08-26T22:32:38.575Z",
+            "end_ts": "2022-08-26T22:32:38.575Z",
+    },
+        {
+            "name": "string",
+            "room_id": [room_id2],
+            "group_id": group_id2,
+            "lecturer_id": [lecturer_id2],
+            "start_ts": "2022-08-26T22:32:38.575Z",
+            "end_ts": "2022-08-26T22:32:38.575Z",
+        }
+    ]
+    response = client_auth.post(f"{RESOURCE}bulk", json=request_obj)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    response_obj = response.json()
+    assert response_obj[0]["name"] == request_obj[0]["name"]
+    assert response_obj[0]["room"][0]["id"] == room_id1
+    assert response_obj[0]["group"]["id"] == request_obj[0]["group_id"]
+    assert response_obj[0]["lecturer"][0]["id"] == lecturer_id1
+    assert response_obj[0]["start_ts"][:20] == request_obj[0]["start_ts"][:20]
+    assert response_obj[0]["end_ts"][:20] == request_obj[0]["end_ts"][:20]
+    response_model: Event = dbsession.query(Event).get(response_obj[0]["id"])
+    assert response_model.name == request_obj[0]["name"]
+    assert [row.id for row in response_model.room] == request_obj[0]["room_id"]
+    assert [row.id for row in response_model.lecturer] == request_obj[0]["lecturer_id"]
+    assert response_model.group_id == request_obj[0]["group_id"]
+
+    assert response_obj[1]["name"] == request_obj[1]["name"]
+    assert response_obj[1]["room"][0]["id"] == room_id2
+    assert response_obj[1]["group"]["id"] == request_obj[1]["group_id"]
+    assert response_obj[1]["lecturer"][0]["id"] == lecturer_id2
+    assert response_obj[1]["start_ts"][:20] == request_obj[1]["start_ts"][:20]
+    assert response_obj[1]["end_ts"][:20] == request_obj[1]["end_ts"][:20]
+    response_model: Event = dbsession.query(Event).get(response_obj[1]["id"])
+    assert response_model.name == request_obj[1]["name"]
+    assert [row.id for row in response_model.room] == request_obj[1]["room_id"]
+    assert [row.id for row in response_model.lecturer] == request_obj[1]["lecturer_id"]
+    assert response_model.group_id == request_obj[1]["group_id"]
+
+
 def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer_path, group_path):
     room_id = int(room_path.split("/")[-1])
     group_id = int(group_path.split("/")[-1])
@@ -137,7 +196,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
-    client_auth.patch(RESOURCE + f"{id_}/", json=request_obj_2)
+    client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
     response = client_auth.get(RESOURCE + f"{id_}/")
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
@@ -175,3 +234,45 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     dbsession.delete(lecturer)
     dbsession.delete(group)
     dbsession.commit()
+
+
+def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factory, group_factory, lecturer_factory):
+    room_path1 = room_factory(client_auth)
+    group_path1 = group_factory(client_auth)
+    lecturer_path1 = lecturer_factory(client_auth)
+    room_path2 = room_factory(client_auth)
+    group_path2 = group_factory(client_auth)
+    lecturer_path2 = lecturer_factory(client_auth)
+    room_id1 = int(room_path1.split("/")[-1])
+    group_id1 = int(group_path1.split("/")[-1])
+    lecturer_id1 = int(lecturer_path1.split("/")[-1])
+    room_id2 = int(room_path2.split("/")[-1])
+    group_id2 = int(group_path2.split("/")[-1])
+    lecturer_id2 = int(lecturer_path2.split("/")[-1])
+    request_obj = [
+        {
+            "name": "string",
+            "room_id": [room_id1],
+            "group_id": group_id1,
+            "lecturer_id": [lecturer_id1],
+            "start_ts": "2022-08-26T22:32:38.575Z",
+            "end_ts": "2022-08-26T22:32:38.575Z",
+        },
+        {
+            "name": "string",
+            "room_id": [room_id2],
+            "group_id": group_id2,
+            "lecturer_id": [lecturer_id2],
+            "start_ts": "2022-08-26T22:32:38.575Z",
+            "end_ts": "2022-08-26T22:32:38.575Z",
+        }
+    ]
+    response = client_auth.post(f"{RESOURCE}bulk", json=request_obj)
+    created = response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    response = client_auth.delete(f"{RESOURCE}bulk", json={"start": "2022-08-26", "end": "2022-08-27"})
+    assert response.status_code == 200
+    response = client_auth.get(f"{RESOURCE}{created[0]['id']}")
+    assert response.status_code == 404
+    response = client_auth.get(f"{RESOURCE}{created[1]['id']}")
+    assert response.status_code == 404
