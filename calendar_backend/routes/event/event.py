@@ -24,11 +24,6 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-class BulkDeleteScheme(Base):
-    start: date
-    end: date
-
-
 @event_router.get("/{id}", response_model=EventGet)
 async def get_event_by_id(id: int) -> EventGet:
     return EventGet.from_orm(Event.get(id, session=db.session))
@@ -134,8 +129,8 @@ async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(aut
 
 
 @event_router.delete("/bulk", response_model=None)
-async def delete_events(dates: BulkDeleteScheme, _: auth.User = Depends(auth.get_current_user)) -> None:
-    db.session.query(Event).filter(Event.start_ts >= dates.start, Event.end_ts < dates.end).update(
+async def delete_events(start: date, end: date, _: auth.User = Depends(auth.get_current_user)) -> None:
+    db.session.query(Event).filter(Event.start_ts >= start, Event.end_ts < end).update(
         values={"is_deleted": True}
     )
 
