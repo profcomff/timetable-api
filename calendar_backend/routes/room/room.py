@@ -37,20 +37,23 @@ async def get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> GetLis
 
 @room_router.post("/", response_model=RoomGet)
 async def create_room(room: RoomPost, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
-    if bool(Room.get_all(session=db.session).filter(
-        Room.name == room.name, Room.building == room.building
-    ).one_or_none()):
+    if bool(
+        Room.get_all(session=db.session).filter(Room.name == room.name, Room.building == room.building).one_or_none()
+    ):
         raise HTTPException(status_code=423, detail="Already exists")
     return RoomGet.from_orm(Room.create(**room.dict(exclude_unset=True), session=db.session))
 
 
 @room_router.patch("/{id}", response_model=RoomGet)
-async def patch_room(id: int, room: RoomPatch, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
-    if bool(query := Room.get_all(session=db.session).filter(
-        Room.name == room.name, Room.building == room.building
-    ).one_or_none()) and query.id != id:
+async def patch_room(id: int, room_inp: RoomPatch, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
+    room = (
+        Room.get_all(session=db.session)
+        .filter(Room.name == room_inp.name, Room.building == room_inp.building)
+        .one_or_none()
+    )
+    if room and room.id != id:
         raise HTTPException(status_code=423, detail="Already exists")
-    return RoomGet.from_orm(Room.update(id, **room.dict(exclude_unset=True), session=db.session))
+    return RoomGet.from_orm(Room.update(id, **room_inp.dict(exclude_unset=True), session=db.session))
 
 
 @room_router.delete("/{id}", response_model=None)

@@ -168,8 +168,6 @@ class Photo(BaseDbModel):
     )
 
 
-
-
 class CommentLecturer(BaseDbModel):
     lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
     author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)

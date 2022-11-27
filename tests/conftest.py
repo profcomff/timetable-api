@@ -121,3 +121,74 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
     response_model = dbsession.query(Event).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
+
+
+@pytest.fixture()
+def room_factory(dbsession: Session):
+    ids_ = []
+
+    def _room_factory(client_auth: TestClient):
+        RESOURCE = "/timetable/room/"
+        request_obj = {
+            "name": datetime.now().isoformat(),
+            "direction": "North",
+        }
+        response = client_auth.post(RESOURCE, json=request_obj)
+        assert response.status_code == status.HTTP_200_OK, response.json()
+        nonlocal ids_
+        ids_.append(yielding := response.json()["id"])
+        return RESOURCE + str(yielding)
+
+    yield _room_factory
+    for id in ids_:
+        response_model: Room = dbsession.query(Room).get(id)
+        dbsession.delete(response_model)
+        dbsession.commit()
+
+
+@pytest.fixture()
+def lecturer_factory(dbsession: Session):
+    ids_ = []
+
+    def _lecturer_factory(client_auth: TestClient):
+        RESOURCE = "/timetable/lecturer/"
+        request_obj = {
+            "first_name": "Петр",
+            "middle_name": "Васильевич",
+            "last_name": "Тритий",
+            "description": "Очень умный",
+        }
+        response = client_auth.post(RESOURCE, json=request_obj)
+        assert response.status_code == status.HTTP_200_OK, response.json()
+        nonlocal ids_
+        ids_.append(yielding := response.json()["id"])
+        return RESOURCE + str(yielding)
+
+    yield _lecturer_factory
+    for id in ids_:
+        response_model: Lecturer = dbsession.query(Lecturer).get(id)
+        dbsession.delete(response_model)
+        dbsession.commit()
+
+
+@pytest.fixture()
+def group_factory(dbsession: Session):
+    ids_ = []
+
+    def _group_factory(client_auth: TestClient):
+        RESOURCE = "/timetable/group/"
+        request_obj = {
+            "name": "",
+            "number": datetime.now().isoformat(),
+        }
+        response = client_auth.post(RESOURCE, json=request_obj)
+        assert response.status_code == status.HTTP_200_OK, response.json()
+        nonlocal ids_
+        ids_.append(yielding := response.json()["id"])
+        return RESOURCE + str(yielding)
+
+    yield _group_factory
+    for id in ids_:
+        response_model: Group = dbsession.query(Group).get(id)
+        dbsession.delete(response_model)
+        dbsession.commit()
