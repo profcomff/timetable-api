@@ -125,7 +125,7 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
 
 @pytest.fixture()
 def room_factory(dbsession: Session):
-    id_: int
+    ids_ = []
     def _room_factory(client_auth: TestClient):
         RESOURCE = "/timetable/room/"
         request_obj = {
@@ -134,19 +134,20 @@ def room_factory(dbsession: Session):
         }
         response = client_auth.post(RESOURCE, json=request_obj)
         assert response.status_code == status.HTTP_200_OK, response.json()
-        nonlocal id_
-        id_ = response.json()["id"]
-        return RESOURCE + str(id_)
+        nonlocal ids_
+        ids_.append(yielding := response.json()["id"])
+        return RESOURCE + str(yielding)
     yield _room_factory
-    response_model: Room = dbsession.query(Room).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
+    for id in ids_:
+        response_model: Room = dbsession.query(Room).get(id)
+        dbsession.delete(response_model)
+        dbsession.commit()
 
 
 
 @pytest.fixture()
 def lecturer_factory(dbsession: Session):
-    id_: int
+    ids_ = []
     def _lecturer_factory(client_auth: TestClient):
         RESOURCE = "/timetable/lecturer/"
         request_obj = {
@@ -157,18 +158,19 @@ def lecturer_factory(dbsession: Session):
         }
         response = client_auth.post(RESOURCE, json=request_obj)
         assert response.status_code == status.HTTP_200_OK, response.json()
-        nonlocal id_
-        id_ = response.json()["id"]
-        return RESOURCE + str(id_)
+        nonlocal ids_
+        ids_.append(yielding := response.json()["id"])
+        return RESOURCE + str(yielding)
     yield _lecturer_factory
-    response_model: Lecturer = dbsession.query(Lecturer).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
+    for id in ids_:
+        response_model: Lecturer = dbsession.query(Lecturer).get(id)
+        dbsession.delete(response_model)
+        dbsession.commit()
 
 
 @pytest.fixture()
 def group_factory(dbsession: Session):
-    id_: int
+    ids_ = []
     def _group_factory(client_auth: TestClient):
         RESOURCE = "/timetable/group/"
         request_obj = {
@@ -177,10 +179,11 @@ def group_factory(dbsession: Session):
         }
         response = client_auth.post(RESOURCE, json=request_obj)
         assert response.status_code == status.HTTP_200_OK, response.json()
-        nonlocal id_
-        id_ = response.json()["id"]
-        return RESOURCE + str(id_)
+        nonlocal ids_
+        ids_.append(yielding := response.json()["id"])
+        return RESOURCE + str(yielding)
     yield _group_factory
-    response_model: Group = dbsession.query(Group).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
+    for id in ids_:
+        response_model: Group = dbsession.query(Group).get(id)
+        dbsession.delete(response_model)
+        dbsession.commit()

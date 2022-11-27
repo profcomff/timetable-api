@@ -135,10 +135,8 @@ async def patch_event(id: int, event_inp: EventPatch, _: auth.User = Depends(aut
 
 @event_router.delete("/bulk", response_model=None)
 async def delete_events(dates: BulkDeleteScheme, _: auth.User = Depends(auth.get_current_user)) -> None:
-    events = Event.get_all(session=db.session).filter(
-        Event.start_ts >= dates.start,
-        Event.end_ts < dates.end,
-    ).update({Event.is_deleted: False}, synchronize_session="fetch").all()
+    db.session.query(Event).filter(Event.start_ts >= dates.start,
+        Event.end_ts < dates.end).update(values={"is_deleted": True})
     # for event in events:
     #     Event.delete(event.id, session=db.session)
 

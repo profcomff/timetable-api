@@ -276,3 +276,7 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
     assert response.status_code == 404
     response = client_auth.get(f"{RESOURCE}{created[1]['id']}")
     assert response.status_code == 404
+    obj1 = dbsession.query(Event).filter(Event.id == created[0]["id"]).one()
+    obj2 = dbsession.query(Event).filter(Event.id == created[1]["id"]).one()
+    for row in (obj1, obj2):
+        dbsession.delete(row)
