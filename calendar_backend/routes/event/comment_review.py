@@ -23,7 +23,7 @@ async def get_unreviewed_comments(
 ) -> list[CommentEventGet]:
     comments = (
         DbCommentEvent.get_all(session=db.session, only_approved=False)
-        .filter(DbCommentEvent.lecturer_id == event_id, DbCommentEvent.approve_status == ApproveStatuses.PENDING)
+        .filter(DbCommentEvent.event_id == event_id, DbCommentEvent.approve_status == ApproveStatuses.PENDING)
         .all()
     )
     return parse_obj_as(list[CommentEventGet], comments)
