@@ -12,7 +12,7 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
-    STATIC_PATH: DirectoryPath = "/static"
+    STATIC_PATH: DirectoryPath = "static"
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
     REQUIRE_REVIEW_PHOTOS: bool = True
     REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
