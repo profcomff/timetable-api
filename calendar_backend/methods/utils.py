@@ -84,7 +84,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
     lecturer = Lecturer.get(lecturer_id, session=session)
     random_string = ''.join(random.choice(string.ascii_letters) for _ in range(32))
     ext = file.filename.split('.')[-1]
-    path = os.path.join(settings.STATIC_PATH, "lecturer", f"{random_string}.{ext}")
+    path = os.path.join(settings.STATIC_PATH, "photo", "lecturer", f"{random_string}.{ext}")
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
