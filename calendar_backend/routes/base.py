@@ -111,7 +111,7 @@ app.add_middleware(
 )
 app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
 
-app.mount('/static', StaticFiles(directory='static'), 'static')
+app.mount('/static', StaticFiles(directory=settings.STATIC_PATH), 'static')
 
 app.include_router(gcal)
 app.include_router(auth_router)

@@ -1,5 +1,10 @@
 from fastapi.testclient import TestClient
 from starlette import status
+from calendar_backend.settings import get_settings
+
+
+settings = get_settings()
+settings.STATIC_PATH = './static'
 
 
 def test_read_all(client_auth: TestClient, photo_path: str):

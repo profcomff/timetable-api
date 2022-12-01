@@ -54,9 +54,9 @@ async def create_user_calendar_file(user_calendar: Calendar, group: str) -> str:
     """
     logger.debug(f"Creating .ics file from iCalendar {user_calendar.name}")
     try:
-        with open(f"{settings.ICS_PATH}/{group}", "wb") as f:
+        with open(f"{settings.STATIC_PATH}/cache/{group}", "wb") as f:
             f.write(user_calendar.to_ical())
-        return f"{settings.ICS_PATH}/{group}"
+        return f"{settings.STATIC_PATH}/cache/{group}"
     except OSError as e:
         logger.info(f"The error {e} occurred")
 
@@ -96,9 +96,9 @@ def check_file_for_creation_date(path_file: str) -> bool:
 
 
 async def create_ics(group_id: int, start: datetime.date, end: datetime.date, session: Session):
-    if check_file_for_creation_date(f"{settings.ICS_PATH}/{group_id}") is False:
+    if check_file_for_creation_date(f"{settings.STATIC_PATH}/cache/{group_id}") is False:
         logger.debug(f"Calendar for group '{group_id}' found in cache")
-        return FileResponse(f"{settings.ICS_PATH}/{group_id}")
+        return FileResponse(f"{settings.STATIC_PATH}/cache/{group_id}")
     else:
         async with asyncio.Lock():
             logger.debug("Getting user calendar...")

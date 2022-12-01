@@ -6,14 +6,13 @@ from pydantic import BaseSettings, PostgresDsn, AnyHttpUrl, DirectoryPath, Json
 class Settings(BaseSettings):
     """Application settings"""
 
-    DB_DSN: PostgresDsn
+    DB_DSN: PostgresDsn = 'postgresql://postgres@localhost:5432/postgres'
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
     SCOPES: list[str] = [
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
-    ICS_PATH: DirectoryPath = "static/cache"
-    PHOTO_LECTURER_PATH: DirectoryPath = 'static/photo/lecturer'
+    STATIC_PATH: DirectoryPath | None
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
     REQUIRE_REVIEW_PHOTOS: bool = True
     REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
