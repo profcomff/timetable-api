@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import BaseSettings, PostgresDsn, AnyHttpUrl, DirectoryPath, Json
+from pydantic import BaseSettings, PostgresDsn, AnyHttpUrl, DirectoryPath, Json, Field
 
 
 class Settings(BaseSettings):
@@ -12,8 +12,7 @@ class Settings(BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
-    ICS_PATH: DirectoryPath = "static/cache"
-    PHOTO_LECTURER_PATH: DirectoryPath = 'static/photo/lecturer'
+    STATIC_PATH: DirectoryPath = "/static"
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
     REQUIRE_REVIEW_PHOTOS: bool = True
     REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
