@@ -60,7 +60,7 @@ async def not_found_error(request: starlette.requests.Request, exc: ObjectNotFou
 
 
 @app.exception_handler(ForbiddenAction)
-async def not_found_error(request: starlette.requests.Request, exc: ForbiddenAction):
+async def forbidden_action(request: starlette.requests.Request, exc: ForbiddenAction):
     return JSONResponse({"error": exc.args[0], "request": request.path_params}, status_code=403)
 
 

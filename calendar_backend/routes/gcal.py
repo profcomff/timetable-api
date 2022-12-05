@@ -15,11 +15,10 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build, UnknownApiNameOrVersion
 from pydantic.types import Json
 
-from calendar_backend.methods import utils
-from calendar_backend.settings import get_settings
 from calendar_backend.google_engine import create_calendar_with_timetable
 from calendar_backend.google_engine import get_calendar_service_from_token
-from calendar_backend.models import Credentials
+from calendar_backend.models import Credentials, Group
+from calendar_backend.settings import get_settings
 
 gcal = APIRouter(tags=["Utils: Google"])
 settings = get_settings()
@@ -40,7 +39,8 @@ def get_flow(state=""):
 
 @gcal.get("/")
 async def home(request: Request):
-    groups = await utils.create_group_list(db.session)
+    groups = [f"{row.number}, {row.name}" if row.name else f"{row.number}"
+              for row in db.session.query(Group).filter().all()]
     return templates.TemplateResponse(
         "index.html",
         {"request": request, "groups": groups},
@@ -53,7 +53,7 @@ async def get_user_flow(state: str):
         user_flow = get_flow(state)
         return RedirectResponse(user_flow.authorization_url()[0])
     else:
-        logger.info(f"Missing google service credentials")
+        logger.info("Missing google service credentials")
         return HTTPException(502, "Connection to google failed")
 
 
@@ -64,7 +64,8 @@ async def get_credentials(
     scope: str,
     state: str,
 ):
-    groups = await utils.create_group_list(db.session)
+    groups = [f"{row.number}, {row.name}" if row.name else f"{row.number}"
+              for row in db.session.query(Group).filter().all()]
     scope = scope.split(unquote("%20"))
     group = state
     flow = get_flow()

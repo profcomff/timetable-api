@@ -1,6 +1,6 @@
 import datetime
 
-from .base import Base, RoomGet, GroupGet, CommentEventGet, LecturerGet, EventGet
+from .base import Base, RoomGet, GroupGet, CommentEventGet, LecturerGet
 
 
 class EventPatch(Base):

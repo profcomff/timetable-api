@@ -69,17 +69,6 @@ async def get_lecturer_lessons_in_daterange(
     return events_list
 
 
-async def create_group_list(session: Session) -> list:
-    groups: list[Group] = session.query(Group).filter().all()
-    return [f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in groups]
-
-
-async def check_group_existing(session: Session, group_num: str) -> bool:
-    if session.query(Group).filter(Group.number == group_num).one_or_none():
-        return True
-    return False
-
-
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     lecturer = Lecturer.get(lecturer_id, session=session)
     random_string = ''.join(random.choice(string.ascii_letters) for _ in range(32))

@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend.methods import utils, auth
+from calendar_backend.methods import auth
 from calendar_backend.models import Group
 from calendar_backend.routes.models import GroupGet, GroupPost, GroupPatch, GetListGroup
 from calendar_backend.settings import get_settings
@@ -37,7 +37,7 @@ async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetLi
 
 @group_router.post("/", response_model=GroupGet)
 async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current_user)) -> GroupGet:
-    if await utils.check_group_existing(db.session, group.number):
+    if db.session.query(Group).filter(Group.number == group.number).one_or_none():
         raise HTTPException(status_code=423, detail="Already exists")
     return GroupGet.from_orm(Group.create(**group.dict(), session=db.session))
 
@@ -49,8 +49,8 @@ async def patch_group(
     _: auth.User = Depends(auth.get_current_user),
 ) -> GroupGet:
     if (
-        bool(query := Group.get_all(session=db.session).filter(Group.number == group_inp.number).one_or_none())
-        and query.id != id
+        bool(query := Group.get_all(session=db.session).filter(Group.number == group_inp.number).one_or_none()) and
+            query.id != id
     ):
         raise HTTPException(status_code=423, detail="Already exists")
     return GroupGet.from_orm(Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session))
