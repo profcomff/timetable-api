@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from enum import Enum
 
-from sqlalchemy import Column, Integer, and_, not_
+from sqlalchemy import Column, Integer, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import Query, RelationshipProperty, Session
+from sqlalchemy.orm import Query, Session
 
 from calendar_backend.exceptions import ObjectNotFound
 

@@ -10,9 +10,8 @@ from pydantic import parse_obj_as
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import auth, list_calendar
 from calendar_backend.models import Room, Lecturer, Event, EventsLecturers, EventsRooms, Group
-from calendar_backend.routes.models.base import Base
+from calendar_backend.routes.models import EventGet
 from calendar_backend.routes.models.event import (
-    EventGet,
     EventPatch,
     EventPost,
     GetListEvent,
@@ -31,7 +30,7 @@ async def get_event_by_id(id: int) -> EventGet:
 
 async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id, detail, limit, offset):
     if bool(group_id) + bool(lecturer_id) + bool(room_id) != 1:
-        raise NotEnoughCriteria(f"Exactly one argument group_id, lecturer_id or room_id required")
+        raise NotEnoughCriteria("Exactly one argument group_id, lecturer_id or room_id required")
     events = Event.get_all(session=db.session).filter(
         Event.start_ts >= start,
         Event.end_ts < end,

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from calendar_backend.settings import get_settings
 from calendar_backend.methods.utils import get_lessons_by_group_from_date
 from calendar_backend.models import Event, Group
-from .event import create_google_calendar_event, Event
+from .event import create_google_calendar_event
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ async def create_google_events_from_db(group_id: int, session: Session) -> list[
     """
     group, _ = Group.get(group_id, session=session)
     group_lessons: list[Event] = await get_lessons_by_group_from_date(group, datetime.date.today())
-    list_of_lessons: list[Event] = []
+    list_of_lessons = []
     time_zone = "+03:00"
     logger.debug(f"Getting list of subjects for {group}...")
     for lesson in group_lessons:
