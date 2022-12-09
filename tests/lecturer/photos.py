@@ -1,13 +1,9 @@
 import os
 
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 from starlette import status
 
-from calendar_backend.models import CommentLecturer
-from calendar_backend.models.db import Photo
 from calendar_backend.settings import get_settings
-
 
 settings = get_settings()
 settings.STATIC_PATH = './static'
