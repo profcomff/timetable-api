@@ -2,9 +2,10 @@ import datetime
 import os
 import random
 import string
+from typing import Final
 
 import aiofiles
-from fastapi import File, UploadFile
+from fastapi import File, UploadFile, HTTPException
 from sqlalchemy.orm import Session
 
 from calendar_backend.models.db import (
@@ -68,11 +69,14 @@ async def get_lecturer_lessons_in_daterange(
             events_list.append(lesson)
     return events_list
 
+SUPPORTED_FILE_EXTENSIONS: Final[list[str]] = ['png', 'svg', 'jpg', 'jpeg']
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     lecturer = Lecturer.get(lecturer_id, session=session)
     random_string = ''.join(random.choice(string.ascii_letters) for _ in range(32))
     ext = file.filename.split('.')[-1]
+    if ext not in SUPPORTED_FILE_EXTENSIONS:
+        raise HTTPException(status_code=422, detail="Unsupported file extension")
     path = os.path.join(settings.STATIC_PATH, "photo", "lecturer", f"{random_string}.{ext}")
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()

@@ -101,6 +101,8 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
     dbsession.commit()
 
 
+
+
 @pytest.fixture()
 def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_path, group_path):
     RESOURCE = f"/timetable/event/"
