@@ -90,5 +90,4 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         session.add(photo)
         session.flush()
         lecturer.avatar_id = lecturer.last_photo.id if lecturer.last_photo else lecturer.avatar_id
-        session.commit()
     return photo
