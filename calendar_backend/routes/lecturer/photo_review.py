@@ -39,5 +39,5 @@ async def review_photo(
         DbPhoto.delete(photo.id, session=db.session)
     db.session.flush()
     lecturer.avatar_id = lecturer.last_photo.id if lecturer.last_photo else lecturer.avatar_id
-    db.session.flush()
+    db.session.commit()
     return Photo.from_orm(photo)

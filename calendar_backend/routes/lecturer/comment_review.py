@@ -44,5 +44,5 @@ async def review_comment(
     DbCommentLecturer.update(comment.id, approve_status=action, session=db.session)
     if action == ApproveStatuses.DECLINED:
         DbCommentLecturer.delete(comment.id, session=db.session)
-    db.session.flush()
+    db.session.commit()
     return CommentLecturer.from_orm(comment)

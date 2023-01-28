@@ -27,7 +27,9 @@ async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo
     requests.post(url=f'{root}/timetable/lecturer/{lecturer_id}/photo', files={"photo": data})
     ```
     """
-    return Photo.from_orm(await utils.upload_lecturer_photo(lecturer_id, db.session, file=photo))
+    photo = await utils.upload_lecturer_photo(lecturer_id, db.session, file=photo)
+    db.session.commit()
+    return Photo.from_orm(photo)
 
 
 @lecturer_photo_router.get("/photo", response_model=LecturerPhotos)
@@ -49,7 +51,9 @@ async def delete_photo(id: int, lecturer_id: int) -> None:
         raise ObjectNotFound(DbPhoto, id)
     if photo.lecturer.avatar_id == photo.id:
         photo.lecturer.avatar_id = None
-    return DbPhoto.delete(id=id, session=db.session)
+    DbPhoto.delete(id=id, session=db.session)
+    db.session.commit()
+    return None
 
 
 @lecturer_photo_router.get("/photo/{id}", response_model=Photo)

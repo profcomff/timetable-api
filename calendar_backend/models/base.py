@@ -6,7 +6,7 @@ from enum import Enum
 from sqlalchemy import Column, Integer, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Query, Session, Mapped, mapped_column
 
 from calendar_backend.exceptions import ObjectNotFound
 
@@ -31,7 +31,7 @@ class DeclarativeBase:
 
 class BaseDbModel(DeclarativeBase):
     __abstract__ = True
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     def __repr__(self):
         attrs = []

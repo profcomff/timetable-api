@@ -41,7 +41,9 @@ async def create_room(room: RoomPost, _: auth.User = Depends(auth.get_current_us
         Room.get_all(session=db.session).filter(Room.name == room.name, Room.building == room.building).one_or_none()
     ):
         raise HTTPException(status_code=423, detail="Already exists")
-    return RoomGet.from_orm(Room.create(**room.dict(exclude_unset=True), session=db.session))
+    db_room = Room.create(**room.dict(exclude_unset=True), session=db.session)
+    db.session.commit()
+    return RoomGet.from_orm(db_room)
 
 
 @room_router.patch("/{id}", response_model=RoomGet)
@@ -53,9 +55,12 @@ async def patch_room(id: int, room_inp: RoomPatch, _: auth.User = Depends(auth.g
     )
     if room and room.id != id:
         raise HTTPException(status_code=423, detail="Already exists")
-    return RoomGet.from_orm(Room.update(id, **room_inp.dict(exclude_unset=True), session=db.session))
+    patched = Room.update(id, **room_inp.dict(exclude_unset=True), session=db.session)
+    db.session.commit()
+    return RoomGet.from_orm(patched)
 
 
 @room_router.delete("/{id}", response_model=None)
 async def delete_room(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Room.delete(id, session=db.session)
+    db.session.commit()
