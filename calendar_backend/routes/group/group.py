@@ -39,7 +39,9 @@ async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetLi
 async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current_user)) -> GroupGet:
     if db.session.query(Group).filter(Group.number == group.number).one_or_none():
         raise HTTPException(status_code=423, detail="Already exists")
-    return GroupGet.from_orm(Group.create(**group.dict(), session=db.session))
+    group = Group.create(**group.dict(), session=db.session)
+    db.session.commit()
+    return GroupGet.from_orm(group)
 
 
 @group_router.patch("/{id}", response_model=GroupGet)
@@ -53,9 +55,12 @@ async def patch_group(
             query.id != id
     ):
         raise HTTPException(status_code=423, detail="Already exists")
-    return GroupGet.from_orm(Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session))
+    patched = Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session)
+    db.session.commit()
+    return GroupGet.from_orm(patched)
 
 
 @group_router.delete("/{id}", response_model=None)
 async def delete_group(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Group.delete(id, session=db.session)
+    db.session.commit()

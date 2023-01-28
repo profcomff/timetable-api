@@ -280,3 +280,4 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
     obj2 = dbsession.query(Event).filter(Event.id == created[1]["id"]).one()
     for row in (obj1, obj2):
         dbsession.delete(row)
+    dbsession.commit()

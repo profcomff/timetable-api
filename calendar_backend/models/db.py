@@ -5,12 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-import sqlalchemy
-from sqlalchemy import Column
+from sqlalchemy import and_, or_, Integer, String, Boolean, JSON, DateTime, Text, ForeignKey, true
 from sqlalchemy import Enum as DbEnum
-from sqlalchemy import and_, or_
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from .base import BaseDbModel, ApproveStatuses
 
@@ -18,13 +16,13 @@ from .base import BaseDbModel, ApproveStatuses
 class Credentials(BaseDbModel):
     """User credentials"""
 
-    id = Column(sqlalchemy.Integer, primary_key=True)
-    group = Column(sqlalchemy.String, nullable=False)
-    email = Column(sqlalchemy.String, nullable=False)
-    scope = Column(sqlalchemy.JSON, nullable=False)
-    token = Column(sqlalchemy.JSON, nullable=False)
-    create_ts = Column(sqlalchemy.DateTime, nullable=False, default=datetime.utcnow)
-    update_ts = Column(sqlalchemy.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    group: Mapped[int] = mapped_column(String, nullable=False)
+    email: Mapped[int] = mapped_column(String, nullable=False)
+    scope: Mapped[int] = mapped_column(JSON, nullable=False)
+    token: Mapped[int] = mapped_column(JSON, nullable=False)
+    create_ts: Mapped[int] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    update_ts: Mapped[int] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Direction(str, Enum):
@@ -33,12 +31,12 @@ class Direction(str, Enum):
 
 
 class Room(BaseDbModel):
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    direction = sqlalchemy.Column(DbEnum(Direction, native_enum=False), nullable=True)
-    building = sqlalchemy.Column(sqlalchemy.String)
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    name: Mapped[int] = mapped_column(String, nullable=False, unique=True)
+    direction: Mapped[int] = mapped_column(DbEnum(Direction, native_enum=False), nullable=True)
+    building: Mapped[int] = mapped_column(String)
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    events: list[Event] = relationship(
+    events: Mapped[list[Event]] = relationship(
         "Event",
         back_populates="room",
         secondary="events_rooms",
@@ -48,34 +46,34 @@ class Room(BaseDbModel):
 
 
 class Lecturer(BaseDbModel):
-    first_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    middle_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    last_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    avatar_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("photo.id"))
-    description = sqlalchemy.Column(sqlalchemy.Text, nullable=True)
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    first_name: Mapped[int] = mapped_column(String, nullable=False)
+    middle_name: Mapped[int] = mapped_column(String, nullable=False)
+    last_name: Mapped[int] = mapped_column(String, nullable=False)
+    avatar_id: Mapped[int] = mapped_column(Integer, ForeignKey("photo.id"))
+    description: Mapped[int] = mapped_column(Text, nullable=True)
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    avatar: Photo = relationship(
+    avatar: Mapped[Photo] = relationship(
         "Photo",
         foreign_keys="Lecturer.avatar_id",
         backref="is_avatar_for",
         primaryjoin="and_(Lecturer.avatar_id==Photo.id, not_(Photo.is_deleted))",
     )
-    photos: list[Photo] = relationship(
+    photos: Mapped[list[Photo]] = relationship(
         "Photo",
         back_populates="lecturer",
         foreign_keys="Photo.lecturer_id",
         order_by="Photo.id",
         primaryjoin="and_(Lecturer.id==Photo.lecturer_id, not_(Photo.is_deleted), Photo.approve_status=='APPROVED')",
     )
-    events: list[Event] = relationship(
+    events: Mapped[list[Event]] = relationship(
         "Event",
         secondary="events_lecturers",
         order_by="(Event.start_ts)",
         back_populates="lecturer",
         secondaryjoin="and_(Event.id==EventsLecturers.event_id, not_(Event.is_deleted))",
     )
-    comments: list[CommentLecturer] = relationship(
+    comments: Mapped[list[CommentLecturer]] = relationship(
         "CommentLecturer",
         back_populates="lecturer",
         foreign_keys="CommentLecturer.lecturer_id",
@@ -84,7 +82,7 @@ class Lecturer(BaseDbModel):
 
     @hybrid_method
     def search(self, query: str) -> bool:
-        response = sqlalchemy.true
+        response = true
         query = query.split(' ')
         for q in query:
             response = and_(
@@ -98,11 +96,11 @@ class Lecturer(BaseDbModel):
 
 
 class Group(BaseDbModel):
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    number = sqlalchemy.Column(sqlalchemy.String, nullable=False, unique=True)
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    name: Mapped[int] = mapped_column(String, nullable=False)
+    number: Mapped[int] = mapped_column(String, nullable=False, unique=True)
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    events: list[Event] = relationship(
+    events: Mapped[list[Event]] = relationship(
         "Event",
         foreign_keys="Event.group_id",
         order_by="(Event.start_ts)",
@@ -111,31 +109,31 @@ class Group(BaseDbModel):
 
 
 class Event(BaseDbModel):
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("group.id"))
-    start_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
-    end_ts = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False)
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    name: Mapped[int] = mapped_column(String, nullable=False)
+    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("group.id"))
+    start_ts: Mapped[int] = mapped_column(DateTime, nullable=False)
+    end_ts: Mapped[int] = mapped_column(DateTime, nullable=False)
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    room: list[Room] = relationship(
+    room: Mapped[list[Room]] = relationship(
         "Room",
         back_populates="events",
         secondary="events_rooms",
         secondaryjoin="and_(Room.id==EventsRooms.room_id, not_(Room.is_deleted))",
     )
-    group: Group = relationship(
+    group: Mapped[Group] = relationship(
         "Group",
         back_populates="events",
         foreign_keys="Event.group_id",
         primaryjoin="and_(Group.id==Event.group_id, not_(Group.is_deleted))",
     )
-    lecturer: list[Lecturer] = relationship(
+    lecturer: Mapped[list[Lecturer]] = relationship(
         "Lecturer",
         back_populates="events",
         secondary="events_lecturers",
         secondaryjoin="and_(Lecturer.id==EventsLecturers.lecturer_id, not_(Lecturer.is_deleted))",
     )
-    comments: list[CommentEvent] = relationship(
+    comments: Mapped[list[CommentEvent]] = relationship(
         "CommentEvent",
         foreign_keys="CommentEvent.event_id",
         back_populates="event",
@@ -144,22 +142,22 @@ class Event(BaseDbModel):
 
 
 class EventsLecturers(BaseDbModel):
-    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
-    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
+    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"))
 
 
 class EventsRooms(BaseDbModel):
-    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
-    room_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("room.id"))
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
+    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("room.id"))
 
 
 class Photo(BaseDbModel):
-    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
-    link = sqlalchemy.Column(sqlalchemy.String, unique=True)
-    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"))
+    link: Mapped[int] = mapped_column(String, unique=True)
+    approve_status: Mapped[int] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    lecturer: Lecturer = relationship(
+    lecturer: Mapped[Lecturer] = relationship(
         "Lecturer",
         back_populates="photos",
         foreign_keys="Photo.lecturer_id",
@@ -169,15 +167,15 @@ class Photo(BaseDbModel):
 
 
 class CommentLecturer(BaseDbModel):
-    lecturer_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lecturer.id"))
-    author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
-    create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
-    update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"))
+    author_name: Mapped[int] = mapped_column(String, nullable=False)
+    text: Mapped[int] = mapped_column(String, nullable=False)
+    approve_status: Mapped[int] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
+    create_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow())
+    update_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    lecturer: Lecturer = relationship(
+    lecturer: Mapped[Lecturer] = relationship(
         "Lecturer",
         back_populates="comments",
         foreign_keys="CommentLecturer.lecturer_id",
@@ -186,15 +184,15 @@ class CommentLecturer(BaseDbModel):
 
 
 class CommentEvent(BaseDbModel):
-    event_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("event.id"))
-    author_name = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    text = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    approve_status = sqlalchemy.Column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
-    create_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow())
-    update_ts = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
-    is_deleted = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
+    author_name: Mapped[int] = mapped_column(String, nullable=False)
+    text: Mapped[int] = mapped_column(String, nullable=False)
+    approve_status: Mapped[int] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
+    create_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow())
+    update_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
 
-    event: Event = relationship(
+    event: Mapped[Event] = relationship(
         "Event",
         back_populates="comments",
         foreign_keys="CommentEvent.event_id",

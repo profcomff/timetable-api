@@ -54,7 +54,9 @@ async def get_lecturers(
 
 @lecturer_router.post("/", response_model=LecturerGet)
 async def create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
-    return LecturerGet.from_orm(Lecturer.create(session=db.session, **lecturer.dict()))
+    dblecturer = Lecturer.create(session=db.session, **lecturer.dict())
+    db.session.commit()
+    return LecturerGet.from_orm(dblecturer)
 
 
 @lecturer_router.patch("/{id}", response_model=LecturerGet)
@@ -70,9 +72,11 @@ async def patch_lecturer(
         )
     else:
         lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True))
+    db.session.commit()
     return LecturerGet.from_orm(lecturer_upd)
 
 
 @lecturer_router.delete("/{id}", response_model=None)
 async def delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Lecturer.delete(id, session=db.session)
+    db.session.commit()

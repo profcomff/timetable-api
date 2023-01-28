@@ -32,7 +32,7 @@ def client_auth(mocker: MockerFixture):
 def dbsession():
     settings = get_settings()
     engine = create_engine(settings.DB_DSN)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    TestingSessionLocal = sessionmaker(bind=engine)
     DeclarativeBase.metadata.create_all(bind=engine)
     return TestingSessionLocal()
 
