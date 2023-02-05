@@ -115,9 +115,3 @@ thread_pool = ThreadPoolExecutor()
 async def async_image_process(image_bytes: bytes) -> None:
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(thread_pool, partial(process_image, image_bytes))
-
-
-
-
-
-
