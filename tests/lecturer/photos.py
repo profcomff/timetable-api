@@ -35,3 +35,10 @@ def test_unsupported_format(lecturer_path: str, client_auth: TestClient):
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+
+def test_corrupted_file(lecturer_path: str, client_auth: TestClient):
+    RESOURCE = f"{lecturer_path}/photo"
+    with open(os.path.dirname(__file__) + "/broken_photo.png", "rb") as f:
+        response = client_auth.post(RESOURCE, files={"photo": f})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
