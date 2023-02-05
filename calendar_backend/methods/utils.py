@@ -1,7 +1,10 @@
+import asyncio
 import datetime
 import os
 import random
 import string
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import Final
 
 import aiofiles
@@ -17,6 +20,9 @@ from calendar_backend.models.db import (
     ApproveStatuses,
 )
 from calendar_backend.settings import get_settings
+from PIL import Image
+from io import BytesIO
+
 
 settings = get_settings()
 
@@ -80,6 +86,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
     path = os.path.join(settings.STATIC_PATH, "photo", "lecturer", f"{random_string}.{ext}")
     async with aiofiles.open(path, 'wb') as out_file:
         content = await file.read()
+        await async_image_process(content)
         await out_file.write(content)
         approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_PHOTOS else ApproveStatuses.PENDING
         photo = Photo(
@@ -92,3 +99,25 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
         lecturer.avatar_id = lecturer.last_photo.id if lecturer.last_photo else lecturer.avatar_id
         session.flush()
     return photo
+
+
+def process_image(image_bytes: bytes) -> None:
+    with Image.open(BytesIO(image_bytes)) as image:
+        try:
+            image.verify()
+        except SyntaxError:
+            raise HTTPException(status_code=422, detail="Corrupted file")
+
+
+thread_pool = ThreadPoolExecutor()
+
+
+async def async_image_process(image_bytes: bytes) -> None:
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(thread_pool, partial(process_image, image_bytes))
+
+
+
+
+
+
