@@ -86,7 +86,7 @@ jobs:
             --volume com_profcomff_api_timetable_test_static:/app/static \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
-            --env STATIC_PATH=/app/static \
+            --env STATIC_PATH=static \
             --name ${{ env.CONTAITER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
 
@@ -131,6 +131,6 @@ jobs:
             --env ADMIN_SECRET='${{ secrets.ADMIN_SECRET }}' \
             --env REDIRECT_URL='https://www.profcomff.com/timetable/google' \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
-            --env STATIC_PATH=/app/static \
+            --env STATIC_PATH=static \
             --name ${{ env.CONTAITER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
