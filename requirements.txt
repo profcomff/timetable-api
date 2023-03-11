@@ -16,3 +16,4 @@ gunicorn
 python-multipart
 httpx
 Pillow
+logging-profcomff
