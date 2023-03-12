@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic import BaseSettings, PostgresDsn, AnyHttpUrl, DirectoryPath, Json
@@ -7,6 +8,8 @@ class Settings(BaseSettings):
     """Application settings"""
 
     DB_DSN: PostgresDsn = 'postgresql://postgres@localhost:5432/postgres'
+    ROOT_PATH: str = '/' + os.getenv('APP_NAME', '')
+
     REDIRECT_URL: AnyHttpUrl = "https://www.profcomff.com"
     SCOPES: list[str] = [
         "https://www.googleapis.com/auth/calendar",

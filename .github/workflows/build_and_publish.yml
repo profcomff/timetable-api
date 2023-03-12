@@ -47,6 +47,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
 
   deploy-testing:
     name: Deploy Testing
@@ -54,7 +56,7 @@ jobs:
     runs-on: [self-hosted, Linux]
     environment:
       name: Testing
-      url: https://timetable.api.test.profcomff.com/
+      url: https://api.test.profcomff.com/timetable
     env:
       CONTAITER_NAME: com_profcomff_api_timetable_test
     permissions:
@@ -85,6 +87,7 @@ jobs:
             --network=web \
             --volume com_profcomff_api_timetable_test_static:/app/static \
             --env DB_DSN=${{ secrets.DB_DSN }} \
+            --env ROOT_PATH='/timetable' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_test.conf' \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
             --env STATIC_PATH=static \
@@ -98,7 +101,7 @@ jobs:
     runs-on: [self-hosted, Linux]
     environment:
       name: Production
-      url: https://timetable.api.profcomff.com/
+      url: https://api.profcomff.com/timetable
     env:
       CONTAITER_NAME: com_profcomff_api_timetable
     permissions:
@@ -129,6 +132,7 @@ jobs:
             --network=web \
             --volume com_profcomff_api_timetable_static:/app/static \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env ROOT_PATH='/timetable' \
             --env ADMIN_SECRET='${{ secrets.ADMIN_SECRET }}' \
             --env REDIRECT_URL='https://www.profcomff.com/timetable/google' \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \

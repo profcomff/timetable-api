@@ -1,19 +1,22 @@
 import logging
+from textwrap import dedent
 
 import starlette.requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi_sqlalchemy import DBSessionMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
-from fastapi.staticfiles import StaticFiles
 from starlette.types import ASGIApp
 
+from calendar_backend import __version__
 from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction, NotEnoughCriteria
 from calendar_backend.settings import get_settings
+
 from .auth import auth_router
 from .gcal import gcal
 from .lecturer import (
@@ -27,30 +30,38 @@ from .group import group_router
 from .room import room_router
 from .event import event_router, event_comment_router, event_comment_review_router
 
+
 settings = get_settings()
 logger = logging.getLogger(__name__)
 app = FastAPI(
-    description="""API для работы с календарем физфака.
-Пример работы на питоне(Создание Room):
-```python
-import reqests, json
-url=f"https://timetable.api.test.profcomff.com"
+    title='Сервис мониторинга активности',
+    description=dedent("""
+        API для работы с календарем физфака.
+        Пример работы на питоне(Создание Room):
+        ```python
+        import reqests, json
+        url=f"https://timetable.api.test.profcomff.com"
 
-# Авторизация
-beaver = requests.post(f"{url}/token", {"username": "...", "password": "..."})
+        # Авторизация
+        beaver = requests.post(f"{url}/token", {"username": "...", "password": "..."})
 
-# Парсинг ответа
-auth_data=json.loads(beaver.content)
+        # Парсинг ответа
+        auth_data=json.loads(beaver.content)
 
-# Создание
-create_room = requests.post(
-    f"{url}/timetable/room",
-    json={"name": "test", "direction": "South"},
-    headers={"Authorization": f"Bearer {auth_data.get('access_token')}"}
-)
+        # Создание
+        create_room = requests.post(
+            f"{url}/timetable/room",
+            json={"name": "test", "direction": "South"},
+            headers={"Authorization": f"Bearer {auth_data.get('access_token')}"}
+        )
+        ```
+    """),
+    version=__version__,
 
-```
-"""
+    # Настраиваем интернет документацию
+    root_path=settings.ROOT_PATH if __version__ != 'dev' else '/',
+    docs_url=None if __version__ != 'dev' else '/docs',
+    redoc_url=None,
 )
 
 
