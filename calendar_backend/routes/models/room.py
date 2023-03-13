@@ -1,5 +1,6 @@
-from .base import Base, RoomGet, EventGet
 from calendar_backend.models import Direction
+
+from .base import Base, EventGet, RoomGet
 
 
 class RoomPatch(Base):

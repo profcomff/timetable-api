@@ -1,16 +1,16 @@
-from .base import LecturerGet, CommentLecturer, CommentEventGet, EventGet, GroupGet, RoomGet
+from .base import CommentEventGet, CommentLecturer, EventGet, GroupGet, LecturerGet, RoomGet
+from .event import Event, EventComments, EventPatch, EventPost, GetListEvent
+from .group import GetListGroup, GroupEvents, GroupPatch, GroupPost
 from .lecturer import (
-    LecturerPost,
+    Action,
+    GetListLecturer,
+    LecturerCommentPatch,
+    LecturerCommentPost,
+    LecturerComments,
+    LecturerEvents,
     LecturerPatch,
     LecturerPhotos,
-    LecturerEvents,
-    GetListLecturer,
+    LecturerPost,
     Photo,
-    LecturerCommentPost,
-    LecturerCommentPatch,
-    LecturerComments,
-    Action,
 )
-from .room import RoomPost, RoomPatch, RoomEvents, GetListRoom
-from .event import EventPost, EventPatch, Event, GetListEvent, EventComments
-from .group import GroupPost, GroupPatch, GroupEvents, GetListGroup
+from .room import GetListRoom, RoomEvents, RoomPatch, RoomPost

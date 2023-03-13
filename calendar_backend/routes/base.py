@@ -5,8 +5,8 @@ import starlette.requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi_sqlalchemy import DBSessionMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi_sqlalchemy import DBSessionMiddleware
 from starlette import status
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
@@ -14,33 +14,48 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 from calendar_backend import __version__
-from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction, NotEnoughCriteria
+from calendar_backend.exceptions import ForbiddenAction, NotEnoughCriteria, ObjectNotFound
 from calendar_backend.settings import get_settings
 
-from .auth import auth_router
+from .auth import auth_router  # TODO: Replace with PKFF Auth
+from .event import event_comment_review_router as old_event_comment_review_router  # DEPRICATED TODO: Drop 2023-04-01
+from .event import event_comment_router as old_event_comment_router  # DEPRICATED TODO: Drop 2023-04-01
+from .event import event_router as old_event_router  # DEPRICATED TODO: Drop 2023-04-01
+from .event.comment import router as event_comment_router
+from .event.comment_review import router as event_comment_review_router
+from .event.event import router as event_router
 from .gcal import gcal
+from .group import group_router as old_group_router  # DEPRICATED TODO: Drop 2023-04-01
+from .group.group import router as group_router
 from .lecturer import (
-    lecturer_router,
-    lecturer_comment_router,
-    lecturer_comment_review_router,
-    lecturer_photo_review_router,
-    lecturer_photo_router,
-)
-from .group import group_router
-from .room import room_router
-from .event import event_router, event_comment_router, event_comment_review_router
+    lecturer_comment_review_router as old_lecturer_comment_review_router,
+)  # DEPRICATED TODO: Drop 2023-04-01
+from .lecturer import lecturer_comment_router as old_lecturer_comment_router  # DEPRICATED TODO: Drop 2023-04-01
+from .lecturer import (
+    lecturer_photo_review_router as old_lecturer_photo_review_router,
+)  # DEPRICATED TODO: Drop 2023-04-01
+from .lecturer import lecturer_photo_router as old_lecturer_photo_router  # DEPRICATED TODO: Drop 2023-04-01
+from .lecturer import lecturer_router as old_lecturer_router  # DEPRICATED TODO: Drop 2023-04-01
+from .lecturer.comment import router as lecturer_comment_router
+from .lecturer.comment_review import router as lecturer_comment_review_router
+from .lecturer.lecturer import router as lecturer_router
+from .lecturer.photo import router as lecturer_photo_router
+from .lecturer.photo_review import router as lecturer_photo_review_router
+from .room import room_router as old_room_router  # DEPRICATED TODO: Drop 2023-04-01
+from .room.room import router as room_router
 
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
 app = FastAPI(
-    title='Сервис мониторинга активности',
-    description=dedent("""
+    title='Сервис расписания',
+    description=dedent(
+        """
         API для работы с календарем физфака.
         Пример работы на питоне(Создание Room):
         ```python
         import reqests, json
-        url=f"https://timetable.api.test.profcomff.com"
+        url=f"https://api.test.profcomff.com/timetable"
 
         # Авторизация
         beaver = requests.post(f"{url}/token", {"username": "...", "password": "..."})
@@ -50,14 +65,14 @@ app = FastAPI(
 
         # Создание
         create_room = requests.post(
-            f"{url}/timetable/room",
+            f"{url}/room",
             json={"name": "test", "direction": "South"},
             headers={"Authorization": f"Bearer {auth_data.get('access_token')}"}
         )
         ```
-    """),
+    """
+    ),
     version=__version__,
-
     # Настраиваем интернет документацию
     root_path=settings.ROOT_PATH if __version__ != 'dev' else '/',
     docs_url=None if __version__ != 'dev' else '/docs',
@@ -123,8 +138,22 @@ app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
 
 app.mount('/static', StaticFiles(directory=settings.STATIC_PATH), 'static')
 
+# region DEPRICATED
+# TODO: Drop 2023-04-01
 app.include_router(gcal)
 app.include_router(auth_router)
+app.include_router(old_lecturer_router)
+app.include_router(old_lecturer_comment_router)
+app.include_router(old_lecturer_comment_review_router)
+app.include_router(old_lecturer_photo_router)
+app.include_router(old_lecturer_photo_review_router)
+app.include_router(old_group_router)
+app.include_router(old_room_router)
+app.include_router(old_event_router)
+app.include_router(old_event_comment_router)
+app.include_router(old_event_comment_review_router)
+# endregion
+
 app.include_router(lecturer_router)
 app.include_router(lecturer_comment_router)
 app.include_router(lecturer_comment_review_router)

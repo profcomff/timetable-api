@@ -5,12 +5,13 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import and_, or_, Integer, String, Boolean, JSON, DateTime, Text, ForeignKey, true
+from sqlalchemy import JSON, Boolean, DateTime
 from sqlalchemy import Enum as DbEnum
+from sqlalchemy import ForeignKey, Integer, String, Text, and_, or_, true
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import BaseDbModel, ApproveStatuses
+from .base import ApproveStatuses, BaseDbModel
 
 
 class Credentials(BaseDbModel):

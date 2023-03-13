@@ -1,14 +1,18 @@
+"""DEPRICATED TODO: Drop 2023-04-01
+"""
 import logging
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
-from calendar_backend.settings import get_settings
 from calendar_backend.methods import auth
+from calendar_backend.settings import get_settings
 
-auth_router = APIRouter(prefix="", tags=["Utils: Auth"])
+
 settings = get_settings()
 logger = logging.getLogger(__name__)
+# DEPRICATED TODO: Drop 2023-04-01
+auth_router = APIRouter(prefix="", tags=["Utils: Auth"], deprecated=True)
 
 
 @auth_router.post("/token")

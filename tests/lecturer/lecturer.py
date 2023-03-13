@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from starlette import status
@@ -5,7 +7,7 @@ from starlette import status
 from calendar_backend.models.db import Lecturer
 
 
-RESOURCE = "/timetable/lecturer/"
+RESOURCE = "/lecturer/"
 
 
 def test_create(client_auth: TestClient, dbsession: Session):
@@ -61,7 +63,7 @@ def test_read(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj: dict = response.json()
     assert {
@@ -114,7 +116,7 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj: dict = response.json()
     assert {
@@ -134,11 +136,11 @@ def test_delete(client_auth: TestClient, dbsession: Session):
     } == set(response_obj.keys())
 
     # Delete
-    response = client_auth.delete(RESOURCE + f"{id_}")
+    response = client_auth.delete(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == 404, response.json()
 
     # Read all
@@ -182,7 +184,7 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
@@ -197,8 +199,8 @@ def test_update_name(client_auth: TestClient, dbsession: Session):
         "first_name": "Hello",
     }
     request_obj.update(request_obj_2)
-    response = client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
-    response = client_auth.get(RESOURCE + f"{id_}")
+    response = client_auth.patch(urljoin(RESOURCE, str(id_)), json=request_obj_2)
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["first_name"] == request_obj_2["first_name"]
@@ -249,7 +251,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {
@@ -267,9 +269,9 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "description": "Третья попытка",
     }
     request_obj.update(request_obj_2)
-    client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
+    client_auth.patch(urljoin(RESOURCE, str(id_)), json=request_obj_2)
     assert response.status_code == status.HTTP_200_OK, response.json()
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert {

@@ -1,5 +1,6 @@
 from calendar_backend.models import ApproveStatuses
-from .base import Base, LecturerGet, EventGet, CommentLecturer
+
+from .base import Base, CommentLecturer, EventGet, LecturerGet
 
 
 class LecturerPhotos(Base):

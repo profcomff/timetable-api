@@ -1,6 +1,6 @@
 from pydantic import validator
 
-from .base import Base, GroupGet, EventGet
+from .base import Base, EventGet, GroupGet
 
 
 class GroupPatch(Base):

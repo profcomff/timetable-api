@@ -3,10 +3,12 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from calendar_backend.settings import get_settings
 from calendar_backend.methods.utils import get_lessons_by_group_from_date
 from calendar_backend.models import Event, Group
+from calendar_backend.settings import get_settings
+
 from .event import create_google_calendar_event
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

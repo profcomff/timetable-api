@@ -1,8 +1,11 @@
 import logging
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
+
 from calendar_backend.settings import get_settings
+
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

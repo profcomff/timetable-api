@@ -8,16 +8,20 @@ from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
-from calendar_backend.routes.models import (
-    CommentLecturer,
-)
+from calendar_backend.routes.models import CommentLecturer
 
+
+# DEPRICATED TODO: Drop 2023-04-01
 lecturer_comment_review_router = APIRouter(
-    prefix="/timetable/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"]
+    prefix="/timetable/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"], deprecated=True
 )
+router = APIRouter(prefix="/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"])
 
 
-@lecturer_comment_review_router.get("/review/", response_model=list[CommentLecturer])
+@lecturer_comment_review_router.get(
+    "/review/", response_model=list[CommentLecturer]
+)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/review/", response_model=list[CommentLecturer])
 async def get_unreviewed_comments(
     lecturer_id: int, _: auth.User = Depends(auth.get_current_user)
 ) -> list[CommentLecturer]:
@@ -31,7 +35,10 @@ async def get_unreviewed_comments(
     return parse_obj_as(list[CommentLecturer], comments)
 
 
-@lecturer_comment_review_router.post("/{id}/review/", response_model=CommentLecturer)
+@lecturer_comment_review_router.post(
+    "/{id}/review/", response_model=CommentLecturer
+)  # DEPRICATED TODO: Drop 2023-04-01
+@router.post("/{id}/review/", response_model=CommentLecturer)
 async def review_comment(
     id: int,
     lecturer_id: int,

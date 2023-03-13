@@ -5,23 +5,16 @@ import random
 import string
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+from io import BytesIO
 from typing import Final
 
 import aiofiles
-from fastapi import File, UploadFile, HTTPException
+from fastapi import File, HTTPException, UploadFile
+from PIL import Image
 from sqlalchemy.orm import Session
 
-from calendar_backend.models.db import (
-    Event,
-    Group,
-    Lecturer,
-    Photo,
-    Room,
-    ApproveStatuses,
-)
+from calendar_backend.models.db import ApproveStatuses, Event, Group, Lecturer, Photo, Room
 from calendar_backend.settings import get_settings
-from PIL import Image
-from io import BytesIO
 
 
 settings = get_settings()
@@ -75,7 +68,9 @@ async def get_lecturer_lessons_in_daterange(
             events_list.append(lesson)
     return events_list
 
+
 SUPPORTED_FILE_EXTENSIONS: Final[list[str]] = ['png', 'svg', 'jpg', 'jpeg']
+
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
     lecturer = Lecturer.get(lecturer_id, session=session)

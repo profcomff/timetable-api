@@ -1,16 +1,17 @@
 from .db import (
-    Credentials,
-    Group,
-    Lecturer,
-    Event,
-    Room,
-    Direction,
+    ApproveStatuses,
     CommentEvent,
     CommentLecturer,
+    Credentials,
+    Direction,
+    Event,
     EventsLecturers,
     EventsRooms,
-    ApproveStatuses,
+    Group,
+    Lecturer,
+    Room,
 )
+
 
 __all__ = [
     "Credentials",
