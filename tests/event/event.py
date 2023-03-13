@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 import datetime
 from sqlalchemy.orm import Session
 from starlette import status
+from urllib.parse import urljoin
 
 from calendar_backend.models import Event, Room, Lecturer, Group
 
@@ -119,11 +120,11 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
     id_ = response_obj['id']
 
     # Delete
-    response = client_auth.delete(RESOURCE + f"{id_}")
+    response = client_auth.delete(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.json()
 
     # Read all
@@ -177,7 +178,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     id_ = response_obj['id']
 
     # Read
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
@@ -196,8 +197,8 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
-    client_auth.patch(RESOURCE + f"{id_}", json=request_obj_2)
-    response = client_auth.get(RESOURCE + f"{id_}/")
+    client_auth.patch(urljoin(RESOURCE, str(id_)), json=request_obj_2)
+    response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj_2["name"]

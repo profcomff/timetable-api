@@ -53,13 +53,13 @@ from .event.comment_review import router as event_comment_review_router
 settings = get_settings()
 logger = logging.getLogger(__name__)
 app = FastAPI(
-    title='Сервис мониторинга активности',
+    title='Сервис расписания',
     description=dedent("""
         API для работы с календарем физфака.
         Пример работы на питоне(Создание Room):
         ```python
         import reqests, json
-        url=f"https://timetable.api.test.profcomff.com"
+        url=f"https://api.test.profcomff.com/timetable"
 
         # Авторизация
         beaver = requests.post(f"{url}/token", {"username": "...", "password": "..."})
@@ -69,7 +69,7 @@ app = FastAPI(
 
         # Создание
         create_room = requests.post(
-            f"{url}/timetable/room",
+            f"{url}/room",
             json={"name": "test", "direction": "South"},
             headers={"Authorization": f"Bearer {auth_data.get('access_token')}"}
         )
