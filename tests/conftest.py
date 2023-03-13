@@ -22,9 +22,16 @@ def client():
 
 @pytest.fixture()
 def client_auth(mocker: MockerFixture):
+    user_mock = mocker.patch('auth_lib.fastapi.UnionAuth.__call__')
+    user_mock.return_value = {
+        "session_scopes": [{"id": 0, "name": "string", "comment": "string"}],
+        "user_scopes": [{"id": 0, "name": "string", "comment": "string"}],
+        "indirect_groups": [{"id": 0, "name": "string", "parent_id": 0}],
+        "groups": [{"id": 0, "name": "string", "parent_id": 0}],
+        "id": 0,
+        "email": "string",
+    }
     client = TestClient(app)
-    access_token = client.post(f"/token", data={"username": "admin", "password": "42"}).json()["access_token"]
-    client.headers = {"Authorization": f"Bearer {access_token}"}
     return client
 
 
