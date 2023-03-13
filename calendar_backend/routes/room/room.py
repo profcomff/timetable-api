@@ -1,9 +1,9 @@
 import logging
 
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 
-from calendar_backend.methods import auth
 from calendar_backend.models import Room
 from calendar_backend.routes.models import GetListRoom, RoomGet, RoomPatch, RoomPost
 from calendar_backend.settings import get_settings
@@ -42,7 +42,7 @@ async def get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> GetLis
 
 @room_router.post("/", response_model=RoomGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/", response_model=RoomGet)
-async def create_room(room: RoomPost, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
+async def create_room(room: RoomPost, _=Depends(UnionAuth(scopes=["timetable.room.create"]))) -> RoomGet:
     if bool(
         Room.get_all(session=db.session).filter(Room.name == room.name, Room.building == room.building).one_or_none()
     ):
@@ -54,7 +54,7 @@ async def create_room(room: RoomPost, _: auth.User = Depends(auth.get_current_us
 
 @room_router.patch("/{id}", response_model=RoomGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.patch("/{id}", response_model=RoomGet)
-async def patch_room(id: int, room_inp: RoomPatch, _: auth.User = Depends(auth.get_current_user)) -> RoomGet:
+async def patch_room(id: int, room_inp: RoomPatch, _=Depends(UnionAuth(scopes=["timetable.room.upadte"]))) -> RoomGet:
     room = (
         Room.get_all(session=db.session)
         .filter(Room.name == room_inp.name, Room.building == room_inp.building)
@@ -69,6 +69,6 @@ async def patch_room(id: int, room_inp: RoomPatch, _: auth.User = Depends(auth.g
 
 @room_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/{id}", response_model=None)
-async def delete_room(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_room(id: int, _=Depends(UnionAuth(scopes=["timetable.room.delete"]))) -> None:
     Room.delete(id, session=db.session)
     db.session.commit()

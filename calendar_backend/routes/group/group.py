@@ -1,9 +1,9 @@
 import logging
 
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 
-from calendar_backend.methods import auth
 from calendar_backend.models import Group
 from calendar_backend.routes.models import GetListGroup, GroupGet, GroupPatch, GroupPost
 from calendar_backend.settings import get_settings
@@ -42,7 +42,7 @@ async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetLi
 
 @group_router.post("/", response_model=GroupGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/", response_model=GroupGet)
-async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current_user)) -> GroupGet:
+async def create_group(group: GroupPost, _=Depends(UnionAuth(scopes=["timetable.group.create"]))) -> GroupGet:
     if db.session.query(Group).filter(Group.number == group.number).one_or_none():
         raise HTTPException(status_code=423, detail="Already exists")
     group = Group.create(**group.dict(), session=db.session)
@@ -55,7 +55,7 @@ async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current
 async def patch_group(
     id: int,
     group_inp: GroupPatch,
-    _: auth.User = Depends(auth.get_current_user),
+    _=Depends(UnionAuth(scopes=["timetable.group.update"])),
 ) -> GroupGet:
     if (
         bool(query := Group.get_all(session=db.session).filter(Group.number == group_inp.number).one_or_none())
@@ -69,6 +69,6 @@ async def patch_group(
 
 @group_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/{id}", response_model=None)
-async def delete_group(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_group(id: int, _=Depends(UnionAuth(scopes=["timetable.group.delete"]))) -> None:
     Group.delete(id, session=db.session)
     db.session.commit()

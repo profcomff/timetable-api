@@ -17,3 +17,4 @@ python-multipart
 httpx
 Pillow
 logging-profcomff
+auth-lib-profcomff[fastapi]

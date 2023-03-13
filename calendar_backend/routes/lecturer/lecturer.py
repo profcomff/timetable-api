@@ -1,11 +1,11 @@
 import logging
 from typing import Any
 
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ObjectNotFound
-from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses, Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import GetListLecturer, LecturerGet, LecturerPatch, LecturerPost
@@ -53,7 +53,9 @@ async def get_lecturers(
 
 @lecturer_router.post("/", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/", response_model=LecturerGet)
-async def create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
+async def create_lecturer(
+    lecturer: LecturerPost, _=Depends(UnionAuth(scopes=["timetable.lecturer.create"]))
+) -> LecturerGet:
     dblecturer = Lecturer.create(session=db.session, **lecturer.dict())
     db.session.commit()
     return LecturerGet.from_orm(dblecturer)
@@ -62,7 +64,7 @@ async def create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.ge
 @lecturer_router.patch("/{id}", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.patch("/{id}", response_model=LecturerGet)
 async def patch_lecturer(
-    id: int, lecturer_inp: LecturerPatch, _: auth.User = Depends(auth.get_current_user)
+    id: int, lecturer_inp: LecturerPatch, _=Depends(UnionAuth(scopes=["timetable.lecturer.update"]))
 ) -> LecturerGet:
     if lecturer_inp.avatar_id:
         photo = DbPhoto.get(lecturer_inp.avatar_id, session=db.session)
@@ -79,6 +81,6 @@ async def patch_lecturer(
 
 @lecturer_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/{id}", response_model=None)
-async def delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_lecturer(id: int, _=Depends(UnionAuth(scopes=["timetable.lecturer.delete"]))) -> None:
     Lecturer.delete(id, session=db.session)
     db.session.commit()

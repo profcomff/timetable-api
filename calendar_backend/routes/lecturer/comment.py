@@ -1,8 +1,8 @@
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ForbiddenAction, ObjectNotFound
-from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.routes.models import CommentLecturer, LecturerCommentPatch, LecturerCommentPost, LecturerComments
@@ -48,7 +48,9 @@ async def update_comment_lecturer(id: int, lecturer_id: int, comment_inp: Lectur
 
 @lecturer_comment_router.delete("/comment/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/comment/{id}", response_model=None)
-async def delete_comment(id: int, lecturer_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+async def delete_comment(
+    id: int, lecturer_id: int, _=Depends(UnionAuth(scopes=["timetable.lecturer.comment.delete"]))
+) -> None:
     comment = DbCommentLecturer.get(id, only_approved=False, session=db.session)
     if comment.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbCommentLecturer, id)
