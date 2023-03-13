@@ -87,6 +87,7 @@ jobs:
             --network=web \
             --volume com_profcomff_api_timetable_test_static:/app/static \
             --env DB_DSN=${{ secrets.DB_DSN }} \
+            --env AUTH_URL='https://api.test.profcomff.com/auth' \
             --env ROOT_PATH='/timetable' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_test.conf' \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
@@ -132,6 +133,7 @@ jobs:
             --network=web \
             --volume com_profcomff_api_timetable_static:/app/static \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env AUTH_URL='https://api.profcomff.com/auth' \
             --env ROOT_PATH='/timetable' \
             --env ADMIN_SECRET='${{ secrets.ADMIN_SECRET }}' \
             --env REDIRECT_URL='https://www.profcomff.com/timetable/google' \
