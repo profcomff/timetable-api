@@ -17,18 +17,37 @@ from calendar_backend import __version__
 from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction, NotEnoughCriteria
 from calendar_backend.settings import get_settings
 
-from .auth import auth_router
+# region DEPRICATED
+# TODO: Drop 2023-04-01
 from .gcal import gcal
 from .lecturer import (
-    lecturer_router,
-    lecturer_comment_router,
-    lecturer_comment_review_router,
-    lecturer_photo_review_router,
-    lecturer_photo_router,
+    lecturer_router as old_lecturer_router,
+    lecturer_comment_router as old_lecturer_comment_router,
+    lecturer_comment_review_router as old_lecturer_comment_review_router,
+    lecturer_photo_review_router as old_lecturer_photo_review_router,
+    lecturer_photo_router as old_lecturer_photo_router,
 )
-from .group import group_router
-from .room import room_router
-from .event import event_router, event_comment_router, event_comment_review_router
+from .group import group_router as old_group_router
+from .room import room_router as old_room_router
+from .event import (
+    event_router as old_event_router,
+    event_comment_router as old_event_comment_router,
+    event_comment_review_router as old_event_comment_review_router,
+)
+# endregion
+
+from .auth import auth_router  # TODO: Replace with PKFF Auth
+
+from .lecturer.lecturer import router as lecturer_router
+from .lecturer.comment import router as lecturer_comment_router
+from .lecturer.comment_review import router as lecturer_comment_review_router
+from .lecturer.photo import router as lecturer_photo_router
+from .lecturer.photo_review import router as lecturer_photo_review_router
+from .group.group import router as group_router
+from .room.room import router as room_router
+from .event.event import router as event_router
+from .event.comment import router as event_comment_router
+from .event.comment_review import router as event_comment_review_router
 
 
 settings = get_settings()
@@ -123,6 +142,8 @@ app.add_middleware(LimitUploadSize, max_upload_size=3145728)  # 3MB
 
 app.mount('/static', StaticFiles(directory=settings.STATIC_PATH), 'static')
 
+# region DEPRICATED
+# TODO: Drop 2023-04-01
 app.include_router(gcal)
 app.include_router(auth_router)
 app.include_router(lecturer_router)
@@ -135,3 +156,4 @@ app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(event_comment_router)
 app.include_router(event_comment_review_router)
+# endregion

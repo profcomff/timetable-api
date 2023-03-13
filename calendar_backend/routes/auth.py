@@ -1,3 +1,5 @@
+"""DEPRICATED TODO: Drop 2023-04-01
+"""
 import logging
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -6,9 +8,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from calendar_backend.settings import get_settings
 from calendar_backend.methods import auth
 
-auth_router = APIRouter(prefix="", tags=["Utils: Auth"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
+# DEPRICATED TODO: Drop 2023-04-01
+auth_router = APIRouter(prefix="", tags=["Utils: Auth"], depricated=True)
 
 
 @auth_router.post("/token")

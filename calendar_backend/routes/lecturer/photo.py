@@ -10,10 +10,14 @@ from calendar_backend.routes.models import (
     LecturerPhotos,
 )
 
-lecturer_photo_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Photo"])
+
+# DEPRICATED TODO: Drop 2023-04-01
+lecturer_photo_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Photo"], depicated=True)
+router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Photo"])
 
 
 @lecturer_photo_router.post("/photo", response_model=Photo)
+@router.post("/photo", response_model=Photo)
 async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
     """Загрузить фотографию преподавателя из локального файла
 
@@ -33,6 +37,7 @@ async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo
 
 
 @lecturer_photo_router.get("/photo", response_model=LecturerPhotos)
+@router.get("/photo", response_model=LecturerPhotos)
 async def get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
     if not Lecturer.get(id=lecturer_id, session=db.session):
         raise ObjectNotFound(Lecturer, lecturer_id)
@@ -45,6 +50,7 @@ async def get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0
 
 
 @lecturer_photo_router.delete("/photo/{id}", response_model=None)
+@router.delete("/photo/{id}", response_model=None)
 async def delete_photo(id: int, lecturer_id: int) -> None:
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id:
@@ -57,6 +63,7 @@ async def delete_photo(id: int, lecturer_id: int) -> None:
 
 
 @lecturer_photo_router.get("/photo/{id}", response_model=Photo)
+@router.get("/photo/{id}", response_model=Photo)
 async def get_photo(id: int, lecturer_id: int) -> Photo:
     if not Lecturer.get(id=lecturer_id, session=db.session):
         raise ObjectNotFound(Lecturer, lecturer_id)

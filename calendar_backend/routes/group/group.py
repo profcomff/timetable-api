@@ -8,17 +8,21 @@ from calendar_backend.models import Group
 from calendar_backend.routes.models import GroupGet, GroupPost, GroupPatch, GetListGroup
 from calendar_backend.settings import get_settings
 
-group_router = APIRouter(prefix="/timetable/group", tags=["Group"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
+# DEPRICATED TODO: Drop 2023-04-01
+group_router = APIRouter(prefix="/timetable/group", tags=["Group"], depricated=True)
+router = APIRouter(prefix="/group", tags=["Group"])
 
 
-@group_router.get("/{id}", response_model=GroupGet)
+@group_router.get("/{id}", response_model=GroupGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/{id}", response_model=GroupGet)
 async def get_group_by_id(id: int) -> GroupGet:
     return GroupGet.from_orm(Group.get(id, session=db.session))
 
 
-@group_router.get("/", response_model=GetListGroup)
+@group_router.get("/", response_model=GetListGroup)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/", response_model=GetListGroup)
 async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetListGroup:
     res = Group.get_all(session=db.session).filter(Group.number.contains(query))
     if limit:
@@ -35,7 +39,8 @@ async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetLi
     )
 
 
-@group_router.post("/", response_model=GroupGet)
+@group_router.post("/", response_model=GroupGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.post("/", response_model=GroupGet)
 async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current_user)) -> GroupGet:
     if db.session.query(Group).filter(Group.number == group.number).one_or_none():
         raise HTTPException(status_code=423, detail="Already exists")
@@ -44,7 +49,8 @@ async def create_group(group: GroupPost, _: auth.User = Depends(auth.get_current
     return GroupGet.from_orm(group)
 
 
-@group_router.patch("/{id}", response_model=GroupGet)
+@group_router.patch("/{id}", response_model=GroupGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.patch("/{id}", response_model=GroupGet)
 async def patch_group(
     id: int,
     group_inp: GroupPatch,
@@ -60,7 +66,8 @@ async def patch_group(
     return GroupGet.from_orm(patched)
 
 
-@group_router.delete("/{id}", response_model=None)
+@group_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
+@router.delete("/{id}", response_model=None)
 async def delete_group(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Group.delete(id, session=db.session)
     db.session.commit()

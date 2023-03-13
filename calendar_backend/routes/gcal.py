@@ -1,3 +1,5 @@
+"""DEPRICATED TODO: Drop 2023-04-01
+"""
 import logging
 import os
 from functools import lru_cache
@@ -20,11 +22,15 @@ from calendar_backend.google_engine import get_calendar_service_from_token
 from calendar_backend.models import Credentials, Group
 from calendar_backend.settings import get_settings
 
-gcal = APIRouter(tags=["Utils: Google"])
+
 settings = get_settings()
-templates = Jinja2Templates(directory="calendar_backend/templates")
-os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 logger = logging.getLogger(__name__)
+templates = Jinja2Templates(directory="calendar_backend/templates")
+# DEPRICATED TODO: Drop 2023-04-01
+gcal = APIRouter(tags=["Utils: Google"], depricated=True)
+
+
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
 
 
 @lru_cache(2)

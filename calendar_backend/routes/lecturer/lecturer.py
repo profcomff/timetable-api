@@ -16,13 +16,15 @@ from calendar_backend.routes.models import (
 )
 from calendar_backend.settings import get_settings
 
-lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"])
-review_lecturer_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Review"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
+# DEPRICATED TODO: Drop 2023-04-01
+lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"], depicated=True)
+router = APIRouter(prefix="/lecturer", tags=["Lecturer"])
 
 
-@lecturer_router.get("/{id}", response_model=LecturerGet)
+@lecturer_router.get("/{id}", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/{id}", response_model=LecturerGet)
 async def get_lecturer_by_id(id: int) -> LecturerGet:
     lecturer = Lecturer.get(id, session=db.session)
     if lecturer.avatar_id:
@@ -30,7 +32,8 @@ async def get_lecturer_by_id(id: int) -> LecturerGet:
     return LecturerGet.from_orm(Lecturer.get(id, session=db.session))
 
 
-@lecturer_router.get("/", response_model=GetListLecturer)
+@lecturer_router.get("/", response_model=GetListLecturer)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/", response_model=GetListLecturer)
 async def get_lecturers(
     query: str = "",
     limit: int = 10,
@@ -52,14 +55,16 @@ async def get_lecturers(
     }
 
 
-@lecturer_router.post("/", response_model=LecturerGet)
+@lecturer_router.post("/", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.post("/", response_model=LecturerGet)
 async def create_lecturer(lecturer: LecturerPost, _: auth.User = Depends(auth.get_current_user)) -> LecturerGet:
     dblecturer = Lecturer.create(session=db.session, **lecturer.dict())
     db.session.commit()
     return LecturerGet.from_orm(dblecturer)
 
 
-@lecturer_router.patch("/{id}", response_model=LecturerGet)
+@lecturer_router.patch("/{id}", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.patch("/{id}", response_model=LecturerGet)
 async def patch_lecturer(
     id: int, lecturer_inp: LecturerPatch, _: auth.User = Depends(auth.get_current_user)
 ) -> LecturerGet:
@@ -76,7 +81,8 @@ async def patch_lecturer(
     return LecturerGet.from_orm(lecturer_upd)
 
 
-@lecturer_router.delete("/{id}", response_model=None)
+@lecturer_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
+@router.delete("/{id}", response_model=None)
 async def delete_lecturer(id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
     Lecturer.delete(id, session=db.session)
     db.session.commit()
