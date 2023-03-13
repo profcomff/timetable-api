@@ -1,5 +1,6 @@
-from calendar_backend.methods import utils
 from pydantic import BaseModel
+
+from calendar_backend.methods import utils
 
 
 class Event(BaseModel):

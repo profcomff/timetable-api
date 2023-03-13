@@ -1,10 +1,12 @@
-from fastapi.testclient import TestClient
 import datetime
-from sqlalchemy.orm import Session
-from starlette import status
 from urllib.parse import urljoin
 
-from calendar_backend.models import Event, Room, Lecturer, Group
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+from starlette import status
+
+from calendar_backend.models import Event, Group, Lecturer, Room
+
 
 RESOURCE = "/event/"
 

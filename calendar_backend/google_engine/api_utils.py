@@ -4,8 +4,10 @@ import googleapiclient.discovery
 from sqlalchemy.orm import Session
 
 from calendar_backend.settings import get_settings
+
 from .event import Event
 from .event_from_db import create_google_events_from_db
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

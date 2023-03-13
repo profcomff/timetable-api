@@ -2,12 +2,13 @@ import json
 
 import google.oauth2.credentials
 import googleapiclient.discovery
-from sqlalchemy.exc import NoResultFound
+from fastapi_sqlalchemy import db
 from googleapiclient.discovery import build
+from pydantic import Json
+from sqlalchemy.exc import NoResultFound
+
 from calendar_backend.models import Credentials
 from calendar_backend.settings import get_settings
-from fastapi_sqlalchemy import db
-from pydantic import Json
 
 
 settings = get_settings()

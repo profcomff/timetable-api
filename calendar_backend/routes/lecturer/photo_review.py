@@ -6,7 +6,7 @@ from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses, Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
-from calendar_backend.routes.models import Photo, Action
+from calendar_backend.routes.models import Action, Photo
 
 
 # DEPRICATED TODO: Drop 2023-04-01

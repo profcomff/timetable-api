@@ -5,6 +5,7 @@ from starlette import status
 
 from calendar_backend.settings import get_settings
 
+
 settings = get_settings()
 settings.STATIC_PATH = './static'
 
@@ -41,4 +42,3 @@ def test_corrupted_file(lecturer_path: str, client_auth: TestClient):
     with open(os.path.dirname(__file__) + "/broken_photo.png", "rb") as f:
         response = client_auth.post(RESOURCE, files={"photo": f})
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-

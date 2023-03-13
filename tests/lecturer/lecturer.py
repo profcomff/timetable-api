@@ -1,7 +1,8 @@
+from urllib.parse import urljoin
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from starlette import status
-from urllib.parse import urljoin
 
 from calendar_backend.models.db import Lecturer
 

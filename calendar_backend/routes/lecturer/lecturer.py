@@ -6,15 +6,11 @@ from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import auth
-from calendar_backend.models.db import Lecturer, ApproveStatuses
+from calendar_backend.models.db import ApproveStatuses, Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
-from calendar_backend.routes.models import (
-    GetListLecturer,
-    LecturerGet,
-    LecturerPost,
-    LecturerPatch,
-)
+from calendar_backend.routes.models import GetListLecturer, LecturerGet, LecturerPatch, LecturerPost
 from calendar_backend.settings import get_settings
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

@@ -1,12 +1,13 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 
 from calendar_backend.methods import auth
 from calendar_backend.models import Room
-from calendar_backend.routes.models import GetListRoom, RoomPost, RoomPatch, RoomGet
+from calendar_backend.routes.models import GetListRoom, RoomGet, RoomPatch, RoomPost
 from calendar_backend.settings import get_settings
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

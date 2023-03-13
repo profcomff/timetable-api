@@ -1,14 +1,11 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, File, UploadFile
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import utils
 from calendar_backend.models.db import ApproveStatuses, Lecturer
 from calendar_backend.models.db import Photo as DbPhoto
-from calendar_backend.routes.models import (
-    Photo,
-    LecturerPhotos,
-)
+from calendar_backend.routes.models import LecturerPhotos, Photo
 
 
 # DEPRICATED TODO: Drop 2023-04-01

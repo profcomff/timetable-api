@@ -1,16 +1,11 @@
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction
+from calendar_backend.exceptions import ForbiddenAction, ObjectNotFound
 from calendar_backend.methods import auth
 from calendar_backend.models import ApproveStatuses
 from calendar_backend.models import CommentEvent as DbCommentEvent
-from calendar_backend.routes.models.event import (
-    CommentEventGet,
-    EventCommentPost,
-    EventCommentPatch,
-    EventComments,
-)
+from calendar_backend.routes.models.event import CommentEventGet, EventCommentPatch, EventCommentPost, EventComments
 from calendar_backend.settings import get_settings
 
 
@@ -24,11 +19,11 @@ router = APIRouter(prefix="/event/{event_id}", tags=["Event: Comment"])
 @router.post("/comment/", response_model=CommentEventGet)
 async def comment_event(event_id: int, comment: EventCommentPost) -> CommentEventGet:
     approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING
-    comment_event = DbCommentEvent.create(event_id=event_id, session=db.session, **comment.dict(), approve_status=approve_status)
-    db.session.commit()
-    return CommentEventGet.from_orm(
-        comment_event
+    comment_event = DbCommentEvent.create(
+        event_id=event_id, session=db.session, **comment.dict(), approve_status=approve_status
     )
+    db.session.commit()
+    return CommentEventGet.from_orm(comment_event)
 
 
 @event_comment_router.patch("/comment/{id}", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
@@ -41,9 +36,7 @@ async def update_comment(id: int, event_id: int, comment_inp: EventCommentPatch)
         raise ForbiddenAction(DbCommentEvent, id)
     comment_event = DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
     db.session.commit()
-    return CommentEventGet.from_orm(
-        comment_event
-    )
+    return CommentEventGet.from_orm(comment_event)
 
 
 @event_comment_router.get("/comment/{id}", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01

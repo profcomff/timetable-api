@@ -1,21 +1,19 @@
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 
-from calendar_backend.exceptions import ObjectNotFound, ForbiddenAction
+from calendar_backend.exceptions import ForbiddenAction, ObjectNotFound
 from calendar_backend.methods import auth
 from calendar_backend.models.db import ApproveStatuses
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
-from calendar_backend.routes.models import (
-    CommentLecturer,
-    LecturerCommentPost,
-    LecturerCommentPatch,
-    LecturerComments,
-)
+from calendar_backend.routes.models import CommentLecturer, LecturerCommentPatch, LecturerCommentPost, LecturerComments
 from calendar_backend.settings import get_settings
+
 
 settings = get_settings()
 # DEPRICATED TODO: Drop 2023-04-01
-lecturer_comment_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Comment"], deprecated=True)
+lecturer_comment_router = APIRouter(
+    prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Comment"], deprecated=True
+)
 router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Comment"])
 
 
@@ -26,15 +24,13 @@ async def comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> Co
         ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_LECTURER_COMMENT else ApproveStatuses.PENDING
     )
     db_comment_lecturer = DbCommentLecturer.create(
-            lecturer_id=lecturer_id,
-            session=db.session,
-            **comment.dict(),
-            approve_status=approve_status,
-        )
-    db.session.commit()
-    return CommentLecturer.from_orm(
-        db_comment_lecturer
+        lecturer_id=lecturer_id,
+        session=db.session,
+        **comment.dict(),
+        approve_status=approve_status,
     )
+    db.session.commit()
+    return CommentLecturer.from_orm(db_comment_lecturer)
 
 
 @lecturer_comment_router.patch("/comment/{id}", response_model=CommentLecturer)  # DEPRICATED TODO: Drop 2023-04-01
@@ -47,9 +43,7 @@ async def update_comment_lecturer(id: int, lecturer_id: int, comment_inp: Lectur
         raise ForbiddenAction(DbCommentLecturer, id)
     patched = DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
     db.session.commit()
-    return CommentLecturer.from_orm(
-        patched
-    )
+    return CommentLecturer.from_orm(patched)
 
 
 @lecturer_comment_router.delete("/comment/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01

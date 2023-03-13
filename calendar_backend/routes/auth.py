@@ -2,11 +2,12 @@
 """
 import logging
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
-from calendar_backend.settings import get_settings
 from calendar_backend.methods import auth
+from calendar_backend.settings import get_settings
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

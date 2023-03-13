@@ -8,15 +8,15 @@ from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods import auth
 from calendar_backend.models import ApproveStatuses
 from calendar_backend.models import CommentEvent as DbCommentEvent
-from calendar_backend.routes.models.event import (
-    CommentEventGet,
-)
+from calendar_backend.routes.models.event import CommentEventGet
 from calendar_backend.settings import get_settings
 
 
 settings = get_settings()
 # DEPRICATED TODO: Drop 2023-04-01
-event_comment_review_router = APIRouter(prefix="/timetable/event/{event_id}/comment", tags=["Event: Comment Review"], deprecated=True)
+event_comment_review_router = APIRouter(
+    prefix="/timetable/event/{event_id}/comment", tags=["Event: Comment Review"], deprecated=True
+)
 router = APIRouter(prefix="/event/{event_id}/comment", tags=["Event: Comment Review"])
 
 

@@ -5,20 +5,16 @@ import os
 from functools import lru_cache
 from urllib.parse import unquote
 
-from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
-from fastapi_sqlalchemy.exceptions import (
-    SessionNotInitialisedError,
-    MissingSessionError,
-)
+from fastapi_sqlalchemy.exceptions import MissingSessionError, SessionNotInitialisedError
 from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build, UnknownApiNameOrVersion
+from googleapiclient.discovery import UnknownApiNameOrVersion, build
 from pydantic.types import Json
 
-from calendar_backend.google_engine import create_calendar_with_timetable
-from calendar_backend.google_engine import get_calendar_service_from_token
+from calendar_backend.google_engine import create_calendar_with_timetable, get_calendar_service_from_token
 from calendar_backend.models import Credentials, Group
 from calendar_backend.settings import get_settings
 
@@ -45,8 +41,9 @@ def get_flow(state=""):
 
 @gcal.get("/")
 async def home(request: Request):
-    groups = [f"{row.number}, {row.name}" if row.name else f"{row.number}"
-              for row in db.session.query(Group).filter().all()]
+    groups = [
+        f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in db.session.query(Group).filter().all()
+    ]
     return templates.TemplateResponse(
         "index.html",
         {"request": request, "groups": groups},
@@ -70,8 +67,9 @@ async def get_credentials(
     scope: str,
     state: str,
 ):
-    groups = [f"{row.number}, {row.name}" if row.name else f"{row.number}"
-              for row in db.session.query(Group).filter().all()]
+    groups = [
+        f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in db.session.query(Group).filter().all()
+    ]
     scope = scope.split(unquote("%20"))
     group = state
     flow = get_flow()

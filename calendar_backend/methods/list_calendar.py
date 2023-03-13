@@ -4,15 +4,18 @@ import os
 import time
 from datetime import date as date_
 from datetime import datetime
-from fastapi import HTTPException
-from fastapi.responses import FileResponse
 
 import pytz
+from fastapi import HTTPException
+from fastapi.responses import FileResponse
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
-from calendar_backend.settings import get_settings
-from . import utils
+
 from calendar_backend.models import Group
+from calendar_backend.settings import get_settings
+
+from . import utils
+
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
