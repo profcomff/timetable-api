@@ -1,8 +1,8 @@
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ForbiddenAction, ObjectNotFound
-from calendar_backend.methods import auth
 from calendar_backend.models import ApproveStatuses
 from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.routes.models.event import CommentEventGet, EventCommentPatch, EventCommentPost, EventComments
@@ -11,12 +11,12 @@ from calendar_backend.settings import get_settings
 
 settings = get_settings()
 # DEPRICATED TODO: Drop 2023-04-01
-event_comment_router = APIRouter(prefix="/timetable/event/{event_id}", tags=["Event: Comment"], deprecated=True)
-router = APIRouter(prefix="/event/{event_id}", tags=["Event: Comment"])
+event_comment_router = APIRouter(prefix="/timetable/event/{event_id}/comment", tags=["Event: Comment"], deprecated=True)
+router = APIRouter(prefix="/event/{event_id}/comment", tags=["Event: Comment"])
 
 
-@event_comment_router.post("/comment/", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
-@router.post("/comment/", response_model=CommentEventGet)
+@event_comment_router.post("/", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.post("/", response_model=CommentEventGet)
 async def comment_event(event_id: int, comment: EventCommentPost) -> CommentEventGet:
     approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING
     comment_event = DbCommentEvent.create(
@@ -26,8 +26,8 @@ async def comment_event(event_id: int, comment: EventCommentPost) -> CommentEven
     return CommentEventGet.from_orm(comment_event)
 
 
-@event_comment_router.patch("/comment/{id}", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
-@router.patch("/comment/{id}", response_model=CommentEventGet)
+@event_comment_router.patch("/{id}", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.patch("/{id}", response_model=CommentEventGet)
 async def update_comment(id: int, event_id: int, comment_inp: EventCommentPatch) -> CommentEventGet:
     comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id:
@@ -39,8 +39,8 @@ async def update_comment(id: int, event_id: int, comment_inp: EventCommentPatch)
     return CommentEventGet.from_orm(comment_event)
 
 
-@event_comment_router.get("/comment/{id}", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
-@router.get("/comment/{id}", response_model=CommentEventGet)
+@event_comment_router.get("/{id}", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/{id}", response_model=CommentEventGet)
 async def get_comment(id: int, event_id: int) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
     if not comment.event_id == event_id or comment.approve_status != ApproveStatuses.APPROVED:
@@ -48,9 +48,11 @@ async def get_comment(id: int, event_id: int) -> CommentEventGet:
     return CommentEventGet.from_orm(comment)
 
 
-@event_comment_router.delete("/comment/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
-@router.delete("/comment/{id}", response_model=None)
-async def delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get_current_user)) -> None:
+@event_comment_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
+@router.delete("/{id}", response_model=None)
+async def delete_comment(
+    id: int, event_id: int, _=Depends(UnionAuth(scopes=["timetable.event.comment.delete"]))
+) -> None:
     comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
@@ -59,8 +61,8 @@ async def delete_comment(id: int, event_id: int, _: auth.User = Depends(auth.get
     return None
 
 
-@event_comment_router.get("/comment/", response_model=EventComments)  # DEPRICATED TODO: Drop 2023-04-01
-@router.get("/comment/", response_model=EventComments)
+@event_comment_router.get("/", response_model=EventComments)  # DEPRICATED TODO: Drop 2023-04-01
+@router.get("/", response_model=EventComments)
 async def get_event_comments(event_id: int, limit: int = 10, offset: int = 0) -> EventComments:
     res = DbCommentEvent.get_all(session=db.session).filter(DbCommentEvent.event_id == event_id)
     if limit:

@@ -2,3 +2,6 @@ pytest
 pytest-cov
 requests
 pytest-mock
+black
+isort
+autoflake

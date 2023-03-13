@@ -1,11 +1,11 @@
 from typing import Literal
 
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
 from calendar_backend.exceptions import ObjectNotFound
-from calendar_backend.methods import auth
 from calendar_backend.models import ApproveStatuses
 from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.routes.models.event import CommentEventGet
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/event/{event_id}/comment", tags=["Event: Comment Rev
 @event_comment_review_router.get("/review/", response_model=list[CommentEventGet])  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/review/", response_model=list[CommentEventGet])
 async def get_unreviewed_comments(
-    event_id: int, _: auth.User = Depends(auth.get_current_user)
+    event_id: int, _=Depends(UnionAuth(scopes=["timetable.event.comment.review"]))
 ) -> list[CommentEventGet]:
     comments = (
         DbCommentEvent.get_all(session=db.session, only_approved=False)
@@ -39,7 +39,7 @@ async def review_comment(
     id: int,
     event_id: int,
     action: Literal[ApproveStatuses.APPROVED, ApproveStatuses.DECLINED] = ApproveStatuses.DECLINED,
-    _: auth.User = Depends(auth.get_current_user),
+    _=Depends(UnionAuth(scopes=["timetable.event.comment.review"])),
 ) -> CommentEventGet:
     comment = DbCommentEvent.get(id, only_approved=False, session=db.session)
     if comment.event_id != event_id or comment.approve_status is not ApproveStatuses.PENDING:

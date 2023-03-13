@@ -1,7 +1,4 @@
-from . import auth, utils
+from . import utils
 
 
-__all__ = [
-    "utils",
-    "auth",
-]
+__all__ = ("utils",)

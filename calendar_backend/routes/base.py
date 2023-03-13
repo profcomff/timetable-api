@@ -17,7 +17,6 @@ from calendar_backend import __version__
 from calendar_backend.exceptions import ForbiddenAction, NotEnoughCriteria, ObjectNotFound
 from calendar_backend.settings import get_settings
 
-from .auth import auth_router  # TODO: Replace with PKFF Auth
 from .event import event_comment_review_router as old_event_comment_review_router  # DEPRICATED TODO: Drop 2023-04-01
 from .event import event_comment_router as old_event_comment_router  # DEPRICATED TODO: Drop 2023-04-01
 from .event import event_router as old_event_router  # DEPRICATED TODO: Drop 2023-04-01
@@ -52,22 +51,17 @@ app = FastAPI(
     description=dedent(
         """
         API для работы с календарем физфака.
+
         Пример работы на питоне(Создание Room):
         ```python
         import reqests, json
         url=f"https://api.test.profcomff.com/timetable"
 
-        # Авторизация
-        beaver = requests.post(f"{url}/token", {"username": "...", "password": "..."})
-
-        # Парсинг ответа
-        auth_data=json.loads(beaver.content)
-
         # Создание
         create_room = requests.post(
             f"{url}/room",
             json={"name": "test", "direction": "South"},
-            headers={"Authorization": f"Bearer {auth_data.get('access_token')}"}
+            headers={"Authorization": f"ТокенАвторизацииТвойФФ"}
         )
         ```
     """
@@ -141,7 +135,6 @@ app.mount('/static', StaticFiles(directory=settings.STATIC_PATH), 'static')
 # region DEPRICATED
 # TODO: Drop 2023-04-01
 app.include_router(gcal)
-app.include_router(auth_router)
 app.include_router(old_lecturer_router)
 app.include_router(old_lecturer_comment_router)
 app.include_router(old_lecturer_comment_review_router)
