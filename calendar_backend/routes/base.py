@@ -146,6 +146,18 @@ app.mount('/static', StaticFiles(directory=settings.STATIC_PATH), 'static')
 # TODO: Drop 2023-04-01
 app.include_router(gcal)
 app.include_router(auth_router)
+app.include_router(old_lecturer_router)
+app.include_router(old_lecturer_comment_router)
+app.include_router(old_lecturer_comment_review_router)
+app.include_router(old_lecturer_photo_router)
+app.include_router(old_lecturer_photo_review_router)
+app.include_router(old_group_router)
+app.include_router(old_room_router)
+app.include_router(old_event_router)
+app.include_router(old_event_comment_router)
+app.include_router(old_event_comment_review_router)
+# endregion
+
 app.include_router(lecturer_router)
 app.include_router(lecturer_comment_router)
 app.include_router(lecturer_comment_review_router)
@@ -156,4 +168,3 @@ app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(event_comment_router)
 app.include_router(event_comment_review_router)
-# endregion

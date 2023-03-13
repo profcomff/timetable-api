@@ -11,7 +11,7 @@ from calendar_backend.routes.models import Photo, Action
 
 # DEPRICATED TODO: Drop 2023-04-01
 lecturer_photo_review_router = APIRouter(
-    prefix="/timetable/lecturer/{lecturer_id}/photo", tags=["Lecturer: Photo Review"], depicated=True
+    prefix="/timetable/lecturer/{lecturer_id}/photo", tags=["Lecturer: Photo Review"], deprecated=True
 )
 router = APIRouter(prefix="/lecturer/{lecturer_id}/photo", tags=["Lecturer: Photo Review"])
 

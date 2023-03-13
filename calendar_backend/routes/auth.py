@@ -11,7 +11,7 @@ from calendar_backend.methods import auth
 settings = get_settings()
 logger = logging.getLogger(__name__)
 # DEPRICATED TODO: Drop 2023-04-01
-auth_router = APIRouter(prefix="", tags=["Utils: Auth"], depricated=True)
+auth_router = APIRouter(prefix="", tags=["Utils: Auth"], deprecated=True)
 
 
 @auth_router.post("/token")

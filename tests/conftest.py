@@ -39,7 +39,7 @@ def dbsession():
 
 @pytest.fixture()
 def room_path(client_auth: TestClient, dbsession: Session):
-    RESOURCE = "/timetable/room/"
+    RESOURCE = "/room/"
     request_obj = {
         "name": datetime.now().isoformat(),
         "direction": "North",
@@ -55,7 +55,7 @@ def room_path(client_auth: TestClient, dbsession: Session):
 
 @pytest.fixture()
 def group_path(client_auth: TestClient, dbsession: Session):
-    RESOURCE = "/timetable/group/"
+    RESOURCE = "/group/"
     request_obj = {
         "name": "",
         "number": datetime.now().isoformat(),
@@ -71,7 +71,7 @@ def group_path(client_auth: TestClient, dbsession: Session):
 
 @pytest.fixture()
 def lecturer_path(client_auth: TestClient, dbsession: Session):
-    RESOURCE = "/timetable/lecturer/"
+    RESOURCE = "/lecturer/"
     request_obj = {
         "first_name": "Петр",
         "middle_name": "Васильевич",
@@ -105,7 +105,7 @@ def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
 
 @pytest.fixture()
 def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_path, group_path):
-    RESOURCE = f"/timetable/event/"
+    RESOURCE = f"/event/"
     room_id = int(room_path.split("/")[-1])
     group_id = int(group_path.split("/")[-1])
     lecturer_id = int(lecturer_path.split("/")[-1])
@@ -130,7 +130,7 @@ def room_factory(dbsession: Session):
     ids_ = []
 
     def _room_factory(client_auth: TestClient):
-        RESOURCE = "/timetable/room/"
+        RESOURCE = "/room/"
         request_obj = {
             "name": datetime.now().isoformat(),
             "direction": "North",
@@ -153,7 +153,7 @@ def lecturer_factory(dbsession: Session):
     ids_ = []
 
     def _lecturer_factory(client_auth: TestClient):
-        RESOURCE = "/timetable/lecturer/"
+        RESOURCE = "/lecturer/"
         request_obj = {
             "first_name": "Петр",
             "middle_name": "Васильевич",
@@ -178,7 +178,7 @@ def group_factory(dbsession: Session):
     ids_ = []
 
     def _group_factory(client_auth: TestClient):
-        RESOURCE = "/timetable/group/"
+        RESOURCE = "/group/"
         request_obj = {
             "name": "",
             "number": datetime.now().isoformat(),

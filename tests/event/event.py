@@ -5,7 +5,7 @@ from starlette import status
 
 from calendar_backend.models import Event, Room, Lecturer, Group
 
-RESOURCE = "/timetable/event/"
+RESOURCE = "/event/"
 
 
 def test_create(client_auth: TestClient, dbsession: Session, room_path, group_path, lecturer_path):

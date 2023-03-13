@@ -14,7 +14,7 @@ from calendar_backend.routes.models import (
 
 # DEPRICATED TODO: Drop 2023-04-01
 lecturer_comment_review_router = APIRouter(
-    prefix="/timetable/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"], depicated=True
+    prefix="/timetable/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"], deprecated=True
 )
 router = APIRouter(prefix="/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"])
 

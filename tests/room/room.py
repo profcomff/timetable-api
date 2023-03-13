@@ -6,7 +6,7 @@ from starlette import status
 
 from calendar_backend.models import Room
 
-RESOURCE = "/timetable/room/"
+RESOURCE = "/room/"
 
 
 def test_create(client_auth: TestClient, dbsession: Session):

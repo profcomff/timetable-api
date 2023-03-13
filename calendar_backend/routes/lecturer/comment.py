@@ -15,7 +15,7 @@ from calendar_backend.settings import get_settings
 
 settings = get_settings()
 # DEPRICATED TODO: Drop 2023-04-01
-lecturer_comment_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Comment"], depicated=True)
+lecturer_comment_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Comment"], deprecated=True)
 router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Comment"])
 
 

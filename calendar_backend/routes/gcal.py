@@ -27,7 +27,7 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory="calendar_backend/templates")
 # DEPRICATED TODO: Drop 2023-04-01
-gcal = APIRouter(tags=["Utils: Google"], depricated=True)
+gcal = APIRouter(tags=["Utils: Google"], deprecated=True)
 
 
 os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"

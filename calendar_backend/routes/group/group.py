@@ -11,7 +11,7 @@ from calendar_backend.settings import get_settings
 settings = get_settings()
 logger = logging.getLogger(__name__)
 # DEPRICATED TODO: Drop 2023-04-01
-group_router = APIRouter(prefix="/timetable/group", tags=["Group"], depricated=True)
+group_router = APIRouter(prefix="/timetable/group", tags=["Group"], deprecated=True)
 router = APIRouter(prefix="/group", tags=["Group"])
 
 

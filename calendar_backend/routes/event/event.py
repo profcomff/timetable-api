@@ -22,7 +22,7 @@ from calendar_backend.settings import get_settings
 settings = get_settings()
 logger = logging.getLogger(__name__)
 # DEPRICATED TODO: Drop 2023-04-01
-event_router = APIRouter(prefix="/timetable/event", tags=["Event"], depricated=True)
+event_router = APIRouter(prefix="/timetable/event", tags=["Event"], deprecated=True)
 router = APIRouter(prefix="/event", tags=["Event"])
 
 

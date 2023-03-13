@@ -16,7 +16,7 @@ from calendar_backend.settings import get_settings
 
 settings = get_settings()
 # DEPRICATED TODO: Drop 2023-04-01
-event_comment_router = APIRouter(prefix="/timetable/event/{event_id}", tags=["Event: Comment"], depicated=True)
+event_comment_router = APIRouter(prefix="/timetable/event/{event_id}", tags=["Event: Comment"], deprecated=True)
 router = APIRouter(prefix="/event/{event_id}", tags=["Event: Comment"])
 
 
