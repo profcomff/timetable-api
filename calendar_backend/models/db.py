@@ -18,12 +18,12 @@ class Credentials(BaseDbModel):
     """User credentials"""
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    group: Mapped[int] = mapped_column(String, nullable=False)
-    email: Mapped[int] = mapped_column(String, nullable=False)
-    scope: Mapped[int] = mapped_column(JSON, nullable=False)
-    token: Mapped[int] = mapped_column(JSON, nullable=False)
-    create_ts: Mapped[int] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
-    update_ts: Mapped[int] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    group: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str] = mapped_column(String, nullable=False)
+    scope: Mapped[JSON] = mapped_column(JSON, nullable=False)
+    token: Mapped[JSON] = mapped_column(JSON, nullable=False)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    update_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Direction(str, Enum):
@@ -36,7 +36,7 @@ class Room(BaseDbModel):
     direction: Mapped[Direction] = mapped_column(DbEnum(Direction, native_enum=False), nullable=True)
     building: Mapped[str] = mapped_column(String, nullable=True)
     building_url: Mapped[str] = mapped_column(String, nullable=True)
-    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     events: Mapped[list[Event]] = relationship(
         "Event",
@@ -51,9 +51,9 @@ class Lecturer(BaseDbModel):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     middle_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
-    avatar_id: Mapped[int] = mapped_column(Integer, ForeignKey("photo.id"))
+    avatar_id: Mapped[int] = mapped_column(Integer, ForeignKey("photo.id"), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
-    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     avatar: Mapped[Photo] = relationship(
         "Photo",
@@ -98,9 +98,9 @@ class Lecturer(BaseDbModel):
 
 
 class Group(BaseDbModel):
-    name: Mapped[int] = mapped_column(String, nullable=False)
-    number: Mapped[int] = mapped_column(String, nullable=False, unique=True)
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    number: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     events: Mapped[list[Event]] = relationship(
         "Event",
@@ -111,11 +111,11 @@ class Group(BaseDbModel):
 
 
 class Event(BaseDbModel):
-    name: Mapped[int] = mapped_column(String, nullable=False)
-    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("group.id"))
-    start_ts: Mapped[int] = mapped_column(DateTime, nullable=False)
-    end_ts: Mapped[int] = mapped_column(DateTime, nullable=False)
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("group.id"), nullable=True)
+    start_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     room: Mapped[list[Room]] = relationship(
         "Room",
@@ -144,20 +144,20 @@ class Event(BaseDbModel):
 
 
 class EventsLecturers(BaseDbModel):
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
-    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"))
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
+    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"), nullable=False)
 
 
 class EventsRooms(BaseDbModel):
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
-    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("room.id"))
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
+    room_id: Mapped[int] = mapped_column(Integer, ForeignKey("room.id"), nullable=False)
 
 
 class Photo(BaseDbModel):
-    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"))
-    link: Mapped[int] = mapped_column(String, unique=True)
-    approve_status: Mapped[int] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"), nullable=False)
+    link: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    approve_status: Mapped[ApproveStatuses] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     lecturer: Mapped[Lecturer] = relationship(
         "Lecturer",
@@ -169,13 +169,13 @@ class Photo(BaseDbModel):
 
 
 class CommentLecturer(BaseDbModel):
-    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"))
-    author_name: Mapped[int] = mapped_column(String, nullable=False)
-    text: Mapped[int] = mapped_column(String, nullable=False)
-    approve_status: Mapped[int] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
-    create_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow())
-    update_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    lecturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("lecturer.id"), nullable=False)
+    author_name: Mapped[str] = mapped_column(String, nullable=False)
+    text: Mapped[str] = mapped_column(String, nullable=False)
+    approve_status: Mapped[ApproveStatuses] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow())
+    update_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     lecturer: Mapped[Lecturer] = relationship(
         "Lecturer",
@@ -186,13 +186,13 @@ class CommentLecturer(BaseDbModel):
 
 
 class CommentEvent(BaseDbModel):
-    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"))
-    author_name: Mapped[int] = mapped_column(String, nullable=False)
-    text: Mapped[int] = mapped_column(String, nullable=False)
-    approve_status: Mapped[int] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
-    create_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow())
-    update_ts: Mapped[int] = mapped_column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow())
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
+    author_name: Mapped[str] = mapped_column(String, nullable=False)
+    text: Mapped[str] = mapped_column(String, nullable=False)
+    approve_status: Mapped[ApproveStatuses] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow())
+    update_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     event: Mapped[Event] = relationship(
         "Event",
