@@ -16,7 +16,6 @@ from calendar_backend.models.db import ApproveStatuses, Lecturer, Photo
 from calendar_backend.settings import get_settings
 
 
-SUPPORTED_FILE_EXTENSIONS: Final[list[str]] = ['png', 'svg', 'jpg', 'jpeg']
 settings = get_settings()
 
 
@@ -24,7 +23,7 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
     lecturer = Lecturer.get(lecturer_id, session=session)
     random_string = ''.join(random.choice(string.ascii_letters) for _ in range(32))
     ext = file.filename.split('.')[-1]
-    if ext not in SUPPORTED_FILE_EXTENSIONS:
+    if ext not in settings.SUPPORTED_FILE_EXTENSIONS:
         raise HTTPException(status_code=422, detail="Unsupported file extension")
     filename = f"{random_string}.{ext}"
     path = os.path.join(settings.STATIC_PATH, "photo", "lecturer", filename)

@@ -26,6 +26,7 @@ class Settings(UnionAuthSettings, BaseSettings):
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: list[str] = ['*']
     CORS_ALLOW_HEADERS: list[str] = ['*']
+    SUPPORTED_FILE_EXTENSIONS: list[str] = ['png', 'svg', 'jpg', 'jpeg', 'webp']
 
     class Config:
         """Pydantic BaseSettings config"""
