@@ -39,17 +39,6 @@ def get_flow(state=""):
     )
 
 
-@gcal.get("/")
-async def home(request: Request):
-    groups = [
-        f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in db.session.query(Group).filter().all()
-    ]
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "groups": groups},
-    )
-
-
 @gcal.get("/flow")
 async def get_user_flow(state: str):
     if settings.GOOGLE_CLIENT_SECRET:
