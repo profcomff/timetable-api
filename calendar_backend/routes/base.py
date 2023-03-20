@@ -30,9 +30,6 @@ from .lecturer import (
     lecturer_comment_review_router as old_lecturer_comment_review_router,
 )  # DEPRICATED TODO: Drop 2023-04-01
 from .lecturer import lecturer_comment_router as old_lecturer_comment_router  # DEPRICATED TODO: Drop 2023-04-01
-from .lecturer import (
-    lecturer_photo_review_router as old_lecturer_photo_review_router,
-)  # DEPRICATED TODO: Drop 2023-04-01
 from .lecturer import lecturer_photo_router as old_lecturer_photo_router  # DEPRICATED TODO: Drop 2023-04-01
 from .lecturer import lecturer_router as old_lecturer_router  # DEPRICATED TODO: Drop 2023-04-01
 from .lecturer.comment import router as lecturer_comment_router
@@ -119,7 +116,7 @@ class LimitUploadSize(BaseHTTPMiddleware):
 app.add_middleware(
     DBSessionMiddleware,
     db_url=settings.DB_DSN,
-    engine_args={"pool_pre_ping": True},
+    engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
 )
 app.add_middleware(
     CORSMiddleware,
@@ -139,7 +136,6 @@ app.include_router(old_lecturer_router)
 app.include_router(old_lecturer_comment_router)
 app.include_router(old_lecturer_comment_review_router)
 app.include_router(old_lecturer_photo_router)
-app.include_router(old_lecturer_photo_review_router)
 app.include_router(old_group_router)
 app.include_router(old_room_router)
 app.include_router(old_event_router)

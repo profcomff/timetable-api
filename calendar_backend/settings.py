@@ -16,7 +16,7 @@ class Settings(UnionAuthSettings, BaseSettings):
         "https://www.googleapis.com/auth/calendar",
         "https://www.googleapis.com/auth/userinfo.email",
     ]
-    STATIC_PATH: DirectoryPath | None
+    STATIC_PATH: DirectoryPath | None = './static'
     ADMIN_SECRET: dict[str, str] = {"admin": "42"}
     REQUIRE_REVIEW_PHOTOS: bool = True
     REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
