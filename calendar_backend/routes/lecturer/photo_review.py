@@ -12,7 +12,7 @@ from calendar_backend.routes.models import Action, Photo
 from calendar_backend.routes.models.base import Base as BaseSchema
 
 
-router = APIRouter(prefix="/lecturer/photo", tags=["Lecturer: Photo Review"])
+router = APIRouter(prefix="/lecturer/photo/review", tags=["Lecturer: Photo Review"])
 
 
 class Photo(BaseSchema):
@@ -28,7 +28,7 @@ class PhotoListResponse(BaseSchema):
     total: int
 
 
-@router.get("/review", response_model=PhotoListResponse)
+@router.get("", response_model=PhotoListResponse)
 async def get_unreviewed_photos(
     limit: int = 10,
     offset: int = 0,
@@ -63,7 +63,7 @@ async def get_unreviewed_photos(
     )
 
 
-@router.post("/{id}/review", response_model=Photo | None)
+@router.post("/{id}", response_model=Photo | None)
 async def review_photo(
     id: int,
     action: Action,

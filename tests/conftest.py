@@ -38,7 +38,7 @@ def client_auth(mocker: MockerFixture):
 @pytest.fixture()
 def dbsession():
     settings = get_settings()
-    engine = create_engine(settings.DB_DSN)
+    engine = create_engine(settings.DB_DSN, isolation_level='AUTOCOMMIT')
     TestingSessionLocal = sessionmaker(bind=engine)
     DeclarativeBase.metadata.create_all(bind=engine)
     return TestingSessionLocal()
@@ -90,20 +90,6 @@ def lecturer_path(client_auth: TestClient, dbsession: Session):
     id_ = response.json()["id"]
     yield RESOURCE + str(id_)
     response_model: Lecturer = dbsession.query(Lecturer).get(id_)
-    dbsession.delete(response_model)
-    dbsession.commit()
-
-
-@pytest.fixture()
-def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
-    RESOURCE = f"{lecturer_path}/photo"
-    with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
-        response = client_auth.post(RESOURCE, files={"photo": f})
-    assert response.status_code == status.HTTP_200_OK, response.json()
-    id_ = response.json()["id"]
-    client_auth.post(f"{RESOURCE}/{id_}/review/", json={"action": "Approved"})
-    yield RESOURCE + "/" + str(id_)
-    response_model: CommentLecturer = dbsession.query(Photo).get(id_)
     dbsession.delete(response_model)
     dbsession.commit()
 
