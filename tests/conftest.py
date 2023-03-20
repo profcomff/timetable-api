@@ -1,4 +1,3 @@
-import os.path
 from datetime import datetime
 
 import pytest
@@ -9,7 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from starlette import status
 
 from calendar_backend.models.base import DeclarativeBase
-from calendar_backend.models.db import CommentLecturer, Event, Group, Lecturer, Photo, Room
+from calendar_backend.models.db import Event, Group, Lecturer, Room
 from calendar_backend.routes import app
 from calendar_backend.settings import get_settings
 
