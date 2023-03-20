@@ -5,7 +5,7 @@ import os
 from functools import lru_cache
 from urllib.parse import unquote
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db

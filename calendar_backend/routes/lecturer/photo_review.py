@@ -1,4 +1,5 @@
 from typing import Literal
+
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db

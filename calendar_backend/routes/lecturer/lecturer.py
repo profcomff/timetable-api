@@ -4,7 +4,7 @@ from typing import Any, Literal
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
-from sqlalchemy.orm import joinedload, Query
+from sqlalchemy.orm import Query, joinedload
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods.image import get_photo_webpath
