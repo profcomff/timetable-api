@@ -73,6 +73,7 @@ jobs:
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --name ${{ env.CONTAITER_NAME }}_migration \
+            --env STATIC_PATH=/app/static \
             --workdir="/" \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test \
             alembic upgrade head
@@ -119,6 +120,7 @@ jobs:
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
             --name ${{ env.CONTAITER_NAME }}_migration \
+            --env STATIC_PATH=/app/static \
             --workdir="/" \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             alembic upgrade head
