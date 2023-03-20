@@ -32,10 +32,11 @@ class Direction(str, Enum):
 
 
 class Room(BaseDbModel):
-    name: Mapped[int] = mapped_column(String, nullable=False, unique=True)
-    direction: Mapped[int] = mapped_column(DbEnum(Direction, native_enum=False), nullable=True)
-    building: Mapped[int] = mapped_column(String)
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    direction: Mapped[Direction] = mapped_column(DbEnum(Direction, native_enum=False), nullable=True)
+    building: Mapped[str] = mapped_column(String, nullable=True)
+    building_url: Mapped[str] = mapped_column(String, nullable=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
     events: Mapped[list[Event]] = relationship(
         "Event",
@@ -47,12 +48,12 @@ class Room(BaseDbModel):
 
 
 class Lecturer(BaseDbModel):
-    first_name: Mapped[int] = mapped_column(String, nullable=False)
-    middle_name: Mapped[int] = mapped_column(String, nullable=False)
-    last_name: Mapped[int] = mapped_column(String, nullable=False)
+    first_name: Mapped[str] = mapped_column(String, nullable=False)
+    middle_name: Mapped[str] = mapped_column(String, nullable=False)
+    last_name: Mapped[str] = mapped_column(String, nullable=False)
     avatar_id: Mapped[int] = mapped_column(Integer, ForeignKey("photo.id"))
-    description: Mapped[int] = mapped_column(Text, nullable=True)
-    is_deleted: Mapped[int] = mapped_column(Boolean, default=False)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
     avatar: Mapped[Photo] = relationship(
         "Photo",

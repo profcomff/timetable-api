@@ -61,6 +61,7 @@ class RoomGet(Base):
     id: int
     name: str
     building: str | None
+    building_url: str | None
     direction: str | None
 
     def __repr__(self):

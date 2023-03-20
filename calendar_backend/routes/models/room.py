@@ -6,6 +6,7 @@ from .base import Base, EventGet, RoomGet
 class RoomPatch(Base):
     name: str | None
     building: str | None
+    building_url: str | None
     direction: Direction | None
 
     def __repr__(self):
@@ -15,6 +16,7 @@ class RoomPatch(Base):
 class RoomPost(Base):
     name: str
     building: str | None
+    building_url: str | None
     direction: Direction | None
 
 
