@@ -1,13 +1,30 @@
 import os
 
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 from starlette import status
 
+from calendar_backend.models.db import Photo
 from calendar_backend.settings import get_settings
 
 
 settings = get_settings()
 settings.STATIC_PATH = './static'
+
+
+@pytest.fixture()
+def photo_path(client_auth: TestClient, dbsession: Session, lecturer_path: str):
+    RESOURCE = f"{lecturer_path}/photo"
+    with open(os.path.dirname(__file__) + "/photo.png", "rb") as f:
+        response = client_auth.post(RESOURCE, files={"photo": f})
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    id_ = response.json()["id"]
+    client_auth.post(f"/lecturer/photo/review/{id_}", json={"action": "Approved"})
+    yield RESOURCE + "/" + str(id_)
+    response_model = dbsession.query(Photo).get(id_)
+    dbsession.delete(response_model)
+    dbsession.commit()
 
 
 def test_read_all(client_auth: TestClient, photo_path: str):

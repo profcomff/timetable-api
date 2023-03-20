@@ -5,7 +5,7 @@ import os
 from functools import lru_cache
 from urllib.parse import unquote
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi_sqlalchemy import db
@@ -36,17 +36,6 @@ def get_flow(state=""):
         scopes=settings.SCOPES,
         state=state,
         redirect_uri=f"{settings.REDIRECT_URL}/credentials",
-    )
-
-
-@gcal.get("/")
-async def home(request: Request):
-    groups = [
-        f"{row.number}, {row.name}" if row.name else f"{row.number}" for row in db.session.query(Group).filter().all()
-    ]
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "groups": groups},
     )
 
 
