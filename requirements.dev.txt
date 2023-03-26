@@ -5,3 +5,4 @@ pytest-mock
 black
 isort
 autoflake
+isort
