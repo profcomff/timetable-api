@@ -26,8 +26,9 @@ from .event.event import router as event_router
 from .gcal import gcal
 from .group import group_router as old_group_router  # DEPRICATED TODO: Drop 2023-04-01
 from .group.group import router as group_router
-from .lecturer import \
-    lecturer_comment_review_router as old_lecturer_comment_review_router  # DEPRICATED TODO: Drop 2023-04-01
+from .lecturer import (
+    lecturer_comment_review_router as old_lecturer_comment_review_router,  # DEPRICATED TODO: Drop 2023-04-01
+)
 from .lecturer import lecturer_comment_router as old_lecturer_comment_router  # DEPRICATED TODO: Drop 2023-04-01
 from .lecturer import lecturer_photo_router as old_lecturer_photo_router  # DEPRICATED TODO: Drop 2023-04-01
 from .lecturer import lecturer_router as old_lecturer_router  # DEPRICATED TODO: Drop 2023-04-01
