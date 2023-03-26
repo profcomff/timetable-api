@@ -23,7 +23,9 @@ class Credentials(BaseDbModel):
     scope: Mapped[JSON] = mapped_column(JSON, nullable=False)
     token: Mapped[JSON] = mapped_column(JSON, nullable=False)
     create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
-    update_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    update_ts: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
 
 class Direction(str, Enum):
@@ -174,7 +176,9 @@ class CommentLecturer(BaseDbModel):
     text: Mapped[str] = mapped_column(String, nullable=False)
     approve_status: Mapped[ApproveStatuses] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
     create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow())
-    update_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    update_ts: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow(), onupdate=datetime.utcnow()
+    )
     is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     lecturer: Mapped[Lecturer] = relationship(
@@ -191,7 +195,9 @@ class CommentEvent(BaseDbModel):
     text: Mapped[str] = mapped_column(String, nullable=False)
     approve_status: Mapped[ApproveStatuses] = mapped_column(DbEnum(ApproveStatuses, native_enum=False), nullable=False)
     create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow())
-    update_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow(), onupdate=datetime.utcnow())
+    update_ts: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow(), onupdate=datetime.utcnow()
+    )
     is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     event: Mapped[Event] = relationship(
