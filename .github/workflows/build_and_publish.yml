@@ -58,7 +58,7 @@ jobs:
       name: Testing
       url: https://api.test.profcomff.com/timetable
     env:
-      CONTAITER_NAME: com_profcomff_api_timetable_test
+      CONTAINER_NAME: com_profcomff_api_timetable_test
     permissions:
       packages: read
 
@@ -72,7 +72,7 @@ jobs:
             --rm \
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --name ${{ env.CONTAITER_NAME }}_migration \
+            --name ${{ env.CONTAINER_NAME }}_migration \
             --env STATIC_PATH=/app/static \
             --workdir="/" \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test \
@@ -81,7 +81,7 @@ jobs:
       - name: Run new version
         id: run_test
         run: |
-          docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
+          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
           docker run \
             --detach \
             --restart on-failure:3 \
@@ -93,7 +93,7 @@ jobs:
             --env GUNICORN_CMD_ARGS='--log-config  logging_test.conf' \
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
             --env STATIC_PATH=static \
-            --name ${{ env.CONTAITER_NAME }} \
+            --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
 
   deploy-production:
@@ -105,7 +105,7 @@ jobs:
       name: Production
       url: https://api.profcomff.com/timetable
     env:
-      CONTAITER_NAME: com_profcomff_api_timetable
+      CONTAINER_NAME: com_profcomff_api_timetable
     permissions:
       packages: read
 
@@ -119,7 +119,7 @@ jobs:
             --rm \
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --name ${{ env.CONTAITER_NAME }}_migration \
+            --name ${{ env.CONTAINER_NAME }}_migration \
             --env STATIC_PATH=/app/static \
             --workdir="/" \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
@@ -128,7 +128,7 @@ jobs:
       - name: Run new version
         id: run_test
         run: |
-          docker stop ${{ env.CONTAITER_NAME }} || true && docker rm ${{ env.CONTAITER_NAME }} || true
+          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
           docker run \
             --detach \
             --restart always \
@@ -142,5 +142,5 @@ jobs:
             --env GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
             --env STATIC_PATH=static \
-            --name ${{ env.CONTAITER_NAME }} \
+            --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
