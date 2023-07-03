@@ -55,7 +55,10 @@ def upgrade():
     delete_old_events_query = (
         f"""UPDATE event SET is_deleted = True WHERE id IN ({', '.join([str(x) for x in to_delete])})"""
     )
-    create_new_links_query = f"""INSERT INTO events_groups(event_id, group_id) VALUES ({'), ('.join([str(x) + ', ' + str(y) for x, y in pairs])})"""
+    list_ = '), ('.join([str(x) + ', ' + str(y) for x, y in pairs])
+    if not list_:
+        return
+    create_new_links_query = f"""INSERT INTO events_groups(event_id, group_id) VALUES ({list_})"""
     e.execute(sa.text(delete_old_events_query))
     e.execute(sa.text(create_new_links_query))
 
