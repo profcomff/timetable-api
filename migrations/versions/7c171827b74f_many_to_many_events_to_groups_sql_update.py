@@ -41,7 +41,7 @@ def upgrade():
                 array_agg(id) as old_ids, 
                 array_agg(group_id) as group_ids, 
                 count(*) as groups_incl
-            from api_timetable."event" e 
+            from "event" e 
             where not is_deleted
             group by name, start_ts, end_ts
         )
