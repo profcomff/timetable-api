@@ -11,18 +11,14 @@ from calendar_backend.settings import get_settings
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
-# DEPRICATED TODO: Drop 2023-04-01
-room_router = APIRouter(prefix="/timetable/room", tags=["Room"], deprecated=True)
 router = APIRouter(prefix="/room", tags=["Room"])
 
 
-@room_router.get("/{id}", response_model=RoomGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/{id}", response_model=RoomGet)
 async def get_room_by_id(id: int) -> RoomGet:
     return RoomGet.from_orm(Room.get(id, session=db.session))
 
 
-@room_router.get("/", response_model=GetListRoom)  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/", response_model=GetListRoom)
 async def get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> GetListRoom:
     res = Room.get_all(session=db.session).filter(Room.name.contains(query))
@@ -40,7 +36,6 @@ async def get_rooms(query: str = "", limit: int = 10, offset: int = 0) -> GetLis
     )
 
 
-@room_router.post("/", response_model=RoomGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/", response_model=RoomGet)
 async def create_room(room: RoomPost, _=Depends(UnionAuth(scopes=["timetable.room.create"]))) -> RoomGet:
     if bool(
@@ -52,7 +47,6 @@ async def create_room(room: RoomPost, _=Depends(UnionAuth(scopes=["timetable.roo
     return RoomGet.from_orm(db_room)
 
 
-@room_router.patch("/{id}", response_model=RoomGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.patch("/{id}", response_model=RoomGet)
 async def patch_room(id: int, room_inp: RoomPatch, _=Depends(UnionAuth(scopes=["timetable.room.upadte"]))) -> RoomGet:
     room = (
@@ -67,7 +61,6 @@ async def patch_room(id: int, room_inp: RoomPatch, _=Depends(UnionAuth(scopes=["
     return RoomGet.from_orm(patched)
 
 
-@room_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/{id}", response_model=None)
 async def delete_room(id: int, _=Depends(UnionAuth(scopes=["timetable.room.delete"]))) -> None:
     Room.delete(id, session=db.session)

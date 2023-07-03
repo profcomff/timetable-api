@@ -22,7 +22,7 @@ from calendar_backend.settings import get_settings
 settings = get_settings()
 logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory="calendar_backend/templates")
-# DEPRICATED TODO: Drop 2023-04-01
+# DEPRICATED TODO: Drop ?
 gcal = APIRouter(tags=["Utils: Google"], deprecated=True)
 
 

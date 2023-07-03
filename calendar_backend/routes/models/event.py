@@ -6,7 +6,7 @@ from .base import Base, CommentEventGet, GroupGet, LecturerGet, RoomGet
 class EventPatch(Base):
     name: str | None
     room_id: list[int] | None
-    group_id: int | None
+    group_id: list[int] | None
     lecturer_id: list[int] | None
     start_ts: datetime.datetime | None
     end_ts: datetime.datetime | None
@@ -22,7 +22,7 @@ class EventPatch(Base):
 class EventPost(Base):
     name: str
     room_id: list[int]
-    group_id: int
+    group_id: list[int]
     lecturer_id: list[int]
     start_ts: datetime.datetime
     end_ts: datetime.datetime
@@ -39,7 +39,7 @@ class Event(Base):
     id: int
     name: str
     room: list[RoomGet]
-    group: GroupGet
+    group: list[GroupGet]
     lecturer: list[LecturerGet]
     start_ts: datetime.datetime
     end_ts: datetime.datetime

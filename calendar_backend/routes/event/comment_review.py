@@ -13,14 +13,9 @@ from calendar_backend.settings import get_settings
 
 
 settings = get_settings()
-# DEPRICATED TODO: Drop 2023-04-01
-event_comment_review_router = APIRouter(
-    prefix="/timetable/event/{event_id}/comment", tags=["Event: Comment Review"], deprecated=True
-)
 router = APIRouter(prefix="/event/{event_id}/comment", tags=["Event: Comment Review"])
 
 
-@event_comment_review_router.get("/review/", response_model=list[CommentEventGet])  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/review/", response_model=list[CommentEventGet])
 async def get_unreviewed_comments(
     event_id: int, _=Depends(UnionAuth(scopes=["timetable.event.comment.review"]))
@@ -33,7 +28,6 @@ async def get_unreviewed_comments(
     return parse_obj_as(list[CommentEventGet], comments)
 
 
-@event_comment_review_router.post("/{id}/review/", response_model=CommentEventGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/{id}/review/", response_model=CommentEventGet)
 async def review_comment(
     id: int,

@@ -106,15 +106,15 @@ class Group(BaseDbModel):
 
     events: Mapped[list[Event]] = relationship(
         "Event",
-        foreign_keys="Event.group_id",
         order_by="(Event.start_ts)",
-        primaryjoin="and_(Group.id==Event.group_id, not_(Event.is_deleted))",
+        secondary="events_groups",
+        back_populates="group",
+        secondaryjoin="and_(Event.id==EventsGroups.event_id, not_(Event.is_deleted))",
     )
 
 
 class Event(BaseDbModel):
     name: Mapped[str] = mapped_column(String, nullable=False)
-    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("group.id"), nullable=True)
     start_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -125,11 +125,11 @@ class Event(BaseDbModel):
         secondary="events_rooms",
         secondaryjoin="and_(Room.id==EventsRooms.room_id, not_(Room.is_deleted))",
     )
-    group: Mapped[Group] = relationship(
+    group: Mapped[list[Group]] = relationship(
         "Group",
         back_populates="events",
-        foreign_keys="Event.group_id",
-        primaryjoin="and_(Group.id==Event.group_id, not_(Group.is_deleted))",
+        secondary="events_groups",
+        secondaryjoin="and_(Group.id==EventsGroups.group_id, not_(Group.is_deleted))",
     )
     lecturer: Mapped[list[Lecturer]] = relationship(
         "Lecturer",
@@ -153,6 +153,11 @@ class EventsLecturers(BaseDbModel):
 class EventsRooms(BaseDbModel):
     event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
     room_id: Mapped[int] = mapped_column(Integer, ForeignKey("room.id"), nullable=False)
+
+
+class EventsGroups(BaseDbModel):
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
+    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("group.id"), nullable=False)
 
 
 class Photo(BaseDbModel):
