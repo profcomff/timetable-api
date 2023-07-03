@@ -83,4 +83,3 @@ def downgrade():
     op.add_column('event', sa.Column('group_id', sa.INTEGER(), autoincrement=False, nullable=True))
     op.create_foreign_key('lesson_group_id_fkey', 'event', 'group', ['group_id'], ['id'])
     op.drop_table('events_groups')
-
