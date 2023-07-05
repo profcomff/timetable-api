@@ -18,7 +18,7 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
     request_obj = {
         "name": "string",
         "room_id": [room_id],
-        "group_id": group_id,
+        "group_id": [group_id],
         "lecturer_id": [lecturer_id],
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
@@ -28,7 +28,7 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == room_id
-    assert response_obj["group"]["id"] == request_obj["group_id"]
+    assert response_obj["group"][0]["id"] == group_id
     assert response_obj["lecturer"][0]["id"] == lecturer_id
     assert response_obj["start_ts"][:20] == request_obj["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj["end_ts"][:20]
@@ -36,7 +36,7 @@ def test_create(client_auth: TestClient, dbsession: Session, room_path, group_pa
     assert response_model.name == request_obj["name"]
     assert [row.id for row in response_model.room] == request_obj["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj["lecturer_id"]
-    assert response_model.group_id == request_obj["group_id"]
+    assert [row.id for row in response_model.group] == request_obj["group_id"]
 
 
 def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, group_factory, lecturer_factory):
@@ -56,7 +56,7 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
         {
             "name": "string",
             "room_id": [room_id1],
-            "group_id": group_id1,
+            "group_id": [group_id1],
             "lecturer_id": [lecturer_id1],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",
@@ -64,7 +64,7 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
         {
             "name": "string",
             "room_id": [room_id2],
-            "group_id": group_id2,
+            "group_id": [group_id2],
             "lecturer_id": [lecturer_id2],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",
@@ -75,7 +75,7 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
     response_obj = response.json()
     assert response_obj[0]["name"] == request_obj[0]["name"]
     assert response_obj[0]["room"][0]["id"] == room_id1
-    assert response_obj[0]["group"]["id"] == request_obj[0]["group_id"]
+    assert response_obj[0]["group"][0]["id"] == group_id1
     assert response_obj[0]["lecturer"][0]["id"] == lecturer_id1
     assert response_obj[0]["start_ts"][:20] == request_obj[0]["start_ts"][:20]
     assert response_obj[0]["end_ts"][:20] == request_obj[0]["end_ts"][:20]
@@ -83,11 +83,11 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
     assert response_model.name == request_obj[0]["name"]
     assert [row.id for row in response_model.room] == request_obj[0]["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj[0]["lecturer_id"]
-    assert response_model.group_id == request_obj[0]["group_id"]
+    assert [row.id for row in response_model.group] == request_obj[0]["group_id"]
 
     assert response_obj[1]["name"] == request_obj[1]["name"]
     assert response_obj[1]["room"][0]["id"] == room_id2
-    assert response_obj[1]["group"]["id"] == request_obj[1]["group_id"]
+    assert response_obj[1]["group"][0]["id"] == group_id2
     assert response_obj[1]["lecturer"][0]["id"] == lecturer_id2
     assert response_obj[1]["start_ts"][:20] == request_obj[1]["start_ts"][:20]
     assert response_obj[1]["end_ts"][:20] == request_obj[1]["end_ts"][:20]
@@ -95,7 +95,7 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
     assert response_model.name == request_obj[1]["name"]
     assert [row.id for row in response_model.room] == request_obj[1]["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj[1]["lecturer_id"]
-    assert response_model.group_id == request_obj[1]["group_id"]
+    assert [row.id for row in response_model.group] == request_obj[1]["group_id"]
 
 
 def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer_path, group_path):
@@ -105,7 +105,7 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
     request_obj = {
         "name": "string",
         "room_id": [room_id],
-        "group_id": group_id,
+        "group_id": [group_id],
         "lecturer_id": [lecturer_id],
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
@@ -115,7 +115,7 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
-    assert response_obj["group"]["id"] == request_obj["group_id"]
+    assert response_obj["group"][0]["id"] == request_obj["group_id"][0]
     assert response_obj["lecturer"][0]["id"] == request_obj["lecturer_id"][0]
     assert response_obj["start_ts"][:20] == request_obj["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj["end_ts"][:20]
@@ -163,7 +163,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     request_obj = {
         "name": "string",
         "room_id": [room.id],
-        "group_id": group.id,
+        "group_id": [group.id],
         "lecturer_id": [lecturer.id],
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
@@ -173,7 +173,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
-    assert response_obj["group"]["id"] == request_obj["group_id"]
+    assert response_obj["group"][0]["id"] == request_obj["group_id"][0]
     assert response_obj["lecturer"][0]["id"] == request_obj["lecturer_id"][0]
     assert response_obj["start_ts"][:20] == request_obj["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj["end_ts"][:20]
@@ -185,7 +185,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     response_obj = response.json()
     assert response_obj["name"] == request_obj["name"]
     assert response_obj["room"][0]["id"] == request_obj["room_id"][0]
-    assert response_obj["group"]["id"] == request_obj["group_id"]
+    assert response_obj["group"][0]["id"] == request_obj["group_id"][0]
     assert response_obj["lecturer"][0]["id"] == request_obj["lecturer_id"][0]
     assert response_obj["start_ts"][:20] == request_obj["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj["end_ts"][:20]
@@ -194,18 +194,19 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     request_obj_2 = {
         "name": "frfrf",
         "room_id": [room.id],
-        "group_id": group.id,
+        "group_id": [group.id],
         "lecturer_id": [lecturer.id],
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
-    client_auth.patch(urljoin(RESOURCE, str(id_)), json=request_obj_2)
+    response = client_auth.patch(urljoin(RESOURCE, str(id_)), json=request_obj_2)
+    assert response.status_code == 200
     response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
     assert response_obj["name"] == request_obj_2["name"]
     assert response_obj["room"][0]["id"] == request_obj_2["room_id"][0]
-    assert response_obj["group"]["id"] == request_obj_2["group_id"]
+    assert response_obj["group"][0]["id"] == request_obj_2["group_id"][0]
     assert response_obj["lecturer"][0]["id"] == request_obj_2["lecturer_id"][0]
     assert response_obj["start_ts"][:20] == request_obj_2["start_ts"][:20]
     assert response_obj["end_ts"][:20] == request_obj_2["end_ts"][:20]
@@ -217,7 +218,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         if item["id"] == id_:
             assert item[0]["name"] == request_obj["name"]
             assert item[0]["room"][0]["id"] == request_obj["room_id"][0]
-            assert item[0]["group"]["id"] == request_obj["group_id"]
+            assert item[0]["group"][0]["id"] == request_obj["group_id"][0]
             assert item[0]["lecturer"][0]["id"] == request_obj["lecturer_id"][0]
             assert item["start_ts"][:20] == request_obj_2["start_ts"][:20]
             assert item["end_ts"][:20] == request_obj_2["end_ts"][:20]
@@ -227,7 +228,7 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     assert response_model.name == request_obj_2["name"]
     assert [row.id for row in response_model.room] == request_obj_2["room_id"]
     assert [row.id for row in response_model.lecturer] == request_obj_2["lecturer_id"]
-    assert response_model.group_id == request_obj_2["group_id"]
+    assert [row.id for row in response_model.group] == request_obj_2["group_id"]
     assert str(response_model.start_ts.isoformat())[:20] == request_obj_2["start_ts"][:20]
     assert str(response_model.end_ts.isoformat())[:20] == request_obj_2["end_ts"][:20]
 
@@ -256,7 +257,7 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
         {
             "name": "string",
             "room_id": [room_id1],
-            "group_id": group_id1,
+            "group_id": [group_id1],
             "lecturer_id": [lecturer_id1],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",
@@ -264,7 +265,7 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
         {
             "name": "string",
             "room_id": [room_id2],
-            "group_id": group_id2,
+            "group_id": [group_id2],
             "lecturer_id": [lecturer_id2],
             "start_ts": "2022-08-26T22:32:38.575Z",
             "end_ts": "2022-08-26T22:32:38.575Z",

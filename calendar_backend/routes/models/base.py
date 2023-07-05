@@ -72,7 +72,7 @@ class EventGet(Base):
     id: int
     name: str
     room: list[RoomGet]
-    group: GroupGet
+    group: list[GroupGet]
     lecturer: list[LecturerGet]
     start_ts: datetime.datetime
     end_ts: datetime.datetime

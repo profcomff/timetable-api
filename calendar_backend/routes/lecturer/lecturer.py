@@ -16,12 +16,9 @@ from calendar_backend.settings import get_settings
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
-# DEPRICATED TODO: Drop 2023-04-01
-lecturer_router = APIRouter(prefix="/timetable/lecturer", tags=["Lecturer"], deprecated=True)
 router = APIRouter(prefix="/lecturer", tags=["Lecturer"])
 
 
-@lecturer_router.get("/{id}", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/{id}", response_model=LecturerGet)
 async def get_lecturer_by_id(id: int) -> LecturerGet:
     lecturer = Lecturer.get(id, session=db.session)
@@ -31,7 +28,6 @@ async def get_lecturer_by_id(id: int) -> LecturerGet:
     return result
 
 
-@lecturer_router.get("/", response_model=GetListLecturer)  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/", response_model=GetListLecturer)
 async def get_lecturers(
     query: str = "",
@@ -65,7 +61,6 @@ async def get_lecturers(
     }
 
 
-@lecturer_router.post("/", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/", response_model=LecturerGet)
 async def create_lecturer(
     lecturer: LecturerPost, _=Depends(UnionAuth(scopes=["timetable.lecturer.create"]))
@@ -75,7 +70,6 @@ async def create_lecturer(
     return LecturerGet.from_orm(dblecturer)
 
 
-@lecturer_router.patch("/{id}", response_model=LecturerGet)  # DEPRICATED TODO: Drop 2023-04-01
 @router.patch("/{id}", response_model=LecturerGet)
 async def patch_lecturer(
     id: int, lecturer_inp: LecturerPatch, _=Depends(UnionAuth(scopes=["timetable.lecturer.update"]))
@@ -93,7 +87,6 @@ async def patch_lecturer(
     return LecturerGet.from_orm(lecturer_upd)
 
 
-@lecturer_router.delete("/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/{id}", response_model=None)
 async def delete_lecturer(id: int, _=Depends(UnionAuth(scopes=["timetable.lecturer.delete"]))) -> None:
     Lecturer.delete(id, session=db.session)

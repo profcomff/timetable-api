@@ -102,7 +102,7 @@ def event_path(client_auth: TestClient, dbsession: Session, lecturer_path, room_
     request_obj = {
         "name": "string",
         "room_id": [room_id],
-        "group_id": group_id,
+        "group_id": [group_id],
         "lecturer_id": [lecturer_id],
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",

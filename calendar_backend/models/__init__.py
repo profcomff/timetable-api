@@ -5,6 +5,7 @@ from .db import (
     Credentials,
     Direction,
     Event,
+    EventsGroups,
     EventsLecturers,
     EventsRooms,
     Group,
@@ -25,4 +26,5 @@ __all__ = [
     "EventsLecturers",
     "EventsRooms",
     "ApproveStatuses",
+    "EventsGroups",
 ]

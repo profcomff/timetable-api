@@ -5,7 +5,6 @@ import string
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from io import BytesIO
-from typing import Final
 
 import aiofiles
 from fastapi import File, HTTPException, UploadFile

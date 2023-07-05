@@ -10,12 +10,9 @@ from calendar_backend.settings import get_settings
 
 
 settings = get_settings()
-# DEPRICATED TODO: Drop 2023-04-01
-lecturer_photo_router = APIRouter(prefix="/timetable/lecturer/{lecturer_id}", tags=["Lecturer: Photo"], deprecated=True)
 router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Photo"])
 
 
-@lecturer_photo_router.post("/photo", response_model=Photo)  # DEPRICATED TODO: Drop 2023-04-01
 @router.post("/photo", response_model=Photo)
 async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
     """Загрузить фотографию преподавателя из локального файла
@@ -35,7 +32,6 @@ async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo
     return Photo.from_orm(photo)
 
 
-@lecturer_photo_router.get("/photo", response_model=LecturerPhotos)  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/photo", response_model=LecturerPhotos)
 async def get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0) -> LecturerPhotos:
     if not Lecturer.get(id=lecturer_id, session=db.session):
@@ -53,7 +49,6 @@ async def get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0
     )
 
 
-@lecturer_photo_router.delete("/photo/{id}", response_model=None)  # DEPRICATED TODO: Drop 2023-04-01
 @router.delete("/photo/{id}", response_model=None)
 async def delete_photo(id: int, lecturer_id: int) -> None:
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
@@ -66,7 +61,6 @@ async def delete_photo(id: int, lecturer_id: int) -> None:
     return None
 
 
-@lecturer_photo_router.get("/photo/{id}", response_model=Photo)  # DEPRICATED TODO: Drop 2023-04-01
 @router.get("/photo/{id}", response_model=Photo)
 async def get_photo(id: int, lecturer_id: int) -> Photo:
     if not Lecturer.get(id=lecturer_id, session=db.session):
