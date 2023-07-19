@@ -51,7 +51,7 @@ async def get_unreviewed_photos(
 
     result = []
     for row in query:
-        get_row = Photo.from_orm(row)
+        get_row = Photo.model_validate(row)
         get_row.link = get_photo_webpath(row.link)
         result.append(get_row)
 
@@ -78,4 +78,4 @@ async def review_photo(
     if not photo.lecturer.avatar:
         photo.lecturer.avatar_id = photo.id
     db.session.flush()
-    return Photo.from_orm(photo)
+    return Photo.model_validate(photo)

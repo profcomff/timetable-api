@@ -1,14 +1,14 @@
-from pydantic import validator
+from pydantic import field_validator
 
 from .base import Base, EventGet, GroupGet
 
 
 class GroupPatch(Base):
-    name: str | None
-    number: str | None
+    name: str | None = None
+    number: str | None = None
 
     @classmethod
-    @validator("number")
+    @field_validator("number")
     def number_validate(cls, v: str):
         if v is None:
             return v
@@ -23,11 +23,11 @@ class GroupPatch(Base):
 
 
 class GroupPost(Base):
-    name: str | None
+    name: str | None = None
     number: str
 
     @classmethod
-    @validator("number")
+    @field_validator("number")
     def number_validate(cls, v: str):
         if v is None:
             return v

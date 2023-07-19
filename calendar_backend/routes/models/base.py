@@ -1,11 +1,10 @@
 import datetime
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class Base(BaseModel):
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CommentLecturer(Base):
@@ -28,11 +27,11 @@ class CommentEventGet(Base):
 
 class GroupGet(Base):
     id: int
-    name: str | None
+    name: str | None = None
     number: str
 
     @classmethod
-    @validator("number")
+    @field_validator("number")
     def number_validate(cls, v: str):
         if len(v) not in [3, 4]:
             raise ValueError("Group number must contain 3 or 4 characters")
@@ -49,9 +48,9 @@ class LecturerGet(Base):
     first_name: str
     middle_name: str
     last_name: str
-    avatar_id: int | None
-    avatar_link: str | None
-    description: str | None
+    avatar_id: int | None = None
+    avatar_link: str | None = None
+    description: str | None = None
 
     def __repr__(self):
         return f"Lecturer(id={self.id}, first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -60,9 +59,9 @@ class LecturerGet(Base):
 class RoomGet(Base):
     id: int
     name: str
-    building: str | None
-    building_url: str | None
-    direction: str | None
+    building: str | None = None
+    building_url: str | None = None
+    direction: str | None = None
 
     def __repr__(self):
         return f"Room(id={self.id}, name={self.name}, direction={self.direction}, building={self.building})"

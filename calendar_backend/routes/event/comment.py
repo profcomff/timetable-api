@@ -17,10 +17,10 @@ router = APIRouter(prefix="/event/{event_id}/comment", tags=["Event: Comment"])
 async def comment_event(event_id: int, comment: EventCommentPost) -> CommentEventGet:
     approve_status = ApproveStatuses.APPROVED if not settings.REQUIRE_REVIEW_EVENT_COMMENT else ApproveStatuses.PENDING
     comment_event = DbCommentEvent.create(
-        event_id=event_id, session=db.session, **comment.dict(), approve_status=approve_status
+        event_id=event_id, session=db.session, **comment.model_dump(), approve_status=approve_status
     )
     db.session.commit()
-    return CommentEventGet.from_orm(comment_event)
+    return CommentEventGet.model_validate(comment_event)
 
 
 @router.patch("/{id}", response_model=CommentEventGet)
@@ -30,9 +30,9 @@ async def update_comment(id: int, event_id: int, comment_inp: EventCommentPatch)
         raise ObjectNotFound(DbCommentEvent, id)
     if comment.approve_status is not ApproveStatuses.PENDING:
         raise ForbiddenAction(DbCommentEvent, id)
-    comment_event = DbCommentEvent.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    comment_event = DbCommentEvent.update(id, session=db.session, **comment_inp.model_dump(exclude_unset=True))
     db.session.commit()
-    return CommentEventGet.from_orm(comment_event)
+    return CommentEventGet.model_validate(comment_event)
 
 
 @router.get("/{id}", response_model=CommentEventGet)
@@ -40,7 +40,7 @@ async def get_comment(id: int, event_id: int) -> CommentEventGet:
     comment = DbCommentEvent.get(id, session=db.session)
     if not comment.event_id == event_id or comment.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbCommentEvent, id)
-    return CommentEventGet.from_orm(comment)
+    return CommentEventGet.model_validate(comment)
 
 
 @router.delete("/{id}", response_model=None)

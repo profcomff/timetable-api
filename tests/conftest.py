@@ -37,7 +37,7 @@ def client_auth(mocker: MockerFixture):
 @pytest.fixture()
 def dbsession():
     settings = get_settings()
-    engine = create_engine(settings.DB_DSN, isolation_level='AUTOCOMMIT')
+    engine = create_engine(str(settings.DB_DSN), isolation_level='AUTOCOMMIT')
     TestingSessionLocal = sessionmaker(bind=engine)
     DeclarativeBase.metadata.create_all(bind=engine)
     return TestingSessionLocal()

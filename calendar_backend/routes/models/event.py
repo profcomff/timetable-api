@@ -4,12 +4,12 @@ from .base import Base, CommentEventGet, GroupGet, LecturerGet, RoomGet
 
 
 class EventPatch(Base):
-    name: str | None
-    room_id: list[int] | None
-    group_id: list[int] | None
-    lecturer_id: list[int] | None
-    start_ts: datetime.datetime | None
-    end_ts: datetime.datetime | None
+    name: str | None = None
+    room_id: list[int] | None = None
+    group_id: list[int] | None = None
+    lecturer_id: list[int] | None = None
+    start_ts: datetime.datetime | None = None
+    end_ts: datetime.datetime | None = None
 
     def __repr__(self):
         return (
@@ -58,8 +58,8 @@ class EventCommentPost(Base):
 
 
 class EventCommentPatch(Base):
-    text: str | None
-    author_name: str | None
+    text: str | None = None
+    author_name: str | None = None
 
 
 class EventComments(Base):

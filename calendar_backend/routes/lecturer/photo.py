@@ -29,7 +29,7 @@ async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo
     """
     photo = await upload_lecturer_photo(lecturer_id, db.session, file=photo)
     db.session.commit()
-    return Photo.from_orm(photo)
+    return Photo.model_validate(photo)
 
 
 @router.get("/photo", response_model=LecturerPhotos)
@@ -68,4 +68,4 @@ async def get_photo(id: int, lecturer_id: int) -> Photo:
     photo = DbPhoto.get(id, session=db.session)
     if photo.lecturer_id != lecturer_id or photo.approve_status != ApproveStatuses.APPROVED:
         raise ObjectNotFound(DbPhoto, id)
-    return Photo.from_orm(photo)
+    return Photo.model_validate(photo)

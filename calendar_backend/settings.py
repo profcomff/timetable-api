@@ -2,7 +2,8 @@ import os
 from functools import lru_cache
 
 from auth_lib.fastapi import UnionAuthSettings
-from pydantic import AnyHttpUrl, BaseSettings, DirectoryPath, Json, PostgresDsn
+from pydantic import AnyHttpUrl, ConfigDict, DirectoryPath, Json, PostgresDsn
+from pydantic_settings import BaseSettings
 
 
 class Settings(UnionAuthSettings, BaseSettings):
@@ -21,18 +22,14 @@ class Settings(UnionAuthSettings, BaseSettings):
     REQUIRE_REVIEW_PHOTOS: bool = True
     REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
     REQUIRE_REVIEW_EVENT_COMMENT: bool = True
-    GOOGLE_CLIENT_SECRET: Json | None
+    GOOGLE_CLIENT_SECRET: Json | None = None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: list[str] = ['*']
     CORS_ALLOW_HEADERS: list[str] = ['*']
-    SUPPORTED_FILE_EXTENSIONS: list[str] = ['png', 'svg', 'jpg', 'jpeg', 'webp']
+    SUPPORTED_FILE_EXTENSIONS: list[str] = ["png", "svg", "jpg", "jpeg", "webp"]
 
-    class Config:
-        """Pydantic BaseSettings config"""
-
-        case_sensitive = True
-        env_file = ".env"
+    model_config = ConfigDict(case_sensitive=True, env_file='.env', extra='allow')
 
 
 @lru_cache
