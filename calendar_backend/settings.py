@@ -29,7 +29,7 @@ class Settings(UnionAuthSettings, BaseSettings):
     CORS_ALLOW_HEADERS: list[str] = ['*']
     SUPPORTED_FILE_EXTENSIONS: list[str] = ["png", "svg", "jpg", "jpeg", "webp"]
 
-    model_config = ConfigDict(case_sensitive=True, env_file='.env', extra='allow')
+    model_config = ConfigDict(case_sensitive=True, env_file='.env', extra='ignore')
 
 
 @lru_cache
