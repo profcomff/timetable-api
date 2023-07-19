@@ -16,7 +16,7 @@ router = APIRouter(prefix="/group", tags=["Group"])
 
 @router.get("/{id}", response_model=GroupGet)
 async def get_group_by_id(id: int) -> GroupGet:
-    return GroupGet.from_orm(Group.get(id, session=db.session))
+    return GroupGet.model_validate(Group.get(id, session=db.session))
 
 
 @router.get("/", response_model=GetListGroup)
@@ -40,9 +40,9 @@ async def get_groups(query: str = "", limit: int = 10, offset: int = 0) -> GetLi
 async def create_group(group: GroupPost, _=Depends(UnionAuth(scopes=["timetable.group.create"]))) -> GroupGet:
     if db.session.query(Group).filter(Group.number == group.number).one_or_none():
         raise HTTPException(status_code=423, detail="Already exists")
-    group = Group.create(**group.dict(), session=db.session)
+    group = Group.create(**group.model_dump(), session=db.session)
     db.session.commit()
-    return GroupGet.from_orm(group)
+    return GroupGet.model_validate(group)
 
 
 @router.patch("/{id}", response_model=GroupGet)
@@ -56,9 +56,9 @@ async def patch_group(
         and query.id != id
     ):
         raise HTTPException(status_code=423, detail="Already exists")
-    patched = Group.update(id, **group_inp.dict(exclude_unset=True), session=db.session)
+    patched = Group.update(id, **group_inp.model_dump(exclude_unset=True), session=db.session)
     db.session.commit()
-    return GroupGet.from_orm(patched)
+    return GroupGet.model_validate(patched)
 
 
 @router.delete("/{id}", response_model=None)

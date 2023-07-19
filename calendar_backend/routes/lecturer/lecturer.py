@@ -22,7 +22,7 @@ router = APIRouter(prefix="/lecturer", tags=["Lecturer"])
 @router.get("/{id}", response_model=LecturerGet)
 async def get_lecturer_by_id(id: int) -> LecturerGet:
     lecturer = Lecturer.get(id, session=db.session)
-    result = LecturerGet.from_orm(Lecturer.get(id, session=db.session))
+    result = LecturerGet.model_validate(Lecturer.get(id, session=db.session))
     if lecturer.avatar_id:
         result.avatar_link = get_photo_webpath(lecturer.avatar.link)
     return result
@@ -49,7 +49,7 @@ async def get_lecturers(
 
     result = []
     for row in query:
-        row_get = LecturerGet.from_orm(row)
+        row_get = LecturerGet.model_validate(row)
         if row.avatar:
             row_get.avatar_link = get_photo_webpath(row.avatar.link)
         result.append(row_get)
@@ -65,9 +65,9 @@ async def get_lecturers(
 async def create_lecturer(
     lecturer: LecturerPost, _=Depends(UnionAuth(scopes=["timetable.lecturer.create"]))
 ) -> LecturerGet:
-    dblecturer = Lecturer.create(session=db.session, **lecturer.dict())
+    dblecturer = Lecturer.create(session=db.session, **lecturer.model_dump())
     db.session.commit()
-    return LecturerGet.from_orm(dblecturer)
+    return LecturerGet.model_validate(dblecturer)
 
 
 @router.patch("/{id}", response_model=LecturerGet)
@@ -79,12 +79,15 @@ async def patch_lecturer(
         if photo.lecturer_id != id or photo.approve_status != ApproveStatuses.APPROVED:
             raise ObjectNotFound(DbPhoto, lecturer_inp.avatar_id)
         lecturer_upd = Lecturer.update(
-            id, session=db.session, **lecturer_inp.dict(exclude_unset=True), avatar_link=get_photo_webpath(photo.link)
+            id,
+            session=db.session,
+            **lecturer_inp.model_dump(exclude_unset=True),
+            avatar_link=get_photo_webpath(photo.link),
         )
     else:
-        lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.dict(exclude_unset=True))
+        lecturer_upd = Lecturer.update(id, session=db.session, **lecturer_inp.model_dump(exclude_unset=True))
     db.session.commit()
-    return LecturerGet.from_orm(lecturer_upd)
+    return LecturerGet.model_validate(lecturer_upd)
 
 
 @router.delete("/{id}", response_model=None)

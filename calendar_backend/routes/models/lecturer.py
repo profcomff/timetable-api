@@ -11,11 +11,11 @@ class LecturerPhotos(Base):
 
 
 class LecturerPatch(Base):
-    first_name: str | None
-    middle_name: str | None
-    last_name: str | None
-    avatar_id: int | None
-    description: str | None
+    first_name: str | None = None
+    middle_name: str | None = None
+    last_name: str | None = None
+    avatar_id: int | None = None
+    description: str | None = None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -25,7 +25,7 @@ class LecturerPost(Base):
     first_name: str
     middle_name: str
     last_name: str
-    description: str | None
+    description: str | None = None
 
     def __repr__(self):
         return f"Lecturer(first_name={self.first_name}, middle_name={self.middle_name}, last_name={self.last_name})"
@@ -54,8 +54,8 @@ class LecturerCommentPost(Base):
 
 
 class LecturerCommentPatch(Base):
-    author_name: str | None
-    text: str | None
+    author_name: str | None = None
+    text: str | None = None
 
 
 class LecturerComments(Base):

@@ -21,11 +21,11 @@ async def comment_lecturer(lecturer_id: int, comment: LecturerCommentPost) -> Co
     db_comment_lecturer = DbCommentLecturer.create(
         lecturer_id=lecturer_id,
         session=db.session,
-        **comment.dict(),
+        **comment.model_dump(),
         approve_status=approve_status,
     )
     db.session.commit()
-    return CommentLecturer.from_orm(db_comment_lecturer)
+    return CommentLecturer.model_validate(db_comment_lecturer)
 
 
 @router.patch("/comment/{id}", response_model=CommentLecturer)
@@ -35,9 +35,9 @@ async def update_comment_lecturer(id: int, lecturer_id: int, comment_inp: Lectur
         raise ObjectNotFound(DbCommentLecturer, id)
     if comment.approve_status is not ApproveStatuses.PENDING:
         raise ForbiddenAction(DbCommentLecturer, id)
-    patched = DbCommentLecturer.update(id, session=db.session, **comment_inp.dict(exclude_unset=True))
+    patched = DbCommentLecturer.update(id, session=db.session, **comment_inp.model_dump(exclude_unset=True))
     db.session.commit()
-    return CommentLecturer.from_orm(patched)
+    return CommentLecturer.model_validate(patched)
 
 
 @router.delete("/comment/{id}", response_model=None)
@@ -58,7 +58,7 @@ async def get_comment(id: int, lecturer_id: int) -> CommentLecturer:
         raise ObjectNotFound(DbCommentLecturer, id)
     if comment.approve_status is not None:
         raise ForbiddenAction(DbCommentLecturer, id)
-    return CommentLecturer.from_orm(comment)
+    return CommentLecturer.model_validate(comment)
 
 
 @router.get("/comment/", response_model=LecturerComments)

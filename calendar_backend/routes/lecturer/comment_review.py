@@ -3,7 +3,7 @@ from typing import Literal
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.models.db import ApproveStatuses
@@ -25,7 +25,8 @@ async def get_unreviewed_comments(
         )
         .all()
     )
-    return parse_obj_as(list[CommentLecturer], comments)
+    adapter = TypeAdapter(list[CommentLecturer])
+    return adapter.validate_python(comments)
 
 
 @router.post("/{id}/review/", response_model=CommentLecturer)
@@ -42,4 +43,4 @@ async def review_comment(
     if action == ApproveStatuses.DECLINED:
         DbCommentLecturer.delete(comment.id, session=db.session)
     db.session.commit()
-    return CommentLecturer.from_orm(comment)
+    return CommentLecturer.model_validate(comment)

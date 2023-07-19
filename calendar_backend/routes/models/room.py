@@ -4,10 +4,10 @@ from .base import Base, EventGet, RoomGet
 
 
 class RoomPatch(Base):
-    name: str | None
-    building: str | None
-    building_url: str | None
-    direction: Direction | None
+    name: str | None = None
+    building: str | None = None
+    building_url: str | None = None
+    direction: Direction | None = None
 
     def __repr__(self):
         return f"Room(name={self.name}, direction={self.direction})"
@@ -15,9 +15,9 @@ class RoomPatch(Base):
 
 class RoomPost(Base):
     name: str
-    building: str | None
-    building_url: str | None
-    direction: Direction | None
+    building: str | None = None
+    building_url: str | None = None
+    direction: Direction | None = None
 
 
 class RoomEvents(RoomGet):

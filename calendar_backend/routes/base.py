@@ -103,7 +103,7 @@ class LimitUploadSize(BaseHTTPMiddleware):
 
 app.add_middleware(
     DBSessionMiddleware,
-    db_url=settings.DB_DSN,
+    db_url=str(settings.DB_DSN),
     engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
 )
 app.add_middleware(

@@ -6,7 +6,7 @@ from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import list_calendar
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/event", tags=["Event"])
 
 @router.get("/{id}", response_model=EventGet)
 async def get_event_by_id(id: int) -> EventGet:
-    return EventGet.from_orm(Event.get(id, session=db.session))
+    return EventGet.model_validate(Event.get(id, session=db.session))
 
 
 async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id, detail, limit, offset):
@@ -60,7 +60,7 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
             }
         ]
 
-    return GetListEvent(items=events, limit=limit, offset=offset, total=cnt).dict(exclude=fmt)
+    return GetListEvent(items=events, limit=limit, offset=offset, total=cnt).model_dump(exclude=fmt)
 
 
 @router.get("/", response_model=GetListEvent | None)
@@ -86,7 +86,7 @@ async def get_events(
 
 @router.post("/", response_model=EventGet)
 async def create_event(event: EventPost, _=Depends(UnionAuth(scopes=["timetable.event.create"]))) -> EventGet:
-    event_dict = event.dict()
+    event_dict = event.model_dump()
     rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
     lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
     groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
@@ -98,7 +98,7 @@ async def create_event(event: EventPost, _=Depends(UnionAuth(scopes=["timetable.
         session=db.session,
     )
     db.session.commit()
-    return EventGet.from_orm(event_get)
+    return EventGet.model_validate(event_get)
 
 
 @router.post("/bulk", response_model=list[EventGet])
@@ -107,7 +107,7 @@ async def create_events(
 ) -> list[EventGet]:
     result = []
     for event in events:
-        event_dict = event.dict()
+        event_dict = event.model_dump()
         rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
         lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
         groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
@@ -121,16 +121,17 @@ async def create_events(
             )
         )
     db.session.commit()
-    return parse_obj_as(list[EventGet], result)
+    adapter = TypeAdapter(list[EventGet])
+    return adapter.validate_python(result)
 
 
 @router.patch("/{id}", response_model=EventGet)
 async def patch_event(
     id: int, event_inp: EventPatch, _=Depends(UnionAuth(scopes=["timetable.event.update"]))
 ) -> EventGet:
-    patched = Event.update(id, session=db.session, **event_inp.dict(exclude_unset=True))
+    patched = Event.update(id, session=db.session, **event_inp.model_dump(exclude_unset=True))
     db.session.commit()
-    return EventGet.from_orm(patched)
+    return EventGet.model_validate(patched)
 
 
 @router.delete("/bulk", response_model=None)
