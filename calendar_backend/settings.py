@@ -22,7 +22,6 @@ class Settings(UnionAuthSettings, BaseSettings):
     REQUIRE_REVIEW_PHOTOS: bool = True
     REQUIRE_REVIEW_LECTURER_COMMENT: bool = True
     REQUIRE_REVIEW_EVENT_COMMENT: bool = True
-    GOOGLE_CLIENT_SECRET: Json | None = None
     CORS_ALLOW_ORIGINS: list[str] = ['*']
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: list[str] = ['*']
