@@ -48,7 +48,7 @@ async def create_room(room: RoomPost, _=Depends(UnionAuth(scopes=["timetable.roo
 
 
 @router.patch("/{id}", response_model=RoomGet)
-async def patch_room(id: int, room_inp: RoomPatch, _=Depends(UnionAuth(scopes=["timetable.room.upadte"]))) -> RoomGet:
+async def patch_room(id: int, room_inp: RoomPatch, _=Depends(UnionAuth(scopes=["timetable.room.update"]))) -> RoomGet:
     room = (
         Room.get_all(session=db.session)
         .filter(Room.name == room_inp.name, Room.building == room_inp.building)
