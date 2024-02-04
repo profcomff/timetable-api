@@ -70,7 +70,7 @@ async def async_image_process(image_bytes: bytes) -> None:
 
 def get_photo_webpath(file_path: str):
     """
-Returns the webpath of the file
+    Returns the webpath of the file
     """
     file_path = file_path.removeprefix('/')
     root_path = settings.ROOT_PATH.removesuffix('/')
