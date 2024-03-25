@@ -19,6 +19,9 @@ settings = get_settings()
 
 
 async def upload_lecturer_photo(lecturer_id: int, session: Session, file: UploadFile = File(...)) -> Photo:
+    """
+    Uploads the lecturer's photo to the database
+    """
     lecturer = Lecturer.get(lecturer_id, session=session)
     random_string = ''.join(random.choice(string.ascii_letters) for _ in range(32))
     ext = file.filename.split('.')[-1]
@@ -44,6 +47,9 @@ async def upload_lecturer_photo(lecturer_id: int, session: Session, file: Upload
 
 
 def process_image(image_bytes: bytes) -> None:
+    """
+    Checks the integrity of the image
+    """
     with Image.open(BytesIO(image_bytes)) as image:
         try:
             image.verify()
@@ -55,11 +61,17 @@ thread_pool = ThreadPoolExecutor()
 
 
 async def async_image_process(image_bytes: bytes) -> None:
+    """
+    Asynchronous image processing
+    """
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(thread_pool, partial(process_image, image_bytes))
 
 
 def get_photo_webpath(file_path: str):
+    """
+    Returns the webpath of the file
+    """
     file_path = file_path.removeprefix('/')
     root_path = settings.ROOT_PATH.removesuffix('/')
     return f"{root_path}/static/photo/lecturer/{file_path}"

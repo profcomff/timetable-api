@@ -1,5 +1,6 @@
 """Database common classes and methods
 """
+
 from __future__ import annotations
 
 from datetime import datetime
