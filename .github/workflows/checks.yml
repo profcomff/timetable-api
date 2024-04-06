@@ -7,14 +7,20 @@ jobs:
   test:
     name: Unit tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          -p 5432:5432
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up docker
-        uses: docker-practice/actions-setup-docker@master
-      - name: Run postgres
-        run: |
-          docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-test postgres:15-alpine
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
@@ -30,6 +36,7 @@ jobs:
         id: pytest
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=calendar_backend tests/ | tee pytest-coverage.txt
+          exit ${PIPESTATUS[0]}
       - name: Print report
         if: always()
         run: |
