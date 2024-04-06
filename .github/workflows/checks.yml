@@ -1,24 +1,29 @@
-name: Python package
+name: Python tests
 
 on:
   pull_request:
-
 
 jobs:
   test:
     name: Unit tests
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          -p 5432:5432
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up docker
-        uses: docker-practice/actions-setup-docker@master
-      - name: Run postgres
-        run: |
-          docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-test postgres:15-alpine
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Install dependencies
         run: |
           python -m ensurepip
@@ -28,8 +33,10 @@ jobs:
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres alembic upgrade head
       - name: Build coverage file
+        id: pytest
         run: |
           DB_DSN=postgresql://postgres@localhost:5432/postgres pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=calendar_backend tests/ | tee pytest-coverage.txt
+          exit ${PIPESTATUS[0]}
       - name: Print report
         if: always()
         run: |
@@ -48,6 +55,10 @@ jobs:
           remove-link-from-badge: false
           junitxml-path: ./pytest.xml
           junitxml-title: Summary
+      - name: Fail on pytest errors
+        if: steps.pytest.outcome == 'failure'
+        run: exit 1
+
   linting:
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +71,7 @@ jobs:
           requirementsFiles: "requirements.txt requirements.dev.txt"
       - uses: psf/black@stable
       - name: Comment if linting failed
-        if: ${{ failure() }}
+        if: failure()
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
