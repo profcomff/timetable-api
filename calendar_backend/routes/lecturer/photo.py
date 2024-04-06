@@ -1,5 +1,6 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi_sqlalchemy import db
+from auth_lib.fastapi import UnionAuth
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods.image import get_photo_webpath, upload_lecturer_photo
@@ -14,7 +15,11 @@ router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Photo"])
 
 
 @router.post("/photo", response_model=Photo)
-async def upload_photo(lecturer_id: int, photo: UploadFile = File(...)) -> Photo:
+async def upload_photo(
+    lecturer_id: int,
+    photo: UploadFile = File(...),
+    _=Depends(UnionAuth(scopes=["timetable.lecturer.photo.create"])),
+) -> Photo:
     """Загрузить фотографию преподавателя из локального файла
 
     Пример загрузки файла на питоне
@@ -50,7 +55,11 @@ async def get_lecturer_photos(lecturer_id: int, limit: int = 10, offset: int = 0
 
 
 @router.delete("/photo/{id}", response_model=None)
-async def delete_photo(id: int, lecturer_id: int) -> None:
+async def delete_photo(
+    id: int,
+    lecturer_id: int,
+    _=Depends(UnionAuth(scopes=["timetable.lecturer.photo.delete"])),
+) -> None:
     photo = DbPhoto.get(id, only_approved=False, session=db.session)
     if photo.lecturer_id != lecturer_id:
         raise ObjectNotFound(DbPhoto, id)
