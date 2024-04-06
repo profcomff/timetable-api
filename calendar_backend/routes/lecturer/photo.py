@@ -1,6 +1,6 @@
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi_sqlalchemy import db
-from auth_lib.fastapi import UnionAuth
 
 from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.methods.image import get_photo_webpath, upload_lecturer_photo
