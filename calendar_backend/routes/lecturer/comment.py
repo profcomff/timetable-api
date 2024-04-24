@@ -10,7 +10,7 @@ from calendar_backend.settings import get_settings
 
 
 settings = get_settings()
-router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Comment"])
+router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Comment"], deprecated=True)
 
 
 @router.post("/comment/", response_model=CommentLecturer)
