@@ -2,6 +2,8 @@
 
 Серверная часть сервиса хранения и управления информацией о расписании
 
+[<img src="https://cdn.profcomff.com/easycode/easycode.svg" width="200"></img>](https://easycode.profcomff.com/templates/docker-fastapi/workspace?mode=manual&param.Repository+URL=https://github.com/profcomff/timetable-api.git&param.Working+directory=timetable-api)
+
 ## Функционал
 1. Управление учебными группами, аудиториями
 2. Управление событями, комменатриями к событиям
@@ -55,7 +57,7 @@
 
 ### Создать группу
 
-Дёрнуть ручку `POST /group`. вы передаете 
+Дёрнуть ручку `POST /group`. вы передаете
 ```json
 {
   "name": "string", // название кафедры
@@ -65,7 +67,7 @@
 
 ### Создать аудиторию
 
-Дёрнуть ручку `POST /room`. вы передаете 
+Дёрнуть ручку `POST /room`. вы передаете
 ```json
 {
   "name": "string", // название аудитории
@@ -77,7 +79,7 @@
 
 ### Создать преподавателя
 
-Дёрнуть ручку `POST /lecturer`. вы передаете 
+Дёрнуть ручку `POST /lecturer`. вы передаете
 ```json
 {
   "first_name": "string", // имя
@@ -89,7 +91,7 @@
 
 ### Создать событие
 
-Дёрнуть ручку `POST /event`. вы передаете 
+Дёрнуть ручку `POST /event`. вы передаете
 ```json
 {
   "name": "string", // название
@@ -107,7 +109,7 @@
 
 ### Ревью фотографии
 
-Дёрнуть ручку `POST /lecturer/photo/review/{id}`. вы передаете 
+Дёрнуть ручку `POST /lecturer/photo/review/{id}`. вы передаете
 ```json
 {
   "action": "Approved" // Подтвердить фотографии или ("Declined")
@@ -123,5 +125,3 @@
 - Основная [информация](https://github.com/profcomff/.github/wiki/%255Bdev%255D-Backend-%25D1%2580%25D0%25B0%25D0%25B7%25D1%2580%25D0%25B0%25D0%25B1%25D0%25BE%25D1%2582%25D0%25BA%25D0%25B0) по разработке наших приложений
 
 - [Ссылка](https://github.com/profcomff/timetable-api/blob/main/CONTRIBUTING.md) на страницу с информацией по разработке timetable-api
-
-
