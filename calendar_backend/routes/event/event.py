@@ -63,6 +63,23 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
     return GetListEvent(items=events, limit=limit, offset=offset, total=cnt).model_dump(exclude=fmt)
 
 
+def _is_unique_event(event_dict):
+    existing_events_query = (
+        Event.get_all(session=db.session)
+        .filter(Event.name == event_dict["name"])
+        .filter(Event.start_ts == event_dict["start_ts"])
+        .filter(Event.end_ts == event_dict["end_ts"])
+    )
+    for existing_event in existing_events_query.all():
+        if (
+            [column.id for column in existing_event.group] == event_dict["group_id"]
+            and [column.id for column in existing_event.room] == event_dict["room_id"]
+            and [column.id for column in existing_event.lecturer] == event_dict["lecturer_id"]
+        ):
+            return False
+    return True
+
+
 @router.get("/", response_model=GetListEvent | None)
 async def get_events(
     start: date | None = Query(default=None, description="Default: Today"),
@@ -84,21 +101,22 @@ async def get_events(
     return await fmt_cases[format]()
 
 
-@router.post("/", response_model=EventGet)
+@router.post("/", response_model=EventGet | None)
 async def create_event(event: EventPost, _=Depends(UnionAuth(scopes=["timetable.event.create"]))) -> EventGet:
     event_dict = event.model_dump()
-    rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
-    lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
-    groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
-    event_get = Event.create(
-        **event_dict,
-        room=rooms,
-        lecturer=lecturers,
-        group=groups,
-        session=db.session,
-    )
-    db.session.commit()
-    return EventGet.model_validate(event_get)
+    if _is_unique_event(event_dict):
+        rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
+        lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
+        groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
+        event_get = Event.create(
+            **event_dict,
+            room=rooms,
+            lecturer=lecturers,
+            group=groups,
+            session=db.session,
+        )
+        db.session.commit()
+        return EventGet.model_validate(event_get)
 
 
 @router.post("/bulk", response_model=list[EventGet])
@@ -108,18 +126,21 @@ async def create_events(
     result = []
     for event in events:
         event_dict = event.model_dump()
-        rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
-        lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
-        groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
-        result.append(
-            Event.create(
-                **event_dict,
-                room=rooms,
-                lecturer=lecturers,
-                group=groups,
-                session=db.session,
+        if _is_unique_event(event_dict):
+            rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
+            lecturers = [
+                Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])
+            ]
+            groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
+            result.append(
+                Event.create(
+                    **event_dict,
+                    room=rooms,
+                    lecturer=lecturers,
+                    group=groups,
+                    session=db.session,
+                )
             )
-        )
     db.session.commit()
     adapter = TypeAdapter(list[EventGet])
     return adapter.validate_python(result)
