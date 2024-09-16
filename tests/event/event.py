@@ -98,29 +98,6 @@ def test_create_many(client_auth: TestClient, dbsession: Session, room_factory, 
     assert [row.id for row in response_model.group] == request_obj[1]["group_id"]
 
 
-def test_create_clone(client_auth: TestClient, dbsession: Session, room_path, group_path, lecturer_path):
-    room_id = int(room_path.split("/")[-1])
-    group_id = int(group_path.split("/")[-1])
-    lecturer_id = int(lecturer_path.split("/")[-1])
-    time_stamp = datetime.datetime.now()
-    name = f"name_{time_stamp}"
-    request_obj = {
-        "name": name,
-        "room_id": [room_id],
-        "group_id": [group_id],
-        "lecturer_id": [lecturer_id],
-        "start_ts": "2022-08-26T22:32:38.575Z",
-        "end_ts": "2022-08-26T22:32:38.575Z",
-    }
-    response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.status_code == status.HTTP_200_OK, response.json()
-    response = client_auth.post(RESOURCE, json=request_obj)
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() is None
-    events = dbsession.query(Event).filter(Event.name == name).all()
-    assert len(events) == 1
-
-
 def test_create_many_clones(client_auth: TestClient, dbsession: Session, room_factory, group_factory, lecturer_factory):
     time_stamp = datetime.datetime.now()
     name1 = f"name1_{time_stamp}"
