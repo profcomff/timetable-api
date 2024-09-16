@@ -117,9 +117,9 @@ async def create_events(
         is_unique = True
         for existing_event in existing_events_query.all():
             if (
-                [column.id for column in existing_event.group] == event_dict["group_id"]
-                and [column.id for column in existing_event.room] == event_dict["room_id"]
-                and [column.id for column in existing_event.lecturer] == event_dict["lecturer_id"]
+                {column.id for column in existing_event.group} == set(event_dict["group_id"])
+                and {column.id for column in existing_event.room} == set(event_dict["room_id"])
+                and {column.id for column in existing_event.lecturer} == set(event_dict["lecturer_id"])
             ):
                 is_unique = False
         if is_unique:
