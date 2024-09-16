@@ -110,9 +110,9 @@ async def create_events(
         event_dict = event.model_dump()
         existing_events_query = (
             Event.get_all(session=db.session)
-            .filter(Event.name == event_dict["name"])
-            .filter(Event.start_ts == event_dict["start_ts"])
-            .filter(Event.end_ts == event_dict["end_ts"])
+            .filter(Event.name == event_dict.get("name"))
+            .filter(Event.start_ts == event_dict.get("start_ts"))
+            .filter(Event.end_ts == event_dict.get("end_ts"))
         )
         is_unique = True
         for existing_event in existing_events_query.all():
