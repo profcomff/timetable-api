@@ -10,7 +10,7 @@ from pydantic import TypeAdapter
 
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import list_calendar
-from calendar_backend.models import Event, EventsGroups, EventsLecturers, EventsRooms, Group, Lecturer, Room
+from calendar_backend.models import Event, Group, Lecturer, Room
 from calendar_backend.routes.models import EventGet
 from calendar_backend.routes.models.event import EventPatch, EventPost, GetListEvent
 from calendar_backend.settings import get_settings
