@@ -10,7 +10,7 @@ from pydantic import TypeAdapter
 
 from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import list_calendar
-from calendar_backend.models import Event, EventsGroups, EventsLecturers, EventsRooms, Group, Lecturer, Room
+from calendar_backend.models import Event, Group, Lecturer, Room
 from calendar_backend.routes.models import EventGet
 from calendar_backend.routes.models.event import EventPatch, EventPost, GetListEvent
 from calendar_backend.settings import get_settings
@@ -34,14 +34,11 @@ async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id,
         Event.end_ts < end,
     )
     if group_id:
-        ids_ = EventsGroups.get_all(session=db.session).filter(EventsGroups.group_id == group_id).all()
-        events = events.filter(Event.id.in_(row.event_id for row in ids_))
+        events = events.filter(Event.group.any(Group.id == group_id))
     elif lecturer_id:
-        ids_ = EventsLecturers.get_all(session=db.session).filter(EventsLecturers.lecturer_id == lecturer_id).all()
-        events = events.filter(Event.id.in_(row.event_id for row in ids_))
+        events = events.filter(Event.lecturer.any(Lecturer.id == lecturer_id))
     elif room_id:
-        ids_ = EventsRooms.get_all(session=db.session).filter(EventsRooms.room_id == room_id).all()
-        events = events.filter(Event.id.in_(row.event_id for row in ids_))
+        events = events.filter(Event.room.any(Room.id == room_id))
     cnt = events.count()
     if limit:
         events = events.order_by(Event.start_ts).limit(limit).offset(offset).all()
