@@ -12,7 +12,7 @@ from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import list_calendar
 from calendar_backend.models import Event, Group, Lecturer, Room
 from calendar_backend.routes.models import EventGet
-from calendar_backend.routes.models.event import EventPatch, EventPost, GetListEvent
+from calendar_backend.routes.models.event import EventPatch, EventPatchName, EventPatchResult, EventPost, GetListEvent
 from calendar_backend.settings import get_settings
 
 
@@ -137,6 +137,16 @@ async def create_events(
     db.session.commit()
     adapter = TypeAdapter(list[EventGet])
     return adapter.validate_python(result)
+
+
+@router.patch("/patch_name", response_model=EventPatchResult, summary="Batch update events by name")
+async def patch_event_by_name(
+    event_inp: EventPatchName,
+    _=Depends(UnionAuth(scopes=["timetable.event.update"]))
+) -> EventPatchResult:
+    updated = db.session.query(Event).filter(Event.name == event_inp.old_name).update(values={"name": event_inp.new_name})
+    db.session.commit()
+    return EventPatchResult(old_name=event_inp.old_name, new_name=event_inp.new_name, updated=updated)
 
 
 @router.patch("/{id}", response_model=EventGet)

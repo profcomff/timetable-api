@@ -331,3 +331,46 @@ def test_delete_from_to(client_auth: TestClient, dbsession: Session, room_factor
     for row in (obj1, obj2):
         dbsession.delete(row)
     dbsession.commit()
+
+
+def test_update_by_name(client_auth: TestClient, dbsession: Session, room_factory, group_factory, lecturer_factory):
+    room_path1 = room_factory(client_auth)
+    group_path1 = group_factory(client_auth)
+    lecturer_path1 = lecturer_factory(client_auth)
+    room_path2 = room_factory(client_auth)
+    group_path2 = group_factory(client_auth)
+    lecturer_path2 = lecturer_factory(client_auth)
+    room_id1 = int(room_path1.split("/")[-1])
+    group_id1 = int(group_path1.split("/")[-1])
+    lecturer_id1 = int(lecturer_path1.split("/")[-1])
+    room_id2 = int(room_path2.split("/")[-1])
+    group_id2 = int(group_path2.split("/")[-1])
+    lecturer_id2 = int(lecturer_path2.split("/")[-1])
+    request_obj = [
+        {
+            "name": "string",
+            "room_id": [room_id1],
+            "group_id": [group_id1],
+            "lecturer_id": [lecturer_id1],
+            "start_ts": "2022-08-26T22:32:38.575Z",
+            "end_ts": "2022-08-26T22:32:38.575Z",
+        },
+        {
+            "name": "string",
+            "room_id": [room_id2],
+            "group_id": [group_id2],
+            "lecturer_id": [lecturer_id2],
+            "start_ts": "2022-08-26T22:32:38.575Z",
+            "end_ts": "2022-08-26T22:32:38.575Z",
+        },
+    ]
+    response = client_auth.post(f"{RESOURCE}bulk", json=request_obj)
+    created = response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    name_to_patch = "not_existing_name"
+    response = client_auth.patch(f"{RESOURCE}patch_name", json={"old_name": "some_name", "new_name": "some_name"})
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    assert response.json()["updated"] == 0  # no events w name "not_existing_name"
+    response = client_auth.patch(f"{RESOURCE}patch_name", json={"old_name": "string", "new_name": "some_name"})
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    assert response.json()["updated"] > 0 # at least 2 events w name "string" (due to our post request)

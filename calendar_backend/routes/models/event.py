@@ -19,6 +19,16 @@ class EventPatch(Base):
         )
 
 
+class EventPatchName(Base):
+    old_name: str
+    new_name: str
+
+
+class EventPatchResult(Base):
+    old_name: str
+    new_name: str
+    updated: int
+
 class EventPost(Base):
     name: str
     room_id: list[int]
