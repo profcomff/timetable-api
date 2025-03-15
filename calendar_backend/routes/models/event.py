@@ -19,6 +19,17 @@ class EventPatch(Base):
         )
 
 
+class EventPatchName(Base):
+    old_name: str
+    new_name: str
+
+
+class EventPatchResult(Base):
+    old_name: str
+    new_name: str
+    updated: int
+
+
 class EventPost(Base):
     name: str
     room_id: list[int]
@@ -32,6 +43,25 @@ class EventPost(Base):
             f"Lesson(name={self.name},"
             f" room={self.room_id}, group={self.group_id},"
             f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})"
+        )
+
+
+class EventRepeatedPost(Base):
+    name: str
+    room_id: list[int]
+    group_id: list[int]
+    lecturer_id: list[int]
+    start_ts: datetime.datetime
+    end_ts: datetime.datetime
+    repeat_timedelta_days: int = 7  # set one week by default
+    repeat_until_ts: datetime.datetime
+
+    def __repr__(self):
+        return (
+            f"Lesson(name={self.name},\n"
+            f" room={self.room_id}, group={self.group_id},\n"
+            f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})\n"
+            f" repeats every {self.repeat_timedelta_days} days until {repeat_until_ts}\n"
         )
 
 

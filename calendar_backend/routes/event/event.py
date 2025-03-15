@@ -1,10 +1,10 @@
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Literal
 
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, Query
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi_sqlalchemy import db
 from pydantic import TypeAdapter
 
@@ -12,7 +12,14 @@ from calendar_backend.exceptions import NotEnoughCriteria
 from calendar_backend.methods import list_calendar
 from calendar_backend.models import Event, Group, Lecturer, Room
 from calendar_backend.routes.models import EventGet
-from calendar_backend.routes.models.event import EventPatch, EventPost, GetListEvent
+from calendar_backend.routes.models.event import (
+    EventPatch,
+    EventPatchName,
+    EventPatchResult,
+    EventPost,
+    EventRepeatedPost,
+    GetListEvent,
+)
 from calendar_backend.settings import get_settings
 
 
@@ -98,6 +105,44 @@ async def create_event(event: EventPost, _=Depends(UnionAuth(scopes=["timetable.
     return EventGet.model_validate(event_get)
 
 
+@router.post("/repeating", response_model=list[EventGet])
+async def create_repeating_event(
+    event: EventRepeatedPost,  # _=Depends(UnionAuth(scopes=["timetable.event.create"]))
+) -> list[EventGet]:
+    if event.repeat_timedelta_days <= 0:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": f"Timedelta must be a positive integer"}
+        )
+    if event.repeat_until_ts > event.start_ts + timedelta(days=1095):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Due to disk utilization limits, events with duration > 3 years is restricted"},
+        )
+    events = []
+    event_dict = event.model_dump()
+    rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
+    lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
+    groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
+    repeat_timedelta_days = timedelta(days=event.repeat_timedelta_days)
+    cur_start_ts = event_dict["start_ts"]
+    cur_end_ts = event_dict["end_ts"]
+    while cur_start_ts <= event.repeat_until_ts:
+        event_get = Event.create(
+            name=event_dict["name"],
+            start_ts=cur_start_ts,
+            end_ts=cur_end_ts,
+            room=rooms,
+            lecturer=lecturers,
+            group=groups,
+            session=db.session,
+        )
+        events.append(event_get)
+        cur_start_ts += repeat_timedelta_days
+        cur_end_ts += repeat_timedelta_days
+    adapter = TypeAdapter(list[EventGet])
+    return adapter.validate_python(events)
+
+
 @router.post("/bulk", response_model=list[EventGet])
 async def create_events(
     events: list[EventPost], _=Depends(UnionAuth(scopes=["timetable.event.create"]))
@@ -137,6 +182,17 @@ async def create_events(
     db.session.commit()
     adapter = TypeAdapter(list[EventGet])
     return adapter.validate_python(result)
+
+
+@router.patch("/patch_name", response_model=EventPatchResult, summary="Batch update events by name")
+async def patch_event_by_name(
+    event_inp: EventPatchName, _=Depends(UnionAuth(scopes=["timetable.event.update"]))
+) -> EventPatchResult:
+    updated = (
+        db.session.query(Event).filter(Event.name == event_inp.old_name).update(values={"name": event_inp.new_name})
+    )
+    db.session.commit()
+    return EventPatchResult(old_name=event_inp.old_name, new_name=event_inp.new_name, updated=updated)
 
 
 @router.patch("/{id}", response_model=EventGet)
