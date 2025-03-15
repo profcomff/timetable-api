@@ -16,8 +16,8 @@ from calendar_backend.routes.models.event import (
     EventPatch,
     EventPatchName,
     EventPatchResult,
-    EventRepeatedPost,
     EventPost,
+    EventRepeatedPost,
     GetListEvent,
 )
 from calendar_backend.settings import get_settings
