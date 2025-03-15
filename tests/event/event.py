@@ -373,4 +373,4 @@ def test_update_by_name(client_auth: TestClient, dbsession: Session, room_factor
     assert response.json()["updated"] == 0  # no events w name "not_existing_name"
     response = client_auth.patch(f"{RESOURCE}patch_name", json={"old_name": "string", "new_name": "some_name"})
     assert response.status_code == status.HTTP_200_OK, response.json()
-    assert response.json()["updated"] > 0 # at least 2 events w name "string" (due to our post request)
+    assert response.json()["updated"] > 0  # at least 2 events w name "string" (due to our post request)

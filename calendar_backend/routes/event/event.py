@@ -141,10 +141,11 @@ async def create_events(
 
 @router.patch("/patch_name", response_model=EventPatchResult, summary="Batch update events by name")
 async def patch_event_by_name(
-    event_inp: EventPatchName,
-    _=Depends(UnionAuth(scopes=["timetable.event.update"]))
+    event_inp: EventPatchName, _=Depends(UnionAuth(scopes=["timetable.event.update"]))
 ) -> EventPatchResult:
-    updated = db.session.query(Event).filter(Event.name == event_inp.old_name).update(values={"name": event_inp.new_name})
+    updated = (
+        db.session.query(Event).filter(Event.name == event_inp.old_name).update(values={"name": event_inp.new_name})
+    )
     db.session.commit()
     return EventPatchResult(old_name=event_inp.old_name, new_name=event_inp.new_name, updated=updated)
 

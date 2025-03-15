@@ -1,5 +1,4 @@
-"""Database common classes and methods
-"""
+"""Database common classes and methods"""
 
 from __future__ import annotations
 
