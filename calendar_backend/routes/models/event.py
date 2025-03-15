@@ -46,6 +46,25 @@ class EventPost(Base):
         )
 
 
+class EventRepeatedPost(Base):
+    name: str
+    room_id: list[int]
+    group_id: list[int]
+    lecturer_id: list[int]
+    start_ts: datetime.datetime
+    end_ts: datetime.datetime
+    repeat_timedelta_days: int = 7  # set one week by default
+    repeat_until_ts: datetime.datetime
+
+    def __repr__(self):
+        return (
+            f"Lesson(name={self.name},\n"
+            f" room={self.room_id}, group={self.group_id},\n"
+            f" lecturer={self.lecturer_id}, start_ts={self.start_ts}, end_ts={self.end_ts})\n"
+            f" repeats every {self.repeat_timedelta_days} days until {repeat_until_ts}\n"
+        )
+
+
 class Event(Base):
     id: int
     name: str
