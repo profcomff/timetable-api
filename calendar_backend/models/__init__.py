@@ -16,6 +16,7 @@ from .db import (
     UserCalendarSubscription,
     UserEventAttendance,
 )
+from .webhook import Webhook, WebhookDelivery, WebhookEventType, WebhookStatus
 
 
 __all__ = [
@@ -36,4 +37,9 @@ __all__ = [
     "SubscriptionType",
     "UserEventAttendance",
     "UserCalendarSubscription",
+    # Webhook models
+    "Webhook",
+    "WebhookDelivery", 
+    "WebhookEventType",
+    "WebhookStatus",
 ]

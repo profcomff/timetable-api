@@ -202,13 +202,32 @@ async def export_user_calendar_ics(
     auth_result = Depends(UnionAuth(scopes=["timetable.calendar.personal.read"])),
 ) -> FileResponse:
     """Export user's calendar as iCal file"""
+    from calendar_backend.methods.personal_calendar import create_personal_calendar_ical, create_personal_calendar_file
+    
     user_id = get_user_id_from_auth(auth_result)
     start = start or date.today()
     end = end or date.today() + timedelta(days=365)
 
-    # For now, return a simple error - this needs to be implemented properly
-    # In production, you'd want to implement proper iCal generation for personal calendars
-    raise HTTPException(status_code=501, detail="Personal calendar iCal export not yet implemented")
+    try:
+        # Generate personal calendar
+        calendar_data = await create_personal_calendar_ical(
+            user_id=user_id,
+            session=db.session, 
+            start_date=start,
+            end_date=end,
+            include_subscriptions=include_subscribed
+        )
+        
+        # Create file and return
+        filepath = await create_personal_calendar_file(user_id, calendar_data)
+        return FileResponse(
+            filepath, 
+            media_type='text/calendar',
+            filename=f'personal_calendar_user_{user_id}.ics'
+        )
+    except Exception as e:
+        logger.error(f"Failed to export personal calendar for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate personal calendar")
 
 
 @router.delete("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
