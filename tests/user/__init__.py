@@ -1,0 +1,1 @@
+"""User-related tests package"""

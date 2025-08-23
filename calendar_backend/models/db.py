@@ -33,6 +33,18 @@ class Direction(str, Enum):
     SOUTH: str = "South"
 
 
+class AttendanceStatus(str, Enum):
+    ATTENDING: str = "attending"
+    NOT_ATTENDING: str = "not_attending"
+    MAYBE: str = "maybe"
+
+
+class SubscriptionType(str, Enum):
+    GROUP: str = "group"
+    LECTURER: str = "lecturer"
+    ROOM: str = "room"
+
+
 class Room(BaseDbModel):
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     direction: Mapped[Direction] = mapped_column(DbEnum(Direction, native_enum=False), nullable=True)
@@ -118,6 +130,10 @@ class Event(BaseDbModel):
     start_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Optional user_id for personal events (null for shared/institutional events)
+    creator_user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    # Flag to indicate if this is a personal event
+    is_personal: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     room: Mapped[list[Room]] = relationship(
         "Room",
@@ -142,6 +158,12 @@ class Event(BaseDbModel):
         foreign_keys="CommentEvent.event_id",
         back_populates="event",
         primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted), CommentEvent.approve_status=='APPROVED')",
+    )
+    attendances: Mapped[list[UserEventAttendance]] = relationship(
+        "UserEventAttendance",
+        foreign_keys="UserEventAttendance.event_id",
+        back_populates="event",
+        cascade="all, delete-orphan"
     )
 
 
@@ -210,4 +232,49 @@ class CommentEvent(BaseDbModel):
         back_populates="comments",
         foreign_keys="CommentEvent.event_id",
         primaryjoin="and_(Event.id==CommentEvent.event_id, not_(Event.is_deleted))",
+    )
+
+
+class UserEventAttendance(BaseDbModel):
+    """User attendance tracking for events"""
+
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
+    status: Mapped[AttendanceStatus] = mapped_column(
+        DbEnum(AttendanceStatus, native_enum=False), nullable=False, default=AttendanceStatus.ATTENDING
+    )
+    create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    update_ts: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    event: Mapped[Event] = relationship(
+        "Event", 
+        foreign_keys="UserEventAttendance.event_id",
+        primaryjoin="and_(Event.id==UserEventAttendance.event_id, not_(Event.is_deleted))"
+    )
+
+    __table_args__ = (
+        # Ensure one attendance record per user per event
+        {"sqlite_autoincrement": True, "postgresql_partition_by": None},
+    )
+
+
+class UserCalendarSubscription(BaseDbModel):
+    """User subscriptions to calendars (groups, lecturers, rooms)"""
+
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    subscription_type: Mapped[SubscriptionType] = mapped_column(
+        DbEnum(SubscriptionType, native_enum=False), nullable=False
+    )
+    target_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    update_ts: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    __table_args__ = (
+        # Ensure unique subscription per user per target
+        {"sqlite_autoincrement": True, "postgresql_partition_by": None},
     )

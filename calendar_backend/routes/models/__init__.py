@@ -14,6 +14,17 @@ from .lecturer import (
     Photo,
 )
 from .room import GetListRoom, RoomEvents, RoomPatch, RoomPost
+from .user import (
+    AttendanceGet,
+    AttendanceListGet,
+    AttendancePost,
+    PersonalEventGet,
+    PersonalEventPost,
+    SubscriptionGet,
+    SubscriptionPost,
+    UserCalendarGet,
+    UserSubscriptionsGet,
+)
 
 
 __all__ = (
@@ -46,4 +57,14 @@ __all__ = (
     "RoomEvents",
     "RoomPatch",
     "RoomPost",
+    # User-related models
+    "AttendanceGet",
+    "AttendanceListGet",
+    "AttendancePost",
+    "PersonalEventGet",
+    "PersonalEventPost",
+    "SubscriptionGet",
+    "SubscriptionPost",
+    "UserCalendarGet",
+    "UserSubscriptionsGet",
 )

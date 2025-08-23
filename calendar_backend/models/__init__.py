@@ -1,5 +1,6 @@
 from .db import (
     ApproveStatuses,
+    AttendanceStatus,
     CommentEvent,
     CommentLecturer,
     Credentials,
@@ -11,6 +12,9 @@ from .db import (
     Group,
     Lecturer,
     Room,
+    SubscriptionType,
+    UserCalendarSubscription,
+    UserEventAttendance,
 )
 
 
@@ -27,4 +31,9 @@ __all__ = [
     "EventsRooms",
     "ApproveStatuses",
     "EventsGroups",
+    # New user-related models
+    "AttendanceStatus",
+    "SubscriptionType",
+    "UserEventAttendance",
+    "UserCalendarSubscription",
 ]

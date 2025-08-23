@@ -27,6 +27,10 @@ from .lecturer.lecturer import router as lecturer_router
 from .lecturer.photo import router as lecturer_photo_router
 from .lecturer.photo_review import router as lecturer_photo_review_router
 from .room.room import router as room_router
+from .user.attendance import router as user_attendance_router
+from .user.calendar import router as user_calendar_router
+from .user.import_export import router as user_import_export_router
+from .user.subscriptions import router as user_subscriptions_router
 
 
 settings = get_settings()
@@ -128,3 +132,9 @@ app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(event_comment_router)
 app.include_router(event_comment_review_router)
+
+# User-related routes (new functionality)
+app.include_router(user_attendance_router)
+app.include_router(user_calendar_router)
+app.include_router(user_subscriptions_router)
+app.include_router(user_import_export_router)
