@@ -6,6 +6,7 @@ from starlette import status
 
 from calendar_backend.models.db import Lecturer
 
+
 RESOURCE = "/lecturer/"
 
 
