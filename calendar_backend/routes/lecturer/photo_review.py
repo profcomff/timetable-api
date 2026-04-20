@@ -11,6 +11,7 @@ from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import Action, Photo
 from calendar_backend.routes.models.base import Base as BaseSchema
 
+
 router = APIRouter(prefix="/lecturer/photo/review", tags=["Lecturer: Photo Review"])
 
 

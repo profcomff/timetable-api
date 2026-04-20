@@ -7,6 +7,7 @@ from starlette import status
 
 from calendar_backend.models import Room
 
+
 RESOURCE = "/room/"
 
 

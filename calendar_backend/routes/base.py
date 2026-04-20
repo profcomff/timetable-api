@@ -28,11 +28,13 @@ from .lecturer.photo import router as lecturer_photo_router
 from .lecturer.photo_review import router as lecturer_photo_review_router
 from .room.room import router as room_router
 
+
 settings = get_settings()
 logger = logging.getLogger(__name__)
 app = FastAPI(
     title='Сервис расписания',
-    description=dedent("""
+    description=dedent(
+        """
         API для работы с календарем физфака.
 
         Пример работы на питоне(Создание Room):
@@ -47,7 +49,8 @@ app = FastAPI(
             headers={"Authorization": f"ТокенАвторизацииТвойФФ"}
         )
         ```
-    """),
+    """
+    ),
     version=__version__,
     # Настраиваем интернет документацию
     root_path=settings.ROOT_PATH if __version__ != 'dev' else '',
