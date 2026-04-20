@@ -8,6 +8,7 @@ from calendar_backend.models import Group
 from calendar_backend.routes.models import GetListGroup, GroupGet, GroupPatch, GroupPost
 from calendar_backend.settings import get_settings
 
+
 settings = get_settings()
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/group", tags=["Group"])

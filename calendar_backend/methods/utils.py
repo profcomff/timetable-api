@@ -3,6 +3,7 @@ import datetime
 from calendar_backend.models.db import Event, Group, Lecturer, Room
 from calendar_backend.settings import get_settings
 
+
 settings = get_settings()
 
 
