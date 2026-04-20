@@ -14,6 +14,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import ApproveStatuses, BaseDbModel
 
 
+class EventUserStatus(str, Enum):
+    NO_STATUS: str = "no_status"    
+    GOING: str = "going"  
+    NOT_GOING: str = "not_going"   
+    ATTENDED: str = "attended"  
+
 class Credentials(BaseDbModel):
     """User credentials"""
 
@@ -143,6 +149,12 @@ class Event(BaseDbModel):
         back_populates="event",
         primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted), CommentEvent.approve_status=='APPROVED')",
     )
+    user_event: Mapped[list[EventUser]] = relationship(
+        "EventUser",
+        back_populates="event",
+        order_by="EventUser.updated_at.desc()",
+        primaryjoin="and_(Event.id==EventUser.event_id, not_(EventUser.is_deleted))",
+    )
 
 
 class EventsLecturers(BaseDbModel):
@@ -210,4 +222,23 @@ class CommentEvent(BaseDbModel):
         back_populates="comments",
         foreign_keys="CommentEvent.event_id",
         primaryjoin="and_(Event.id==CommentEvent.event_id, not_(Event.is_deleted))",
+    )
+
+class EventUser(BaseDbModel):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    event_id: Mapped[int] = mapped_column(Integer, ForeignKey("event.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[EventUserStatus] = mapped_column(
+        DbEnum(EventUserStatus, native_enum=False), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+    is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    event: Mapped[Event] = relationship(
+        "Event",
+        foreign_keys="EventUser.event_id", 
+        back_populates="user_event",
+        primaryjoin="and_(EventUser.event_id==Event.id, not_(Event.is_deleted))",
     )
