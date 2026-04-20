@@ -6,7 +6,6 @@ from sqlalchemy import engine_from_config, pool
 from calendar_backend.models.base import DeclarativeBase
 from calendar_backend.settings import get_settings
 
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

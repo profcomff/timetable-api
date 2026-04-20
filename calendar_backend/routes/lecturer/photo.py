@@ -9,7 +9,6 @@ from calendar_backend.models.db import Photo as DbPhoto
 from calendar_backend.routes.models import LecturerPhotos, Photo
 from calendar_backend.settings import get_settings
 
-
 settings = get_settings()
 router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Photo"])
 

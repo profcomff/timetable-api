@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Literal
 
 from auth_lib.fastapi import UnionAuth
@@ -21,7 +21,6 @@ from calendar_backend.routes.models.event import (
     GetListEvent,
 )
 from calendar_backend.settings import get_settings
-
 
 settings = get_settings()
 logger = logging.getLogger(__name__)

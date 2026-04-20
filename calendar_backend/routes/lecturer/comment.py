@@ -8,7 +8,6 @@ from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.routes.models import CommentLecturer, LecturerCommentPatch, LecturerCommentPost, LecturerComments
 from calendar_backend.settings import get_settings
 
-
 settings = get_settings()
 router = APIRouter(prefix="/lecturer/{lecturer_id}", tags=["Lecturer: Comment"], deprecated=True)
 

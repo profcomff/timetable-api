@@ -8,7 +8,6 @@ from calendar_backend.models import CommentEvent as DbCommentEvent
 from calendar_backend.routes.models.event import CommentEventGet, EventCommentPatch, EventCommentPost, EventComments
 from calendar_backend.settings import get_settings
 
-
 settings = get_settings()
 router = APIRouter(prefix="/event/{event_id}/comment", tags=["Event: Comment"])
 
