@@ -9,7 +9,6 @@ Create Date: 2023-07-02 22:58:17.045433
 import sqlalchemy as sa
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
 revision = '55a049fde8f4'
 down_revision = 'fe04c8baa5ab'
@@ -45,9 +44,7 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint('id'),
     )
-    res = e.execute(
-        sa.text(
-            """
+    res = e.execute(sa.text("""
         with inner_q as (
             select 
                 name, 
@@ -62,9 +59,7 @@ def upgrade():
         )
         select old_ids, group_ids
         from inner_q
-    """
-        )
-    ).all()
+    """)).all()
 
     to_delete, pairs = merge_groups(res)
     delete_old_events_query = (

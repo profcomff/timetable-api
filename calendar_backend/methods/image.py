@@ -14,7 +14,6 @@ from sqlalchemy.orm import Session
 from calendar_backend.models.db import ApproveStatuses, Lecturer, Photo
 from calendar_backend.settings import get_settings
 
-
 settings = get_settings()
 
 

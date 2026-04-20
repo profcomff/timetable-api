@@ -16,7 +16,6 @@ from calendar_backend.settings import get_settings
 
 from . import utils
 
-
 settings = get_settings()
 logger = logging.getLogger(__name__)
 

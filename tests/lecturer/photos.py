@@ -8,7 +8,6 @@ from starlette import status
 from calendar_backend.models.db import Photo
 from calendar_backend.settings import get_settings
 
-
 settings = get_settings()
 settings.STATIC_PATH = './static'
 

@@ -10,7 +10,6 @@ from calendar_backend.models.db import ApproveStatuses
 from calendar_backend.models.db import CommentLecturer as DbCommentLecturer
 from calendar_backend.routes.models import CommentLecturer
 
-
 router = APIRouter(prefix="/lecturer/{lecturer_id}/comment", tags=["Lecturer: Comment Review"], deprecated=True)
 
 
