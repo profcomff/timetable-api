@@ -150,12 +150,6 @@ class Event(BaseDbModel):
         back_populates="event",
         primaryjoin="and_(Event.id==CommentEvent.event_id, not_(CommentEvent.is_deleted), CommentEvent.approve_status=='APPROVED')",
     )
-    user_event: Mapped[list[EventUser]] = relationship(
-        "EventUser",
-        back_populates="event",
-        order_by="EventUser.updated_at.desc()",
-        primaryjoin="and_(Event.id==EventUser.event_id, not_(EventUser.is_deleted))",
-    )
 
 
 class EventsLecturers(BaseDbModel):
@@ -235,10 +229,3 @@ class EventUser(BaseDbModel):
         DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
     )
     is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-
-    event: Mapped[Event] = relationship(
-        "Event",
-        foreign_keys="EventUser.event_id",
-        back_populates="user_event",
-        primaryjoin="and_(EventUser.event_id==Event.id, not_(Event.is_deleted))",
-    )
