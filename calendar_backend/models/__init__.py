@@ -26,4 +26,5 @@ __all__ = [
     "EventsRooms",
     "ApproveStatuses",
     "EventsGroups",
+    "EventUser",
 ]
