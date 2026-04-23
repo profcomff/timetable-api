@@ -20,6 +20,7 @@ from calendar_backend.settings import get_settings
 from .event.comment import router as event_comment_router
 from .event.comment_review import router as event_comment_review_router
 from .event.event import router as event_router
+from .event.user_event import router as user_event_router
 from .group.group import router as group_router
 from .lecturer.comment import router as lecturer_comment_router
 from .lecturer.comment_review import router as lecturer_comment_review_router
@@ -125,3 +126,4 @@ app.include_router(room_router)
 app.include_router(event_router)
 app.include_router(event_comment_router)
 app.include_router(event_comment_review_router)
+app.include_router(user_event_router)
