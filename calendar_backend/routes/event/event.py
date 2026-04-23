@@ -22,6 +22,7 @@ from calendar_backend.routes.models.event import (
 )
 from calendar_backend.settings import get_settings
 
+
 settings = get_settings()
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/event", tags=["Event"])

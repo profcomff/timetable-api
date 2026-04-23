@@ -16,6 +16,7 @@ from .lecturer import (
 from .room import GetListRoom, RoomEvents, RoomPatch, RoomPost
 from .visit import VisitRequest, VisitResponse
 
+
 __all__ = (
     "CommentEventGet",
     "CommentLecturer",
