@@ -8,22 +8,6 @@ from calendar_backend.routes.models.visit import VisitRequest, VisitResponse
 
 router = APIRouter(prefix="/event", tags=["Event: Visit"])
 
-
-# class VisitRequest(BaseModel):
-#     status: EventUserStatus
-
-
-# class VisitResponse(BaseModel):
-#     id: int
-#     event_id: int
-#     user_id: int
-#     status: EventUserStatus
-#     updated_at: str  # ISO format datetime
-
-#     class Config:
-    #  from_attributes = True
-
-
 @router.post("/{event_id}/visit", response_model=VisitResponse)
 async def set_event_visit_status(
     event_id: int, visit: VisitRequest, auth: dict = Depends(UnionAuth(scopes=[]))
@@ -46,7 +30,6 @@ async def set_event_visit_status(
             detail=f"Event with id {event_id} not found",
         )
 
-    # Поиск/создание записи о посещении
     existing = (
         db.session.query(EventUser)
         .filter(
