@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from calendar_backend.models import EventUserStatus
 
 
@@ -12,5 +13,5 @@ class VisitResponse(BaseModel):
     user_id: int
     status: EventUserStatus
     updated_at: str  # ISO-формат
-    
+
     model_config = {"from_attributes": True}

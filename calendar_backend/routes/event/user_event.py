@@ -1,12 +1,14 @@
+from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi_sqlalchemy import db
-from auth_lib.fastapi import UnionAuth
 
 from calendar_backend.exceptions import ObjectNotFound
-from calendar_backend.models import Event, EventUser, EventUserStatus
+from calendar_backend.models import Event, EventUser
 from calendar_backend.routes.models.visit import VisitRequest, VisitResponse
 
+
 router = APIRouter(prefix="/event", tags=["Event: Visit"])
+
 
 @router.post("/{event_id}/visit", response_model=VisitResponse)
 async def set_event_visit_status(
@@ -21,7 +23,7 @@ async def set_event_visit_status(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User ID not found in authentication data",
         )
-    
+
     try:
         _ = Event.get(event_id, with_deleted=False, session=db.session)
     except ObjectNotFound:
