@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 import datetime
+
+from pydantic import BaseModel
+
 from calendar_backend.models import EventUserStatus
 
 

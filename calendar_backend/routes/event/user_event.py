@@ -1,10 +1,9 @@
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi_sqlalchemy import db
 
-from calendar_backend.exceptions import ObjectNotFound
 from calendar_backend.models import Event, EventUser
-from calendar_backend.routes.models.visit import VisitRequest, VisitResponse
+from calendar_backend.routes.models.visit import VisitResponse
 
 
 router = APIRouter(prefix="/event", tags=["Event: Visit"])
@@ -15,7 +14,7 @@ async def set_event_visit_status(
     event_id: int,
     auth: dict = Depends(UnionAuth()),
     visit: str = Query(enum=["no_status", "going", "not_going", "attended"], default="no_status"),
-) -> VisitResponse: 
+) -> VisitResponse:
     """
     Отметить посещение мероприятия для текущего пользователя.
     """
@@ -30,7 +29,7 @@ async def set_event_visit_status(
     )
 
     if existing:
-        result = EventUser.update(existing.id, session=db.session, status=visit) 
+        result = EventUser.update(existing.id, session=db.session, status=visit)
     else:
         result = EventUser.create(
             session=db.session,
