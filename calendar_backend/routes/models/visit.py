@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+import datetime
 from calendar_backend.models import EventUserStatus
 
 
@@ -12,6 +12,6 @@ class VisitResponse(BaseModel):
     event_id: int
     user_id: int
     status: EventUserStatus
-    updated_at: str  # ISO-формат
+    updated_at: datetime.datetime
 
     model_config = {"from_attributes": True}

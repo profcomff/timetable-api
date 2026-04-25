@@ -1,5 +1,5 @@
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi_sqlalchemy import db
 
 from calendar_backend.exceptions import ObjectNotFound
@@ -12,54 +12,32 @@ router = APIRouter(prefix="/event", tags=["Event: Visit"])
 
 @router.post("/{event_id}/visit", response_model=VisitResponse)
 async def set_event_visit_status(
-    event_id: int, visit: VisitRequest, auth: dict = Depends(UnionAuth(scopes=[]))
-) -> VisitResponse:
+    event_id: int,
+    auth: dict = Depends(UnionAuth()),
+    visit: str = Query(enum=["no_status", "going", "not_going", "attended"], default="no_status"),
+) -> VisitResponse: 
     """
     Отметить посещение мероприятия для текущего пользователя.
     """
     user_id = auth.get('id')
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User ID not found in authentication data",
-        )
 
-    try:
-        _ = Event.get(event_id, with_deleted=False, session=db.session)
-    except ObjectNotFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Event with id {event_id} not found",
-        )
+    Event.get(event_id, with_deleted=False, session=db.session)
 
     existing = (
-        db.session.query(EventUser)
-        .filter(
-            EventUser.event_id == event_id,
-            EventUser.user_id == user_id,
-            EventUser.is_deleted == False,
-        )
+        EventUser.get_all(session=db.session)
+        .filter(EventUser.event_id == event_id, EventUser.user_id == user_id)
         .first()
     )
 
     if existing:
-        existing.status = visit.status
-        db.session.flush()
-        result = existing
+        result = EventUser.update(existing.id, session=db.session, status=visit) 
     else:
         result = EventUser.create(
             session=db.session,
             event_id=event_id,
             user_id=user_id,
-            status=visit.status,
+            status=visit,
         )
 
     db.session.commit()
-
-    return VisitResponse(
-        id=result.id,
-        event_id=result.event_id,
-        user_id=result.user_id,
-        status=result.status,
-        updated_at=result.updated_at.isoformat(),
-    )
+    return VisitResponse.model_validate(result)
