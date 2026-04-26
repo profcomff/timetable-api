@@ -5,10 +5,6 @@ from calendar_backend.models import EventUserStatus
 from .base import Base
 
 
-# class VisitRequest(Base):
-#     status: EventUserStatus
-
-
 class VisitResponse(Base):
     id: int
     event_id: int
