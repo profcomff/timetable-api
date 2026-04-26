@@ -16,7 +16,16 @@ async def set_event_visit_status(
     visit: str = Query(enum=["no_status", "going", "not_going"], default="no_status"),
 ) -> VisitResponse:
     """
-    Отметить посещение мероприятия для текущего пользователя.
+    Отметить статус посещения мероприятия для текущего пользователя. 
+    
+    Параметры:
+    event_id - id события, которому будет присвоен статус
+    auth - авторизация пользователя
+    visit - доступные пользователю статусы для присвоения событию (по умолчанию no_status)
+
+    Ошибки:
+    Unautherized - не удалось получить id пользователя
+    ObjectNotFound - нет события с таким event_id
     """
     user_id = auth.get('id')
 

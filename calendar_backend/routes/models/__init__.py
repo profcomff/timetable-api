@@ -47,6 +47,5 @@ __all__ = (
     "RoomEvents",
     "RoomPatch",
     "RoomPost",
-    "VisitRequest",
     "VisitResponse",
 )
