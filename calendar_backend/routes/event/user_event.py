@@ -16,8 +16,8 @@ async def set_event_visit_status(
     visit: str = Query(enum=["no_status", "going", "not_going"], default="no_status"),
 ) -> VisitResponse:
     """
-    Отметить статус посещения мероприятия для текущего пользователя. 
-    
+    Отметить статус посещения мероприятия для текущего пользователя.
+
     Параметры:
     event_id - id события, которому будет присвоен статус
     auth - авторизация пользователя
