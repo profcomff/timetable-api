@@ -1,19 +1,17 @@
 import datetime
 
-from pydantic import BaseModel
-
 from calendar_backend.models import EventUserStatus
 
-
-class VisitRequest(BaseModel):
-    status: EventUserStatus
+from .base import Base
 
 
-class VisitResponse(BaseModel):
+# class VisitRequest(Base):
+#     status: EventUserStatus
+
+
+class VisitResponse(Base):
     id: int
     event_id: int
     user_id: int
     status: EventUserStatus
     updated_at: datetime.datetime
-
-    model_config = {"from_attributes": True}

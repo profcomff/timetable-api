@@ -13,14 +13,14 @@ router = APIRouter(prefix="/event", tags=["Event: Visit"])
 async def set_event_visit_status(
     event_id: int,
     auth: dict = Depends(UnionAuth()),
-    visit: str = Query(enum=["no_status", "going", "not_going", "attended"], default="no_status"),
+    visit: str = Query(enum=["no_status", "going", "not_going"], default="no_status"),
 ) -> VisitResponse:
     """
     Отметить посещение мероприятия для текущего пользователя.
     """
     user_id = auth.get('id')
 
-    Event.get(event_id, with_deleted=False, session=db.session)
+    Event.get(event_id, session=db.session)
 
     existing = (
         EventUser.get_all(session=db.session)
@@ -38,5 +38,4 @@ async def set_event_visit_status(
             status=visit,
         )
 
-    db.session.commit()
     return VisitResponse.model_validate(result)
