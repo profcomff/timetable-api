@@ -8,6 +8,8 @@ from .db import (
     EventsGroups,
     EventsLecturers,
     EventsRooms,
+    EventUser,
+    EventUserStatus,
     Group,
     Lecturer,
     Room,
@@ -27,4 +29,6 @@ __all__ = [
     "EventsRooms",
     "ApproveStatuses",
     "EventsGroups",
+    "EventUser",
+    "EventUserStatus",
 ]

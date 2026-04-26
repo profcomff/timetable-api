@@ -14,6 +14,7 @@ from .lecturer import (
     Photo,
 )
 from .room import GetListRoom, RoomEvents, RoomPatch, RoomPost
+from .visit import VisitResponse
 
 
 __all__ = (
@@ -46,4 +47,5 @@ __all__ = (
     "RoomEvents",
     "RoomPatch",
     "RoomPost",
+    "VisitResponse",
 )

@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from typing import Literal
 
 from auth_lib.fastapi import UnionAuth

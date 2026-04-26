@@ -2,6 +2,6 @@ pytest
 pytest-cov
 requests
 pytest-mock
-black
+black==23.11.0
 isort
 autoflake
