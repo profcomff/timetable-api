@@ -4,7 +4,7 @@ from typing import Literal
 
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi_sqlalchemy import db
 from pydantic import TypeAdapter
 
@@ -26,6 +26,18 @@ from calendar_backend.settings import get_settings
 settings = get_settings()
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/event", tags=["Event"])
+
+
+@router.get("/ical/{event_id}", response_class=Response)
+async def get_event_ical(event_id: int) -> Response:
+    row = Event.get(event_id, session=db.session)
+    body = list_calendar.event_to_ics_bytes(row)
+    filename = f"event-{event_id}.ics"
+    return Response(
+        content=body,
+        media_type="text/calendar; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/{id}", response_model=EventGet)

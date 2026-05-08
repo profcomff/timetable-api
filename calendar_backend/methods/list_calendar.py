@@ -8,9 +8,10 @@ from datetime import datetime
 import pytz
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
-from icalendar import Calendar, Event, vText
+from icalendar import Calendar, Event as ICalEvent, vText
 from sqlalchemy.orm import Session
 
+from calendar_backend.models import Event as DbEvent
 from calendar_backend.models import Group
 from calendar_backend.settings import get_settings
 
@@ -36,7 +37,7 @@ async def get_user_calendar(group_id: int, session: Session, start_date: date_, 
             else "-"
         )
         place = str([row.name for row in lesson.room]) if lesson.room else "-"
-        event = Event()
+        event = ICalEvent()
         event.add("summary", f"{lesson.name}, {teacher}")
         event.add(
             "dtstart",
@@ -49,6 +50,24 @@ async def get_user_calendar(group_id: int, session: Session, start_date: date_, 
         event["location"] = vText(place)
         user_calendar.add_component(event)
     return user_calendar
+
+
+def event_to_ics_bytes(db_event: DbEvent) -> bytes:
+    """Same fields as in get_user_calendar loop: summary, start/end, location."""
+    teacher = (
+        str([f"{row.first_name} {row.middle_name} {row.last_name}" for row in db_event.lecturer])
+        if db_event.lecturer
+        else "-"
+    )
+    place = str([row.name for row in db_event.room]) if db_event.room else "-"
+    event = ICalEvent()
+    event.add("summary", f"{db_event.name}, {teacher}")
+    event.add("dtstart", db_event.start_ts.replace(tzinfo=pytz.UTC))
+    event.add("dtend", db_event.end_ts.replace(tzinfo=pytz.UTC))
+    event["location"] = vText(place)
+    cal = Calendar()
+    cal.add_component(event)
+    return cal.to_ical()
 
 
 async def create_user_calendar_file(user_calendar: Calendar, group: str) -> str:
