@@ -2,8 +2,8 @@ from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Query
 from fastapi_sqlalchemy import db
 
-from calendar_backend.models import Event, EventUser
-from calendar_backend.routes.models.visit import VisitResponse
+from calendar_backend.models import Event, EventUser, EventUserStatus
+from calendar_backend.routes.models.visit import UserVisitStatus, VisitResponse
 
 
 router = APIRouter(prefix="/event", tags=["Event: Visit"])
@@ -49,3 +49,32 @@ async def set_event_visit_status(
         )
 
     return VisitResponse.model_validate(result)
+
+
+@router.get("/{event_id}/visit/me", response_model=UserVisitStatus)
+async def get_my_event_visit_status(
+    event_id: int,
+    auth: dict = Depends(UnionAuth()),
+) -> UserVisitStatus:
+    """
+    Получить статус посещения мероприятия для текущего пользователя.
+    Возвращает event_id и статус (no_status, если пользователь никак не отметился).
+
+    Параметры:
+    event_id - id события
+
+    Ошибки:
+    ObjectNotFound - нет события с таким event_id
+    """
+    user_id = auth.get('id')
+    Event.get(event_id, session=db.session)
+    existing = (
+        EventUser.get_all(session=db.session)
+        .filter(EventUser.event_id == event_id, EventUser.user_id == user_id)
+        .first()
+    )
+
+    if existing:
+        return UserVisitStatus(event_id=existing.event_id, status=existing.status)
+    else:
+        return UserVisitStatus(event_id=event_id, status=EventUserStatus.NO_STATUS)
