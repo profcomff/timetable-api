@@ -11,3 +11,8 @@ class VisitResponse(Base):
     user_id: int
     status: EventUserStatus
     updated_at: datetime.datetime
+
+
+class UserVisitStatus(Base):
+    event_id: int
+    status: EventUserStatus
