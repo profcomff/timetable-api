@@ -75,6 +75,6 @@ async def get_my_event_visit_status(
     )
 
     if existing:
-        return UserVisitStatus(event_id=existing.event_id, status=existing.status)
+        return UserVisitStatus.model_validate(existing)
     else:
-        return UserVisitStatus(event_id=event_id, status=EventUserStatus.NO_STATUS)
+        return UserVisitStatus.model_validate({"event_id": event_id, "status": EventUserStatus.NO_STATUS})
