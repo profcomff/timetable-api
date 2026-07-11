@@ -11,6 +11,50 @@ from calendar_backend.models.base import DeclarativeBase
 from calendar_backend.models.db import Event, Group, Lecturer, Room
 from calendar_backend.routes import app
 from calendar_backend.settings import get_settings
+from _pytest.monkeypatch import MonkeyPatch
+from alembic import command
+from alembic.config import Config as AlembicConfig
+from pathlib import Path
+from testcontainers.postgres import PostgresContainer
+
+
+class PostgresConfig:
+    """Дата-класс со значениями для контейнера с тестовой БД и для alembic-миграции."""
+
+    container_name: str = "modal-service-api_test"
+    username: str = "postgres"
+    host: str = "localhost"
+    external_port: int = 5432
+    image: str = "postgres:15"
+    host_auth_method: str = "trust"
+    alembic_ini: str = Path(__file__).resolve().parent.parent / "alembic.ini"
+
+    @classmethod
+    def get_url(cls) -> str:
+        """Возвращает URI для подключения к БД."""
+        return f"postgresql://{cls.username}@{cls.host}:{cls.external_port}/postgres"
+
+
+
+@pytest.fixture(scope="session")
+def db_container():
+    """Фикстура настройки БД для тестов в Docker-контейнере."""
+    container = (
+        PostgresContainer(
+            image=PostgresConfig.image, username=PostgresConfig.username, dbname=PostgresConfig.container_name
+        )
+        .with_bind_ports(5432, PostgresConfig.external_port)
+        .with_env("POSTGRES_HOST_AUTH_METHOD", PostgresConfig.host_auth_method)
+    )
+    container.start()
+    alembic_ini = PostgresConfig.alembic_ini
+    cfg = AlembicConfig(str(alembic_ini.resolve()))
+    cfg.set_main_option("script_location", "%(here)s/migrations")
+    command.upgrade(cfg, "head")
+    try:
+        yield PostgresConfig.get_url()
+    finally:
+        container.stop()
 
 
 @pytest.fixture()
@@ -21,7 +65,7 @@ def client():
 
 @pytest.fixture()
 def client_auth(mocker: MockerFixture):
-    user_mock = mocker.patch('auth_lib.fastapi.UnionAuth.__call__')
+    user_mock = mocker.patch('auth_lib.fastapi.UnionAuth.__call__', autospec=True)
     user_mock.return_value = {
         "session_scopes": [{"id": 0, "name": "string", "comment": "string"}],
         "user_scopes": [{"id": 0, "name": "string", "comment": "string"}],
@@ -35,9 +79,8 @@ def client_auth(mocker: MockerFixture):
 
 
 @pytest.fixture()
-def dbsession():
-    settings = get_settings()
-    engine = create_engine(str(settings.DB_DSN), isolation_level='AUTOCOMMIT')
+def dbsession(db_container):
+    engine = create_engine(str(db_container), isolation_level='AUTOCOMMIT')
     TestingSessionLocal = sessionmaker(bind=engine)
     DeclarativeBase.metadata.create_all(bind=engine)
     return TestingSessionLocal()
