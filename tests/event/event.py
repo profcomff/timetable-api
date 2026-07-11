@@ -198,7 +198,6 @@ def test_delete(client_auth: TestClient, dbsession: Session, room_path, lecturer
 
 
 def test_update_all(client_auth: TestClient, dbsession: Session):
-    import pytest
     # Create
     room = Room(name="5-07" + datetime.datetime.utcnow().isoformat(), direction="North")
     lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
@@ -215,7 +214,6 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
-    pytest.set_trace()
     response = client_auth.post(RESOURCE, json=request_obj)
     assert response.status_code == status.HTTP_200_OK, response.json()
     response_obj = response.json()
@@ -253,7 +251,6 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
     response = client_auth.patch(urljoin(RESOURCE, str(id_)), json=request_obj_2)
-    pytest.set_trace()
     assert response.status_code == 200
     response = client_auth.get(urljoin(RESOURCE, str(id_)))
     assert response.status_code == status.HTTP_200_OK, response.json()

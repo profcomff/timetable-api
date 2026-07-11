@@ -1,21 +1,19 @@
 from datetime import datetime
+from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette import status
+from testcontainers.postgres import PostgresContainer
 
 from calendar_backend.models.base import DeclarativeBase
 from calendar_backend.models.db import Event, Group, Lecturer, Room
 from calendar_backend.routes import app
-from calendar_backend.settings import get_settings
-from _pytest.monkeypatch import MonkeyPatch
-from alembic import command
-from alembic.config import Config as AlembicConfig
-from pathlib import Path
-from testcontainers.postgres import PostgresContainer
 
 
 class PostgresConfig:
@@ -33,7 +31,6 @@ class PostgresConfig:
     def get_url(cls) -> str:
         """Возвращает URI для подключения к БД."""
         return f"postgresql://{cls.username}@{cls.host}:{cls.external_port}/postgres"
-
 
 
 @pytest.fixture(scope="session")
