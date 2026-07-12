@@ -5,3 +5,4 @@ pytest-mock
 black==23.11.0
 isort
 autoflake
+testcontainers[postgres]
