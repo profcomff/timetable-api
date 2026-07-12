@@ -1,6 +1,5 @@
 import logging
 from datetime import date, timedelta
-from itertools import zip_longest
 from typing import Literal
 
 from auth_lib.fastapi import UnionAuth
@@ -204,22 +203,25 @@ async def patch_event(
     Events = db.session.query(Event).filter(Event.id == id).one_or_none()
     if not Events:
         raise ObjectNotFound(type=type(Events), ids=id)
-
     event_upd_data = event_inp.model_dump(exclude_unset=True)
-    # получаем списки id всех существующих аудиторий, групп и лекторов
-    all_rooms = [room.id for room in db.session.query(Room).all()]
-    all_groups = [group.id for group in db.session.query(Group).all()]
-    all_lecturers = [lecturer.id for lecturer in db.session.query(Lecturer).all()]
-    # проверяем cуществование заданных в body (room_, group_, lecturer_)*id
-    for r, g, l in zip_longest(
-        event_upd_data.get("room_id"), event_upd_data.get("group_id"), event_upd_data.get("lecturer_id"), fillvalue=None
-    ):
-        if r not in all_rooms:
-            raise ObjectNotFound(type=type(Room), ids=r)
-        if g not in all_groups:
-            raise ObjectNotFound(type=type(Group), ids=g)
-        if l not in all_lecturers:
-            raise ObjectNotFound(type=type(Lecturer), ids=l)
+
+    upd_rooms = set(event_upd_data.get("room_id"))
+    db_rooms = {room.id for room in db.session.query(Room).filter(Room.id.in_(upd_rooms)).all()}
+    no_exist_rooms = upd_rooms - db_rooms
+    if no_exist_rooms:
+        raise ObjectNotFound(type=type(Room), ids=list(no_exist_rooms))
+
+    upd_groups = set(event_upd_data.get("group_id"))
+    db_groups = {group.id for group in db.session.query(Group).filter(Group.id.in_(upd_groups)).all()}
+    no_exist_groups = upd_groups - db_groups
+    if no_exist_groups:
+        raise ObjectNotFound(type=type(Group), ids=list(no_exist_groups))
+
+    upd_lecturers = set(event_upd_data.get("lecturer_id"))
+    db_lecturers = {lecturer.id for lecturer in db.session.query(Lecturer).filter(Lecturer.id.in_(upd_lecturers)).all()}
+    no_exist_lecturers = upd_lecturers - db_lecturers
+    if no_exist_lecturers:
+        raise ObjectNotFound(type=type(Lecturer), ids=list(no_exist_lecturers))
 
     def add_new_remove_old_ids(dbsession, event_id, artefact: str, event_instance, negotiator_instance) -> None:
         """Вспомогательная фукнция описывающая удаление старых и добавление новых (room_, group_, lecturer_)*id - артефактов"""
