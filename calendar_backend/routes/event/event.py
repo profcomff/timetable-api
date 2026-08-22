@@ -199,37 +199,35 @@ async def patch_event_by_name(
 async def patch_event(
     id: int, event_inp: EventPatch, _=Depends(UnionAuth(scopes=["timetable.event.update"]))
 ) -> EventGet:
-    def add_new_remove_old_ids(dbsession, event_id, artefact: str, event_instance, negotiator_instance) -> None:
+    def add_new_remove_old_ids(dbsession, event_id, artefact_name: str, event_class, artefact_class) -> None:
         """Вспомогательная фукнция описывающая удаление старых и добавление новых (room_, group_, lecturer_)*id - артефактов"""
         # получаем множество артефактов события
-        event_artefacts = {room.id for room in getattr(event_instance, f"{artefact}")}
+        event_artefacts = {artefact.id for artefact in getattr(event_class, f"{artefact_name}")}
         # получаем множетсво страрых артефактов
-        old_artefacts = event_artefacts - set(event_upd_data.get(f"{artefact}_id"))
+        old_artefacts = event_artefacts - set(event_upd_data.get(f"{artefact_name}_id"))
         # получаем множество новых артефактов
-        new_artefacts = set(event_upd_data.get(f"{artefact}_id")) - event_artefacts
+        new_artefacts = set(event_upd_data.get(f"{artefact_name}_id")) - event_artefacts
         # получаем артефакты к удалению(уникальные старые)
         to_remove = old_artefacts - new_artefacts
         # получаем артефакты к созданию(уникальные новые)
         to_add = new_artefacts - old_artefacts
 
         if to_remove:
-            dbsession.query(negotiator_instance).filter(
-                negotiator_instance.event_id == event_id, getattr(negotiator_instance, f"{artefact}_id").in_(to_remove)
+            artefact_class.get_all(session=db.session).filter(
+                artefact_class.event_id == event_id, getattr(artefact_class, f"{artefact_name}_id").in_(to_remove)
             ).delete()
         if to_add:
             dbsession.bulk_insert_mappings(
-                negotiator_instance, [{"event_id": f"{event_id}", f"{artefact}_id": id_to_add} for id_to_add in to_add]
+                artefact_class, [{"event_id": f"{event_id}", f"{artefact_name}_id": id_to_add} for id_to_add in to_add]
             )
 
     # проверяем, что событие с таким id существует
-    Events = db.session.query(Event).filter(Event.id == id).one_or_none()
-    if not Events:
-        raise ObjectNotFound(type=type(Events), ids=id)
+    Events = Event.get(id, session=db.session)
     event_upd_data = event_inp.model_dump(exclude_unset=True)
 
     if event_upd_data.get("room_id"):
         upd_rooms = set(event_upd_data.get("room_id"))
-        db_rooms = {room.id for room in db.session.query(Room).filter(Room.id.in_(upd_rooms)).all()}
+        db_rooms = {room.id for room in Room.get_all(session=db.session).filter(Room.id.in_(upd_rooms)).all()}
         no_exist_rooms = upd_rooms - db_rooms
         if no_exist_rooms:
             raise ObjectNotFound(type=type(Room), ids=list(no_exist_rooms))
@@ -237,7 +235,7 @@ async def patch_event(
 
     if event_upd_data.get("group_id"):
         upd_groups = set(event_upd_data.get("group_id"))
-        db_groups = {group.id for group in db.session.query(Group).filter(Group.id.in_(upd_groups)).all()}
+        db_groups = {group.id for group in Group.get_all(session=db.session).filter(Group.id.in_(upd_groups)).all()}
         no_exist_groups = upd_groups - db_groups
         if no_exist_groups:
             raise ObjectNotFound(type=type(Group), ids=list(no_exist_groups))
@@ -246,7 +244,8 @@ async def patch_event(
     if event_upd_data.get("lecturer_id"):
         upd_lecturers = set(event_upd_data.get("lecturer_id"))
         db_lecturers = {
-            lecturer.id for lecturer in db.session.query(Lecturer).filter(Lecturer.id.in_(upd_lecturers)).all()
+            lecturer.id
+            for lecturer in Lecturer.get_all(session=db.session).filter(Lecturer.id.in_(upd_lecturers)).all()
         }
         no_exist_lecturers = upd_lecturers - db_lecturers
         if no_exist_lecturers:
