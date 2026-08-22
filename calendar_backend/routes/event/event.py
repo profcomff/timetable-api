@@ -8,9 +8,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi_sqlalchemy import db
 from pydantic import TypeAdapter
 
-from calendar_backend.exceptions import NotEnoughCriteria
+from calendar_backend.exceptions import NotEnoughCriteria, ObjectNotFound
 from calendar_backend.methods import list_calendar
-from calendar_backend.models import Event, Group, Lecturer, Room
+from calendar_backend.models import Event, EventsGroups, EventsLecturers, EventsRooms, Group, Lecturer, Room
 from calendar_backend.routes.models import EventGet
 from calendar_backend.routes.models.event import (
     EventPatch,
@@ -199,7 +199,60 @@ async def patch_event_by_name(
 async def patch_event(
     id: int, event_inp: EventPatch, _=Depends(UnionAuth(scopes=["timetable.event.update"]))
 ) -> EventGet:
-    patched = Event.update(id, session=db.session, **event_inp.model_dump(exclude_unset=True))
+    def add_new_remove_old_ids(dbsession, event_id, artefact_name: str, event_class, artefact_class) -> None:
+        """Вспомогательная фукнция описывающая удаление старых и добавление новых (room_, group_, lecturer_)*id - артефактов"""
+        # получаем множество артефактов события
+        event_artefacts = {artefact.id for artefact in getattr(event_class, f"{artefact_name}")}
+        # получаем множетсво страрых артефактов
+        old_artefacts = event_artefacts - set(event_upd_data.get(f"{artefact_name}_id"))
+        # получаем множество новых артефактов
+        new_artefacts = set(event_upd_data.get(f"{artefact_name}_id")) - event_artefacts
+        # получаем артефакты к удалению(уникальные старые)
+        to_remove = old_artefacts - new_artefacts
+        # получаем артефакты к созданию(уникальные новые)
+        to_add = new_artefacts - old_artefacts
+
+        if to_remove:
+            artefact_class.get_all(session=db.session).filter(
+                artefact_class.event_id == event_id, getattr(artefact_class, f"{artefact_name}_id").in_(to_remove)
+            ).delete()
+        if to_add:
+            dbsession.bulk_insert_mappings(
+                artefact_class, [{"event_id": f"{event_id}", f"{artefact_name}_id": id_to_add} for id_to_add in to_add]
+            )
+
+    # проверяем, что событие с таким id существует
+    Events = Event.get(id, session=db.session)
+    event_upd_data = event_inp.model_dump(exclude_unset=True)
+
+    if event_upd_data.get("room_id"):
+        upd_rooms = set(event_upd_data.get("room_id"))
+        db_rooms = {room.id for room in Room.get_all(session=db.session).filter(Room.id.in_(upd_rooms)).all()}
+        no_exist_rooms = upd_rooms - db_rooms
+        if no_exist_rooms:
+            raise ObjectNotFound(type=type(Room), ids=list(no_exist_rooms))
+        add_new_remove_old_ids(db.session, id, "room", Events, EventsRooms)
+
+    if event_upd_data.get("group_id"):
+        upd_groups = set(event_upd_data.get("group_id"))
+        db_groups = {group.id for group in Group.get_all(session=db.session).filter(Group.id.in_(upd_groups)).all()}
+        no_exist_groups = upd_groups - db_groups
+        if no_exist_groups:
+            raise ObjectNotFound(type=type(Group), ids=list(no_exist_groups))
+        add_new_remove_old_ids(db.session, id, "group", Events, EventsGroups)
+
+    if event_upd_data.get("lecturer_id"):
+        upd_lecturers = set(event_upd_data.get("lecturer_id"))
+        db_lecturers = {
+            lecturer.id
+            for lecturer in Lecturer.get_all(session=db.session).filter(Lecturer.id.in_(upd_lecturers)).all()
+        }
+        no_exist_lecturers = upd_lecturers - db_lecturers
+        if no_exist_lecturers:
+            raise ObjectNotFound(type=type(Lecturer), ids=list(no_exist_lecturers))
+        add_new_remove_old_ids(db.session, id, "lecturer", Events, EventsLecturers)
+
+    patched = Event.update(id, session=db.session, **event_upd_data)
     db.session.commit()
     return EventGet.model_validate(patched)
 

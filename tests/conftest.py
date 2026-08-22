@@ -1,27 +1,100 @@
 from datetime import datetime
+from functools import lru_cache
+from pathlib import Path
 
 import pytest
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from fastapi.testclient import TestClient
+from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from starlette import status
+from testcontainers.postgres import PostgresContainer
 
 from calendar_backend.models.base import DeclarativeBase
 from calendar_backend.models.db import Event, Group, Lecturer, Room
-from calendar_backend.routes import app
-from calendar_backend.settings import get_settings
+from calendar_backend.settings import Settings
+
+
+class PostgresConfig:
+    """Дата-класс со значениями для контейнера с тестовой БД и для alembic-миграции."""
+
+    container_name: str = "timetable-api-test"
+    username: str = "postgres"
+    host: str = "localhost"
+    external_port: int = 5433
+    image: str = "postgres:15"
+    host_auth_method: str = "trust"
+    alembic_ini: str = Path(__file__).resolve().parent.parent / "alembic.ini"
+
+    @classmethod
+    def get_url(cls) -> str:
+        """Возвращает URI для подключения к БД."""
+        return f"postgresql://{cls.username}@{cls.host}:{cls.external_port}/postgres"
+
+
+@pytest.fixture(scope="session")
+def session_mp():
+    mp = MonkeyPatch()
+    yield mp
+    mp.undo()
+
+
+@pytest.fixture(scope="session")
+def get_settings_mock(session_mp):
+    """Переопределение get_settings в calendar_backend/settings.py."""
+
+    @lru_cache
+    def get_test_settings():
+        test_settings = Settings()
+        test_settings.DB_DSN = PostgresConfig.get_url()
+        return test_settings
+
+    dsn_mock = session_mp.setattr("calendar_backend.settings.get_settings", get_test_settings)
+    return dsn_mock
+
+
+@pytest.fixture(scope="session")
+def get_app_with_test_settings(get_settings_mock):
+    """Загрузка app с тестовыми настройками."""
+    from calendar_backend.routes import app
+
+    return app
+
+
+@pytest.fixture(scope="session")
+def db_container(get_settings_mock):
+    """Фикстура настройки БД для тестов в Docker-контейнере."""
+    container = (
+        PostgresContainer(
+            image=PostgresConfig.image, username=PostgresConfig.username, dbname=PostgresConfig.container_name
+        )
+        .with_bind_ports(5432, PostgresConfig.external_port)
+        .with_env("POSTGRES_HOST_AUTH_METHOD", PostgresConfig.host_auth_method)
+    )
+    container.start()
+    alembic_ini = PostgresConfig.alembic_ini
+    cfg = AlembicConfig(str(alembic_ini.resolve()))
+    cfg.set_main_option("script_location", "%(here)s/migrations")
+    command.upgrade(cfg, "head")
+    try:
+        yield PostgresConfig.get_url()
+    finally:
+        container.stop()
 
 
 @pytest.fixture()
-def client():
+def client(get_app_with_test_settings):
+    app = get_app_with_test_settings
     client = TestClient(app)
     return client
 
 
 @pytest.fixture()
-def client_auth(mocker: MockerFixture):
-    user_mock = mocker.patch('auth_lib.fastapi.UnionAuth.__call__')
+def client_auth(mocker: MockerFixture, get_app_with_test_settings):
+    user_mock = mocker.patch('auth_lib.fastapi.UnionAuth.__call__', autospec=True)
     user_mock.return_value = {
         "session_scopes": [{"id": 0, "name": "string", "comment": "string"}],
         "user_scopes": [{"id": 0, "name": "string", "comment": "string"}],
@@ -30,17 +103,17 @@ def client_auth(mocker: MockerFixture):
         "id": 0,
         "email": "string",
     }
+    app = get_app_with_test_settings
     client = TestClient(app)
     return client
 
 
 @pytest.fixture()
-def dbsession():
-    settings = get_settings()
-    engine = create_engine(str(settings.DB_DSN), isolation_level='AUTOCOMMIT')
+def dbsession(db_container):
+    engine = create_engine(str(db_container), isolation_level='AUTOCOMMIT')
     TestingSessionLocal = sessionmaker(bind=engine)
     DeclarativeBase.metadata.create_all(bind=engine)
-    return TestingSessionLocal()
+    yield TestingSessionLocal()
 
 
 @pytest.fixture()

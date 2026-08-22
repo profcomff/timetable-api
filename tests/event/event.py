@@ -237,11 +237,16 @@ def test_update_all(client_auth: TestClient, dbsession: Session):
     assert response_obj["end_ts"][:20] == request_obj["end_ts"][:20]
 
     # Update
+    another_room = Room(name="5-07" + datetime.datetime.utcnow().isoformat(), direction="North")
+    another_lecturer = Lecturer(first_name="s", middle_name="s", last_name="s")
+    another_group = Group(name="", number="202" + datetime.datetime.utcnow().isoformat())
+    dbsession.add_all((another_room, another_group, another_lecturer))
+    dbsession.commit()
     request_obj_2 = {
         "name": "frfrf",
-        "room_id": [room.id],
-        "group_id": [group.id],
-        "lecturer_id": [lecturer.id],
+        "room_id": [another_room.id],
+        "group_id": [another_group.id],
+        "lecturer_id": [another_lecturer.id],
         "start_ts": "2022-08-26T22:32:38.575Z",
         "end_ts": "2022-08-26T22:32:38.575Z",
     }
