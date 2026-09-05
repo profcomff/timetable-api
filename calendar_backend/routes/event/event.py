@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from typing import Literal
 
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, File, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi_sqlalchemy import db
 from pydantic import TypeAdapter
@@ -31,6 +31,13 @@ router = APIRouter(prefix="/event", tags=["Event"])
 @router.get("/{id}", response_model=EventGet)
 async def get_event_by_id(id: int) -> EventGet:
     return EventGet.model_validate(Event.get(id, session=db.session))
+
+
+@router.post("/ical", response_model=EventPost)
+async def create_events_from_3dparty(file: UploadFile = File(...)):
+    """Создает события на основе .ical или .ics файлов полученных из 3'd party источников."""
+    events = await list_calendar.create_event_from_icalendar(db.session, file)
+    return [EventGet.model_validate(event) for event in events]   
 
 
 async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id, detail, limit, offset):
