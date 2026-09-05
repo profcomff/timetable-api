@@ -7,12 +7,13 @@ from datetime import datetime
 from typing import List
 
 import pytz
-from fastapi import HTTPException, UploadFile, File
+from fastapi import File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
 
-from calendar_backend.models import Group, Event as DB_Event, Room, Lecturer
+from calendar_backend.models import Event as DB_Event
+from calendar_backend.models import Group, Lecturer, Room
 from calendar_backend.settings import get_settings
 
 from . import utils
@@ -21,17 +22,17 @@ from . import utils
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
+
 def _get_list_from_ical_obj(element, field: str) -> List:
     items = element.get(field)
     if not items:
         return []
     elif isinstance(items, list):
         return [int(i) for i in items]
-    elif "," in (str_items := str(items)) :
+    elif "," in (str_items := str(items)):
         return [int(i) for i in items.split(",")]
     else:
         return [int(items)]
-
 
 
 async def create_event_from_icalendar(dbsession: Session, file: UploadFile = File(...)) -> List:
@@ -58,15 +59,14 @@ async def create_event_from_icalendar(dbsession: Session, file: UploadFile = Fil
         if not data.get("group_ids"):
             raise HTTPException(status_code=403, detail="Невозможно создать событие без группы!")
         events.append(data)
-        
+
     for data in events:
         existing_events_query = (
-
-        DB_Event.get_all(session=dbsession)
-        .filter(DB_Event.name == data.get("name"))
-        .filter(DB_Event.start_ts == data.get("start_ts"))
-        .filter(DB_Event.end_ts == data.get("end_ts"))
-    )
+            DB_Event.get_all(session=dbsession)
+            .filter(DB_Event.name == data.get("name"))
+            .filter(DB_Event.start_ts == data.get("start_ts"))
+            .filter(DB_Event.end_ts == data.get("end_ts"))
+        )
         is_unique = True
         for existing_event in existing_events_query.all():
             if (
@@ -78,9 +78,7 @@ async def create_event_from_icalendar(dbsession: Session, file: UploadFile = Fil
 
         if is_unique:
             rooms = [Room.get(room_id, session=dbsession) for room_id in data.pop("room_id", [])]
-            lecturers = [
-                Lecturer.get(lecturer_id, session=dbsession) for lecturer_id in data.pop("lecturer_id", [])
-            ]
+            lecturers = [Lecturer.get(lecturer_id, session=dbsession) for lecturer_id in data.pop("lecturer_id", [])]
             groups = [Group.get(group_id, session=dbsession) for group_id in data.pop("group_id", [])]
             result.append(
                 DB_Event.create(
