@@ -4,16 +4,19 @@ import os
 import time
 from datetime import date as date_
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
 
 import pytz
 from fastapi import File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from icalendar import Calendar, Event, vText
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from calendar_backend.models import Group
+from calendar_backend.routes.models.event import EventRepeatedPost
 from calendar_backend.settings import get_settings
+from calendar_backend.utils.services import EventService
 
 from . import utils
 
@@ -44,7 +47,7 @@ async def create_event_from_icalendar(file: UploadFile = File(...)) -> List[Dict
     str_file: str = raw_file.decode("utf-8")
     cal_obj = Calendar.from_ical(str_file)
     events = []
-    for element in cal_obj.walk():
+    for element in cal_obj.walk("VEVENT"):
         data = {}
         data["name"] = element.get("summary")
         data["start_ts"] = element.get("dtstart")
@@ -54,11 +57,28 @@ async def create_event_from_icalendar(file: UploadFile = File(...)) -> List[Dict
         data["lecturer_ids"] = _get_list_from_ical_obj(element, lecturer_ids_field)
         data["room_ids"] = _get_list_from_ical_obj(element, room_ids_field)
         # решено, что group_id обязателен
-        if not data.get("group_ids"):
-            raise HTTPException(status_code=403, detail="Невозможно создать событие без группы!")
-        events.append(data)
+        try:
+            if not data.get("group_ids"):
+                raise HTTPException(status_code=403, detail="Невозможно создать событие без группы!")
+
+            if rrule := element.get("rrule"):
+                interval = rrule.get("interval", [None])
+                until = rrule.get("until", [None])
+                data["repeat_timedelta_days"] = interval[0]
+                data["repeat_until_ts"] = until[0]
+
+                event = EventRepeatedPost.model_validate(data)
+                repeating_events = await EventService.reproduce_repeating_event(event)
+                events.extend(repeating_events)
+            else:
+                events.append(data)
+
+        except (HTTPException, ValidationError):
+            # вероятно следует логировать какие именно события не удалось получить
+            break
 
     return events
+
 
 async def get_user_calendar(group_id: int, session: Session, start_date: date_, end_date: date_) -> Calendar:
     """

@@ -3,8 +3,8 @@ from datetime import date, timedelta
 from typing import Literal
 
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi.responses import FileResponse
 from fastapi_sqlalchemy import db
 from pydantic import TypeAdapter
 
@@ -20,8 +20,8 @@ from calendar_backend.routes.models.event import (
     EventRepeatedPost,
     GetListEvent,
 )
-from calendar_backend.utils.services import EventService
 from calendar_backend.settings import get_settings
+from calendar_backend.utils.services import EventService
 
 
 settings = get_settings()
@@ -111,7 +111,7 @@ async def create_repeating_event(
     event: EventRepeatedPost,  # _=Depends(UnionAuth(scopes=["timetable.event.create"]))
 ) -> list[EventGet]:
     """Создает множество повторяющихся событий."""
-    list_events = await EventService.reproduce_repeating_event(db.session, event)
+    list_events = await EventService.reproduce_repeating_event(event)
     result = await EventService.bulk_create_events(db.session, list_events)
     adapter = TypeAdapter(list[EventGet])
     return adapter.validate_python(result)
