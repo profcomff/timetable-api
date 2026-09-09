@@ -4,21 +4,80 @@ import os
 import time
 from datetime import date as date_
 from datetime import datetime
+from typing import Dict, List
 
 import pytz
-from fastapi import HTTPException
+from fastapi import File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from icalendar import Calendar, Event, vText
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from calendar_backend.models import Group
+from calendar_backend.routes.models.event import EventRepeatedPost
 from calendar_backend.settings import get_settings
+from calendar_backend.utils.services import EventService
 
 from . import utils
 
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
+
+
+def _get_list_from_ical_obj(element, field: str) -> List:
+    items = element.get(field)
+    if not items:
+        return []
+    elif isinstance(items, list):
+        return [int(i) for i in items]
+    elif "," in (str_items := str(items)):
+        return [int(i) for i in items.split(",")]
+    else:
+        return [int(items)]
+
+
+async def create_event_from_icalendar(file: UploadFile = File(...)) -> List[Dict]:
+    extension = file.filename.split(".")[-1]
+    available_exts = ["ical", "ics"]
+    if extension not in available_exts:
+        raise HTTPException(status_code=422, detail="Не поддерживаемый фармат файла!")
+
+    raw_file: bytes = file.read()
+    str_file: str = raw_file.decode("utf-8")
+    cal_obj = Calendar.from_ical(str_file)
+    events = []
+    for element in cal_obj.walk("VEVENT"):
+        data = {}
+        data["name"] = element.get("summary")
+        data["start_ts"] = element.get("dtstart")
+        data["end_ts"] = element.get("dtend")
+        group_ids_field, lecturer_ids_field, room_ids_field = "X-FF-GROUP-IDS", "X-FF-LECTURER-IDS", "X-FF-ROOM-IDS"
+        data["group_ids"] = _get_list_from_ical_obj(element, group_ids_field)
+        data["lecturer_ids"] = _get_list_from_ical_obj(element, lecturer_ids_field)
+        data["room_ids"] = _get_list_from_ical_obj(element, room_ids_field)
+        # решено, что group_id обязателен
+        try:
+            if not data.get("group_ids"):
+                raise HTTPException(status_code=403, detail="Невозможно создать событие без группы!")
+
+            if rrule := element.get("rrule"):
+                interval = rrule.get("interval", [None])
+                until = rrule.get("until", [None])
+                data["repeat_timedelta_days"] = interval[0]
+                data["repeat_until_ts"] = until[0]
+
+                event = EventRepeatedPost.model_validate(data)
+                repeating_events = await EventService.reproduce_repeating_event(event)
+                events.extend(repeating_events)
+            else:
+                events.append(data)
+
+        except (HTTPException, ValidationError):
+            # вероятно следует логировать какие именно события не удалось получить
+            break
+
+    return events
 
 
 async def get_user_calendar(group_id: int, session: Session, start_date: date_, end_date: date_) -> Calendar:
