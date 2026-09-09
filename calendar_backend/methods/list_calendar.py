@@ -35,7 +35,7 @@ def _get_list_from_ical_obj(element, field: str) -> List:
         return [int(items)]
 
 
-async def create_event_from_icalendar(dbsession: Session, file: UploadFile = File(...)) -> List:
+async def create_event_from_icalendar(file: UploadFile = File(...)) -> List:
     extension = file.filename.split(".")[-1]
     available_exts = ["ical", "ics"]
     if extension not in available_exts:
@@ -45,7 +45,6 @@ async def create_event_from_icalendar(dbsession: Session, file: UploadFile = Fil
     str_file: str = raw_file.decode("utf-8")
     cal_obj = Calendar.from_ical(str_file)
     events = []
-    result = []
     for element in cal_obj.walk():
         data = {}
         data["name"] = element.get("summary")
@@ -60,38 +59,7 @@ async def create_event_from_icalendar(dbsession: Session, file: UploadFile = Fil
             raise HTTPException(status_code=403, detail="Невозможно создать событие без группы!")
         events.append(data)
 
-    for data in events:
-        existing_events_query = (
-            DB_Event.get_all(session=dbsession)
-            .filter(DB_Event.name == data.get("name"))
-            .filter(DB_Event.start_ts == data.get("start_ts"))
-            .filter(DB_Event.end_ts == data.get("end_ts"))
-        )
-        is_unique = True
-        for existing_event in existing_events_query.all():
-            if (
-                {column.id for column in existing_event.group} == set(data["group_id"])
-                and {column.id for column in existing_event.room} == set(data["room_id"])
-                and {column.id for column in existing_event.lecturer} == set(data["lecturer_id"])
-            ):
-                is_unique = False
-
-        if is_unique:
-            rooms = [Room.get(room_id, session=dbsession) for room_id in data.pop("room_id", [])]
-            lecturers = [Lecturer.get(lecturer_id, session=dbsession) for lecturer_id in data.pop("lecturer_id", [])]
-            groups = [Group.get(group_id, session=dbsession) for group_id in data.pop("group_id", [])]
-            result.append(
-                DB_Event.create(
-                    **data,
-                    room=rooms,
-                    lecturer=lecturers,
-                    group=groups,
-                    session=dbsession,
-                )
-            )
-    dbsession.commit()
-    return result
-
+    return events
 
 async def get_user_calendar(group_id: int, session: Session, start_date: date_, end_date: date_) -> Calendar:
     """
