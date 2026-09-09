@@ -4,7 +4,7 @@ import os
 import time
 from datetime import date as date_
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 import pytz
 from fastapi import File, HTTPException, UploadFile
@@ -12,8 +12,7 @@ from fastapi.responses import FileResponse
 from icalendar import Calendar, Event, vText
 from sqlalchemy.orm import Session
 
-from calendar_backend.models import Event as DB_Event
-from calendar_backend.models import Group, Lecturer, Room
+from calendar_backend.models import Group
 from calendar_backend.settings import get_settings
 
 from . import utils
@@ -35,7 +34,7 @@ def _get_list_from_ical_obj(element, field: str) -> List:
         return [int(items)]
 
 
-async def create_event_from_icalendar(file: UploadFile = File(...)) -> List:
+async def create_event_from_icalendar(file: UploadFile = File(...)) -> List[Dict]:
     extension = file.filename.split(".")[-1]
     available_exts = ["ical", "ics"]
     if extension not in available_exts:

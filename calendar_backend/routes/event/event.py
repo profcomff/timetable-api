@@ -34,13 +34,6 @@ async def get_event_by_id(id: int) -> EventGet:
     return EventGet.model_validate(Event.get(id, session=db.session))
 
 
-@router.post("/ical", response_model=EventPost)
-async def create_events_from_3dparty(file: UploadFile = File(...)):
-    """Создает события на основе .ical или .ics файлов полученных из 3'd party источников."""
-    events = await list_calendar.create_event_from_icalendar(db.session, file)
-    return [EventGet.model_validate(event) for event in events]
-
-
 async def _get_timetable(start: date, end: date, group_id, lecturer_id, room_id, detail, limit, offset):
     if bool(group_id) + bool(lecturer_id) + bool(room_id) != 1:
         raise NotEnoughCriteria("Exactly one argument group_id, lecturer_id or room_id required")
@@ -117,46 +110,28 @@ async def create_event(event: EventPost, _=Depends(UnionAuth(scopes=["timetable.
 async def create_repeating_event(
     event: EventRepeatedPost,  # _=Depends(UnionAuth(scopes=["timetable.event.create"]))
 ) -> list[EventGet]:
-    if event.repeat_timedelta_days <= 0:
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": f"Timedelta must be a positive integer"}
-        )
-    if event.repeat_until_ts > event.start_ts + timedelta(days=1095):
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"detail": "Due to disk utilization limits, events with duration > 3 years is restricted"},
-        )
-    events = []
-    event_dict = event.model_dump()
-    rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
-    lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
-    groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
-    repeat_timedelta_days = timedelta(days=event.repeat_timedelta_days)
-    cur_start_ts = event_dict["start_ts"]
-    cur_end_ts = event_dict["end_ts"]
-    while cur_start_ts <= event.repeat_until_ts:
-        event_get = Event.create(
-            name=event_dict["name"],
-            start_ts=cur_start_ts,
-            end_ts=cur_end_ts,
-            room=rooms,
-            lecturer=lecturers,
-            group=groups,
-            session=db.session,
-        )
-        events.append(event_get)
-        cur_start_ts += repeat_timedelta_days
-        cur_end_ts += repeat_timedelta_days
+    """Создает множество повторяющихся событий."""
+    list_events = await EventService.reproduce_repeating_event(db.session, event)
+    result = await EventService.bulk_create_events(db.session, list_events)
     adapter = TypeAdapter(list[EventGet])
-    return adapter.validate_python(events)
+    return adapter.validate_python(result)
 
 
 @router.post("/bulk", response_model=list[EventGet])
 async def create_events(
     events: list[EventPost], _=Depends(UnionAuth(scopes=["timetable.event.create"]))
 ) -> list[EventGet]:
-    """Создает множество событий"""
-    events = [event.model_dump() for event in events]
+    """Создает множество событий."""
+    list_events = [event.model_dump() for event in events]
+    result = await EventService.bulk_create_events(db.session, list_events)
+    adapter = TypeAdapter(list[EventGet])
+    return adapter.validate_python(result)
+
+
+@router.post("/ical", response_model=EventPost)
+async def create_events_from_3dparty(file: UploadFile = File(...)):
+    """Создает события на основе .ical или .ics файлов полученных из 3'd party источников."""
+    events = await list_calendar.create_event_from_icalendar(file)
     result = await EventService.bulk_create_events(db.session, events)
     adapter = TypeAdapter(list[EventGet])
     return adapter.validate_python(result)

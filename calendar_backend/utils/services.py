@@ -1,7 +1,12 @@
 from typing import List, Dict
+from datetime import timedelta
 
 from sqlalchemy.orm import Session
 from calendar_backend.models import Event, Group, Lecturer, Room
+from calendar_backend.routes.models.event import EventRepeatedPost
+
+from fastapi.responses import JSONResponse
+from fastapi import status
 
 class EventService:
     """Сервис для работы с логикой создания событий"""
@@ -43,8 +48,40 @@ class EventService:
         db.session.commit()
         return result
 
-    @classmethod
-    async def create_repeating_event(cls):
-        pass
 
+    @classmethod
+    async def reproduce_repeating_event(cls, db: Session, event: EventRepeatedPost) -> List[Dict]:
+        if event.repeat_timedelta_days <= 0:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST, content={"detail": f"Timedelta must be a positive integer"}
+            )
+        if event.repeat_until_ts > event.start_ts + timedelta(days=1095):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Due to disk utilization limits, events with duration > 3 years is restricted"},
+            )
+        events = []
+        event_dict = event.model_dump()
+
+        rooms = [Room.get(room_id, session=db.session) for room_id in event_dict.pop("room_id", [])]
+        lecturers = [Lecturer.get(lecturer_id, session=db.session) for lecturer_id in event_dict.pop("lecturer_id", [])]
+        groups = [Group.get(group_id, session=db.session) for group_id in event_dict.pop("group_id", [])]
+
+        repeat_timedelta_days = timedelta(days=event.repeat_timedelta_days)
+        cur_start_ts = event_dict["start_ts"]
+        cur_end_ts = event_dict["end_ts"]
+
+        while cur_start_ts <= event.repeat_until_ts:
+            event_get = {}
+            event_get["name"] = event_dict["name"]
+            event_get["start_ts"] = cur_start_ts
+            event_get["end_ts"] = cur_end_ts
+            event_get["room"] = rooms
+            event_get["lecturer"] = lecturers
+            event_get["group"] = groups
+            events.append(event_get)
+            cur_start_ts += repeat_timedelta_days
+            cur_end_ts += repeat_timedelta_days
+
+        return events
 
